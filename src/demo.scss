@@ -1,0 +1,55 @@
+@keyframes glow {
+  from {
+    color: green;
+    text-decoration: underline;
+  }
+  to {
+    color: black;
+    text-decoration: none;
+  }
+}
+
+#event {
+  margin-top: 20px;
+  border: 1px solid;
+  height: 200px;
+  overflow-y: auto;
+  padding: 5px;
+  font-weight: bold;
+
+  p {
+    animation: glow 2s ease-out;
+    animation-fill-mode: forwards;
+  }
+}
+
+.GameGrid {
+  &__stage {
+    // max-height: 200px;
+    max-width: 400px;
+  }
+
+  &__tile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.focused {
+      background-color: aliceblue;
+    }
+
+    &:focus {
+      outline: 3px solid red;
+    }
+
+    &.flipped {
+      background-color: blue;
+    }
+  }
+}
+[data-type="barrier"] {
+  background-color: coral;
+}
+[data-type="interactive"] {
+  background-color: green;
+}

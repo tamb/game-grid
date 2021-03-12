@@ -1,0 +1,36 @@
+// base styles
+// @import "./../mixins";
+
+.GameGrid {
+  * {
+    box-sizing: border-box; // 1
+  }
+  &__stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    box-sizing: border-box; // 1
+    border: 1px solid;
+  }
+  &__row {
+    display: flex;
+    flex-basis: 100%;
+    max-width: 100%;
+    box-sizing: border-box; // 1
+  }
+
+  &__tile {
+    flex: 1 0 auto;
+    height: auto;
+    overflow: hidden;
+    box-sizing: border-box; // 1
+    border: 1px solid;
+
+    &::before {
+      content: "";
+      float: left;
+      padding-top: 100%;
+    }
+  }
+}
