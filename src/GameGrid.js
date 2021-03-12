@@ -6,55 +6,80 @@ import {
   
   import { gridEventsEnum } from "./enums";
   
+
+const INITIAL_STATE = {
+  active_coords: [0,0],
+  prev_coords: [0,0],
+};
+
   function GameGrid(query, conf) {
-    const config = {
-      arrowControls: true,
-      disableClick: true,
-      infiniteX: true,
-      infiniteY: true,
+    const game_grid = {
+      
+    };
+    const _config = {
+      arrow_controls: true,
+      disable_click: true,
+      infinite_x: true,
+      infinite_y: true,
       ...conf
     };
-    const $root = document.querySelector(query);
+    const _root = document.querySelector(query);
   
-    const $refs = {
+    const _refs = {
       stage: createStage(),
       rows: null,
-      tiles: []
+      tiles: [],
+      prev_element: null,
+      active_element: null,
     };
-  
-    let prevEl = null;
-    let activeEl = null;
+
+    const _state = INITIAL_STATE;
+    const _prevState = null;
   
     // API
     function destroy() {
       dettachHandlers();
     }
     function getConfig() {
-      return config;
+      return _config;
     }
     function getPrevEl() {
-      return prevEl;
+      return _refs.prev_element;
+    }
+
+    function setState(obj){
+      const newState = {..._state, ...obj}
+      _prevState = _state;
+      _state = newState;
+    }
+
+    function getState(){
+      return _state;
+    }
+
+    function getPrevState(){
+      return _prevState;
     }
   
     function getActiveEl() {
-      return activeEl;
+      return _refs.active_element;
     }
     function getStage() {
-      return $refs.stage;
+      return _refs.stage;
     }
     function getRows(id) {
       if (id) {
-        return $refs.rows[id];
+        return _refs.rows[id];
       } else {
-        return $refs.rows;
+        return _refs.rows;
       }
     }
   
     function getTiles(row, col) {
       if (row && col) {
-        return $refs.tiles[row][col];
+        return _refs.tiles[row][col];
       } else {
-        return $refs.tiles;
+        return _refs.tiles;
       }
     }
   
@@ -62,18 +87,18 @@ import {
       renderTileAsActive(el);
     }
     function setActiveTileByRowCol(row, col) {
-      renderTileAsActive($refs.tiles[row][col]);
+      renderTileAsActive(_refs.tiles[row][col]);
     }
     function setConfig(conf) {
-      config = conf;
+      _config = conf;
     }
   
     //INPUT
   
     function hitsBarrier(el) {
       const coords = getCoordsFromElement(el);
-      const barrierCheck = config.matrix[coords[0]][coords[1]];
-      const _el = $refs.tiles[coords[0]][coords[1]];
+      const barrierCheck = _config.matrix[coords[0]][coords[1]];
+      const _el = _refs.tiles[coords[0]][coords[1]];
       const hitBarrier = barrierCheck.type === "barrier";
       if (hitBarrier) {
         fireCustomEvent(_el, gridEventsEnum.POINT_BLOCK);
@@ -83,53 +108,53 @@ import {
     }
   
     function handleDirection(event) {
-      const ENDROW = config.matrix.length - 1;
-      const ENDCOL = config.matrix[0].length - 1;
-      const TILES = $refs.tiles;
-      const activeEl = event.target;
-      const coords = getCoordsFromElement(activeEl);
+      const ENDROW = _config.matrix.length - 1;
+      const ENDCOL = _config.matrix[0].length - 1;
+      const TILES = _refs.tiles;
+      const currentEl = event.target;
+      const coords = getCoordsFromElement(currentEl);
   
       let nextEl = null;
       let directionMoved = null;
   
       if (event.which === 37 || event.key === "ArrowLeft") {
-        fireCustomEvent(activeEl, gridEventsEnum.MOVE_LEFT);
+        fireCustomEvent(currentEl, gridEventsEnum.MOVE_LEFT);
         directionMoved = gridEventsEnum.MOVED_LEFT;
   
         if (coords[1] - 1 < 0) {
-          if (!config.infiniteX) {
-            fireCustomEvent(activeEl, gridEventsEnum.COL_LIMIT);
+          if (!_config.infinite_x) {
+            fireCustomEvent(currentEl, gridEventsEnum.COL_LIMIT);
             return;
           }
-          fireCustomEvent(activeEl, gridEventsEnum.COL_WRAP);
+          fireCustomEvent(currentEl, gridEventsEnum.COL_WRAP);
           nextEl = TILES[coords[0]][ENDCOL];
         } else {
           nextEl = TILES[coords[0]][coords[1] - 1];
         }
       }
       if (event.which === 38 || event.key === "ArrowUp") {
-        fireCustomEvent(activeEl, gridEventsEnum.MOVE_UP);
+        fireCustomEvent(currentEl, gridEventsEnum.MOVE_UP);
         directionMoved = gridEventsEnum.MOVED_UP;
         if (coords[0] - 1 < 0) {
-          if (!config.infiniteY) {
-            fireCustomEvent(activeEl, gridEventsEnum.ROW_LIMIT);
+          if (!_config.infinite_y) {
+            fireCustomEvent(currentEl, gridEventsEnum.ROW_LIMIT);
             return;
           }
-          fireCustomEvent(activeEl, gridEventsEnum.ROW_WRAP);
+          fireCustomEvent(currentEl, gridEventsEnum.ROW_WRAP);
           nextEl = TILES[ENDROW][coords[1]];
         } else {
           nextEl = TILES[coords[0] - 1][coords[1]];
         }
       }
       if (event.which === 39 || event.key === "ArrowRight") {
-        fireCustomEvent(activeEl, gridEventsEnum.MOVE_RIGHT);
+        fireCustomEvent(currentEl, gridEventsEnum.MOVE_RIGHT);
         directionMoved = gridEventsEnum.MOVED_RIGHT;
         if (coords[1] + 1 > ENDCOL) {
-          if (!config.infiniteX) {
-            fireCustomEvent(activeEl, gridEventsEnum.COL_LIMIT);
+          if (!_config.infinite_x) {
+            fireCustomEvent(currentEl, gridEventsEnum.COL_LIMIT);
             return;
           }
-          fireCustomEvent(activeEl, gridEventsEnum.COL_WRAP);
+          fireCustomEvent(currentEl, gridEventsEnum.COL_WRAP);
           nextEl = TILES[coords[0]][0];
         } else {
           nextEl = TILES[coords[0]][coords[1] + 1];
@@ -137,15 +162,15 @@ import {
       }
   
       if (event.which === 40 || event.key === "ArrowDown") {
-        fireCustomEvent(activeEl, gridEventsEnum.MOVE_DOWN);
+        fireCustomEvent(currentEl, gridEventsEnum.MOVE_DOWN);
         directionMoved = gridEventsEnum.MOVED_DOWN;
         if (coords[0] + 1 > ENDROW) {
-          if (!config.infiniteY) {
-            fireCustomEvent(activeEl, gridEventsEnum.ROW_LIMIT);
+          if (!_config.infinite_y) {
+            fireCustomEvent(currentEl, gridEventsEnum.ROW_LIMIT);
             return;
           }
           nextEl = TILES[0][coords[1]];
-          fireCustomEvent(activeEl, gridEventsEnum.ROW_WRAP);
+          fireCustomEvent(currentEl, gridEventsEnum.ROW_WRAP);
         } else {
           nextEl = TILES[coords[0] + 1][coords[1]];
         }
@@ -153,17 +178,16 @@ import {
   
       const hitBarrier = hitsBarrier(nextEl);
       if (hitBarrier) {
-        nextEl = getActiveEl() || activeEl;
+        nextEl = getActiveEl() || currentEl;
       }
       renderTileAsActive(nextEl);
-      !hitBarrier? fireCustomEvent(activeEl, directionMoved) : null;
+      !hitBarrier? fireCustomEvent(currentEl, directionMoved) : null;
     }
-    function handleError(err) {}
     function handleKeyDown(event) {
       // console.log(event);
       event.preventDefault();
   
-      if (config.arrowControls) {
+      if (_config.arrow_controls) {
         if (
           event.which === 37 ||
           event.which === 38 ||
@@ -177,16 +201,16 @@ import {
   
     // SET UP
     function attachHandlers() {
-      $refs.tiles.forEach((row) => {
+      _refs.tiles.forEach((row) => {
         row.forEach((tile) => {
-          config.disableClick? tile.addEventListener("click", e=> e.preventDefault()) : null;
+          _config.disable_click? tile.addEventListener("click", e=> e.preventDefault()) : null;
           tile.addEventListener("keydown", handleKeyDown);
         });
       });
     }
   
     function dettachHandlers() {
-      $refs.tiles.forEach((row) => {
+      _refs.tiles.forEach((row) => {
         row.forEach((tile) => {
           tile.removeEventListener("keydown", handleKeyDown);
         });
@@ -203,16 +227,16 @@ import {
     }
   
     function renderTileAsActive(el) {
-      prevEl ? fireCustomEvent(prevEl, gridEventsEnum.TILE_BLUR) : null;
+      _refs.prev_element ? fireCustomEvent(_refs.prev_element, gridEventsEnum.TILE_BLUR) : null;
       el.focus();
       fireCustomEvent(el, gridEventsEnum.TILE_FOCUS);
-      prevEl = activeEl;
-      activeEl = el;
-      prevEl?.classList.remove("focused");
-      activeEl.classList.add("focused");
+      _refs.prev_element = _refs.active_element;
+      _refs.active_element = el;
+      _refs.prev_element?.classList.remove("focused");
+      _refs.active_element.classList.add("focused");
     }
     function renderRows(_rows) {
-      $refs.rows = _rows.map((_row, _rowIndex) => {
+      _refs.rows = _rows.map((_row, _rowIndex) => {
         renderTilesByRow(_row, _rowIndex);
         const newRow = document.createElement("div");
         newRow.classList.add("GameGrid__row");
@@ -220,7 +244,7 @@ import {
       });
     }
     function renderTilesByRow(_row, _rowIndex) {
-      $refs.tiles[_rowIndex] = _row.map((_tile, _tileIndex) => {
+      _refs.tiles[_rowIndex] = _row.map((_tile, _tileIndex) => {
         const newTile = document.createElement("div");
         newTile.classList.add("GameGrid__tile");
         newTile.tabIndex = "0";
@@ -241,23 +265,23 @@ import {
       });
     }
     function render() {
-      renderRows(config.matrix);
+      renderRows(_config.matrix);
   
-      $refs.rows.forEach((row, index) => {
+      _refs.rows.forEach((row, index) => {
         const frag = document.createDocumentFragment();
-        $refs.tiles[index].forEach((tile) => {
+        _refs.tiles[index].forEach((tile) => {
           frag.appendChild(tile);
         });
         row.appendChild(frag);
-        $refs.stage.appendChild(row);
+        _refs.stage.appendChild(row);
         fireCustomEvent(row, gridEventsEnum.ROW_RENDER);
       });
   
-      $root.appendChild($refs.stage);
-      if (config.arrowControls) {
+      _root.appendChild(_refs.stage);
+      if (_config.arrow_controls) {
         attachHandlers();
       }
-      fireCustomEvent($refs.stage, gridEventsEnum.STAGE_RENDER);
+      fireCustomEvent(_refs.stage, gridEventsEnum.STAGE_RENDER);
     }
   
     return {
@@ -271,12 +295,15 @@ import {
       getStage,
       setActiveTileByElement,
       setActiveTileByRowCol,
-      setConfig
+      setConfig,
+      setState,
+      getState,
+      getPrevState,
   
       // TODO
-      // getGridData - should return the state of
+      // getGridData - should return the _state of
       // of the grid so it can be rendered as it was last left
-      // need to add a way to track the grid data as state
+      // need to add a way to track the grid data as _state
     };
   }
   
