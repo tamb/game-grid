@@ -79,9 +79,17 @@ function GameGrid(query, conf) {
 
   function setActiveTileByElement(el) {
     renderTileAsActive(el);
+    _state.active_coords = getCoordsFromElement(el);
+    _refs.active_element = el;
   }
   function setActiveTileByRowCol(row, col) {
-    renderTileAsActive(_refs.tiles[row][col]);
+    _state.active_coords = [row, col];
+    _refs.active_element = _refs.tiles[row][col];
+    renderTileAsActive(_refs.active_element);
+  }
+
+  function setPreviousTileByElement(el) {
+    _state.prev_coords = getCoordsFromElement(el);
   }
   function setConfig(conf) {
     _config = conf;
@@ -100,7 +108,6 @@ function GameGrid(query, conf) {
 
     return hitBarrier;
   }
-
 
   function hitsInteractive(el) {
     const coords = getCoordsFromElement(el);
@@ -186,9 +193,9 @@ function GameGrid(query, conf) {
     const hitBarrier = hitsBarrier(nextEl);
     const hitInteractive = hitsInteractive(nextEl);
 
-    if(!hitInteractive){
+    if (!hitInteractive) {
       const oldCoords = getCoordsFromElement(_refs.prev_element); // should be from state
-      if(_config.matrix[oldCoords[0]][oldCoords[1]].type === "interactive"){
+      if (_config.matrix[oldCoords[0]][oldCoords[1]].type === "interactive") {
         fireCustomEvent(nextEl, gridEventsEnum.POINT_DETTACH);
       }
     }
@@ -226,7 +233,6 @@ function GameGrid(query, conf) {
       });
     });
   }
-
   function dettachHandlers() {
     _refs.tiles.forEach((row) => {
       row.forEach((tile) => {
