@@ -165,3 +165,5 @@ Object.keys(gridEventsEnum).forEach((key) => {
       );
   });
 });
+
+window.gamegrid = g;

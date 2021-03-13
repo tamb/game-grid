@@ -9,6 +9,7 @@ import { gridEventsEnum } from "./enums";
 const INITIAL_STATE = {
   active_coords: [0, 0],
   prev_coords: [0, 0],
+  moves: [],
 };
 
 function GameGrid(query, conf) {
@@ -17,6 +18,8 @@ function GameGrid(query, conf) {
     disable_click: true,
     infinite_x: true,
     infinite_y: true,
+    rewind_limit: 20,
+    clickable: false,
     ...conf,
   };
   const _root = document.querySelector(query);
@@ -27,8 +30,8 @@ function GameGrid(query, conf) {
     prev_element: null,
     active_element: null,
   };
-  const _state = INITIAL_STATE;
-  const _prevState = null;
+  let _state = INITIAL_STATE;
+  let _prevState = null;
 
   // API
   function destroy() {
@@ -39,6 +42,10 @@ function GameGrid(query, conf) {
   }
   function getPrevEl() {
     return _refs.prev_element;
+  }
+
+  function getRefs() {
+    return _refs;
   }
 
   function setState(obj) {
@@ -78,42 +85,65 @@ function GameGrid(query, conf) {
   }
 
   function setActiveTileByElement(el) {
-    renderTileAsActive(el);
-    _state.active_coords = getCoordsFromElement(el);
-    _refs.active_element = el;
+    setState({
+      active_coords: getCoordsFromElement(el),
+      prev_coords: _state.active_coords,
+    });
+    _refs.active_element = getTiles()[getState().active_coords[0]][
+      getState().active_coords[1]
+    ];
+    _refs.prev_element = getTiles()[getState().prev_coords[0]][
+      getState().prev_coords[1]
+    ];
+
+    renderTileAsActive();
   }
   function setActiveTileByRowCol(row, col) {
-    _state.active_coords = [row, col];
+    setState({ active_coords: [row, col], prev_coords: _state.active_coords });
     _refs.active_element = _refs.tiles[row][col];
-    renderTileAsActive(_refs.active_element);
+    renderTileAsActive();
   }
 
   function setPreviousTileByElement(el) {
-    _state.prev_coords = getCoordsFromElement(el);
+    if (el) {
+      _state.prev_coords = getCoordsFromElement(el);
+      _refs.prev_element =
+        _refs.tiles[_state.prev_coords[0]][_state.prev_coords[1]];
+    }
   }
   function setConfig(conf) {
     _config = conf;
   }
 
+  function getMoves() {
+    return _state.moves;
+  }
+
   //INPUT
+  function addToMoves() {
+    _state.moves.unshift(_state.active_coords);
+    if (_state.moves.length > _config.rewind_limit) {
+      _state.moves.pop();
+    }
+  }
 
   function hitsBarrier(el) {
     const coords = getCoordsFromElement(el);
-    const barrierCheck = _config.matrix[coords[0]][coords[1]];
+    const tileData = _config.matrix[coords[0]][coords[1]];
     const _el = _refs.tiles[coords[0]][coords[1]];
-    const hitBarrier = barrierCheck.type === "barrier";
-    if (hitBarrier) {
+    const isBarrier = tileData.type === "barrier";
+    if (isBarrier) {
       fireCustomEvent(_el, gridEventsEnum.POINT_BLOCK);
     }
 
-    return hitBarrier;
+    return isBarrier;
   }
 
   function hitsInteractive(el) {
     const coords = getCoordsFromElement(el);
-    const interactiveCheck = _config.matrix[coords[0]][coords[1]];
+    const tileData = _config.matrix[coords[0]][coords[1]];
     const _el = _refs.tiles[coords[0]][coords[1]];
-    const isInteractive = interactiveCheck.type === "interactive";
+    const isInteractive = tileData.type === "interactive";
     if (isInteractive) {
       fireCustomEvent(_el, gridEventsEnum.POINT_COLLIDE);
     }
@@ -190,21 +220,7 @@ function GameGrid(query, conf) {
       }
     }
 
-    const hitBarrier = hitsBarrier(nextEl);
-    const hitInteractive = hitsInteractive(nextEl);
-
-    if (!hitInteractive) {
-      const oldCoords = getCoordsFromElement(_refs.prev_element); // should be from state
-      if (_config.matrix[oldCoords[0]][oldCoords[1]].type === "interactive") {
-        fireCustomEvent(nextEl, gridEventsEnum.POINT_DETTACH);
-      }
-    }
-
-    if (hitBarrier) {
-      nextEl = getActiveEl() || currentEl;
-    }
-    renderTileAsActive(nextEl);
-    !hitBarrier ? fireCustomEvent(currentEl, directionMoved) : null;
+    checkSurroundings(nextEl, directionMoved, currentEl);
   }
   function handleKeyDown(event) {
     // console.log(event);
@@ -222,13 +238,30 @@ function GameGrid(query, conf) {
     }
   }
 
+  function checkSurroundings(nextEl, directionMoved, currentEl) {
+    const hitBarrier = hitsBarrier(nextEl);
+    const hitInteractive = hitsInteractive(nextEl);
+
+    if (!hitInteractive) {
+      const oldCoords = getCoordsFromElement(
+        _refs.prev_element ? _refs.prev_element : _refs.active_element
+      ); // should be from state
+      if (_config.matrix[oldCoords[0]][oldCoords[1]].type === "interactive") {
+        fireCustomEvent(nextEl, gridEventsEnum.POINT_DETTACH);
+      }
+    }
+
+    if (hitBarrier) {
+      nextEl = getActiveEl() || currentEl;
+    }
+    setActiveTileByElement(nextEl);
+    !hitBarrier ? fireCustomEvent(currentEl, directionMoved) : null;
+  }
+
   // SET UP
   function attachHandlers() {
     _refs.tiles.forEach((row) => {
       row.forEach((tile) => {
-        _config.disable_click
-          ? tile.addEventListener("click", (e) => e.preventDefault())
-          : null;
         tile.addEventListener("keydown", handleKeyDown);
       });
     });
@@ -249,16 +282,15 @@ function GameGrid(query, conf) {
 
     return stage;
   }
-  function renderTileAsActive(el) {
+  function renderTileAsActive() {
     _refs.prev_element
       ? fireCustomEvent(_refs.prev_element, gridEventsEnum.TILE_BLUR)
       : null;
-    el.focus();
-    fireCustomEvent(el, gridEventsEnum.TILE_FOCUS);
-    _refs.prev_element = _refs.active_element;
-    _refs.active_element = el;
-    _refs.prev_element?.classList.remove("focused");
-    _refs.active_element.classList.add("focused");
+    _refs.active_element.focus();
+    fireCustomEvent(_refs.active_element, gridEventsEnum.TILE_FOCUS);
+    _refs.prev_element?.classList.remove("active");
+    _refs.active_element.classList.add("active");
+    addToMoves();
   }
   function renderRows(_rows) {
     _refs.rows = _rows.map((_row, _rowIndex) => {
@@ -272,7 +304,7 @@ function GameGrid(query, conf) {
     _refs.tiles[_rowIndex] = _row.map((_tile, _tileIndex) => {
       const newTile = document.createElement("div");
       newTile.classList.add("GameGrid__tile");
-      newTile.tabIndex = "0";
+      newTile.tabIndex = "-1";
       newTile.style.maxWidth = `${100 / _row.length}%`;
       newTile.setAttribute("data-coords", `${_rowIndex},${_tileIndex}`);
       _tile.key ? newTile.setAttribute("data-key", _tile.key) : null;
@@ -307,6 +339,8 @@ function GameGrid(query, conf) {
       attachHandlers();
     }
     fireCustomEvent(_refs.stage, gridEventsEnum.STAGE_RENDER);
+
+    setActiveTileByRowCol(..._state.active_coords);
   }
 
   return {
@@ -324,6 +358,8 @@ function GameGrid(query, conf) {
     setState,
     getState,
     getPrevState,
+    getMoves,
+    getRefs,
 
     // TODO
     // getGridData - should return the _state of
