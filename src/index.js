@@ -149,7 +149,9 @@ const g = new GameGrid("#app", {
       },
     ],
   ],
-  infinite_y: false,
+  options: {
+    infinite_y: false,
+  }
 });
 
 g.render();

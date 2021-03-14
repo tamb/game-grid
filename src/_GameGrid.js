@@ -12,26 +12,40 @@ const INITIAL_STATE = {
   moves: [],
 };
 
-function GameGrid(query, config) {
-  const _options = config.options;
-  const _matrix = config.matrix;
-
-  let _state = {
-    ...INITIAL_STATE,
-    ...config.state,
+function GameGrid(query, conf) {
+  const _config = {
+    arrow_controls: true,
+    disable_click: true,
+    infinite_x: true,
+    infinite_y: true,
+    rewind_limit: 20,
+    clickable: false,
+    ...conf,
   };
-  let _prev_state = config.prev_state || {};
-
   const _root = document.querySelector(query);
   const _refs = {
     stage: createStage(),
     rows: null,
     tiles: [],
+    prev_element: null,
+    active_element: null,
   };
+  let _state = INITIAL_STATE;
+  let _prevState = null;
 
   // API
   function destroy() {
     dettachHandlers();
+  }
+  function getConfig() {
+    return _config;
+  }
+  function getPrevEl() {
+    return _refs.prev_element;
+  }
+
+  function getRefs() {
+    return _refs;
   }
 
   function setState(obj) {
@@ -40,8 +54,34 @@ function GameGrid(query, config) {
     _state = newState;
   }
 
-  function getActiveTile() {
-    return _refs.tiles[_state.active_coords[0]][_state.active_coords[1]];
+  function getState() {
+    return _state;
+  }
+
+  function getPrevState() {
+    return _prevState;
+  }
+
+  function getActiveEl() {
+    return _refs.active_element;
+  }
+  function getStage() {
+    return _refs.stage;
+  }
+  function getRows(id) {
+    if (id) {
+      return _refs.rows[id];
+    } else {
+      return _refs.rows;
+    }
+  }
+
+  function getTiles(row, col) {
+    if (row && col) {
+      return _refs.tiles[row][col];
+    } else {
+      return _refs.tiles;
+    }
   }
 
   function setActiveTileByElement(el) {
@@ -49,11 +89,34 @@ function GameGrid(query, config) {
       active_coords: getCoordsFromElement(el),
       prev_coords: _state.active_coords,
     });
-    //   renderTileAsActive();
+    _refs.active_element = getTiles()[getState().active_coords[0]][
+      getState().active_coords[1]
+    ];
+    _refs.prev_element = getTiles()[getState().prev_coords[0]][
+      getState().prev_coords[1]
+    ];
+
+    renderTileAsActive();
   }
   function setActiveTileByRowCol(row, col) {
     setState({ active_coords: [row, col], prev_coords: _state.active_coords });
-    //   renderTileAsActive();
+    _refs.active_element = _refs.tiles[row][col];
+    renderTileAsActive();
+  }
+
+  function setPreviousTileByElement(el) {
+    if (el) {
+      _state.prev_coords = getCoordsFromElement(el);
+      _refs.prev_element =
+        _refs.tiles[_state.prev_coords[0]][_state.prev_coords[1]];
+    }
+  }
+  function setConfig(conf) {
+    _config = conf;
+  }
+
+  function getMoves() {
+    return _state.moves;
   }
 
   //INPUT
@@ -91,10 +154,11 @@ function GameGrid(query, config) {
   function handleDirection(event) {
     const ENDROW = _config.matrix.length - 1;
     const ENDCOL = _config.matrix[0].length - 1;
-
+    const TILES = _refs.tiles;
     const currentEl = event.target;
     const coords = getCoordsFromElement(currentEl);
 
+    let nextEl = null;
     let directionMoved = null;
 
     if (event.which === 37 || event.key === "ArrowLeft") {
@@ -103,19 +167,13 @@ function GameGrid(query, config) {
 
       if (coords[1] - 1 < 0) {
         if (!_config.infinite_x) {
-          fireCustomEvent(getActiveTile(), gridEventsEnum.COL_LIMIT);
+          fireCustomEvent(currentEl, gridEventsEnum.COL_LIMIT);
           return;
         }
-        setState({
-          active_coords: [coords[0], ENDCOL],
-          prev_coords: _state.active_coords,
-        });
-        fireCustomEvent(getActiveTile(), gridEventsEnum.COL_WRAP);
+        fireCustomEvent(currentEl, gridEventsEnum.COL_WRAP);
+        nextEl = TILES[coords[0]][ENDCOL];
       } else {
-        setState({
-          active_coords: [coords[0]][coords[1] - 1],
-          prev_coords: _state.active_coords,
-        });
+        nextEl = TILES[coords[0]][coords[1] - 1];
       }
     }
     if (event.which === 38 || event.key === "ArrowUp") {
@@ -295,14 +353,13 @@ function GameGrid(query, config) {
     getRows,
     getStage,
     setActiveTileByElement,
+    setActiveTileByRowCol,
+    setConfig,
+    setState,
     getState,
     getPrevState,
     getMoves,
     getRefs,
-
-    setActiveTileByRowCol,
-    setConfig,
-    setState,
 
     // TODO
     // getGridData - should return the _state of
