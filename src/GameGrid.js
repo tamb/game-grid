@@ -1,5 +1,4 @@
 import { fireCustomEvent } from "./utils";
-
 import { gridEventsEnum } from "./enums";
 
 const INITIAL_STATE = {
@@ -14,6 +13,7 @@ function GameGrid(query, config) {
     infinite_y: true,
     maintain_squares: true,
     rewind_limit: 20,
+    block_render: false,
     ...config.options,
   };
   const _matrix = config.matrix;
@@ -52,7 +52,7 @@ function GameGrid(query, config) {
     }
   }
 
-  function moveLeft(event) {
+  function moveLeft() {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_LEFT, _state);
     setState({
       active_coords: [_state.active_coords[0], _state.active_coords[1] - 1],
@@ -60,7 +60,7 @@ function GameGrid(query, config) {
     });
   }
 
-  function moveUp(event) {
+  function moveUp() {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_UP, _state);
     setState({
       active_coords: [_state.active_coords[0] - 1, _state.active_coords[1]],
@@ -68,7 +68,7 @@ function GameGrid(query, config) {
     });
   }
 
-  function moveRight(event) {
+  function moveRight() {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_RIGHT, _state);
     setState({
       active_coords: [_state.active_coords[0], _state.active_coords[1] + 1],
@@ -76,7 +76,7 @@ function GameGrid(query, config) {
     });
   }
 
-  function moveDown(event) {
+  function moveDown() {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_DOWN, _state);
     setState({
       active_coords: [_state.active_coords[0] + 1, _state.active_coords[1]],
@@ -128,15 +128,17 @@ function GameGrid(query, config) {
   // SET UP
   function attachHandlers() {
     console.log("attaching");
-    _refs.stage.addEventListener("keydown", handleKeyDown);
-    _refs.stage.addEventListener("focus", stageFocus);
-    _refs.stage.addEventListener("blur", stageBlur);
+    const EL = _options.block_render ? _root : _refs.stage;
+    EL.addEventListener("keydown", handleKeyDown);
+    EL.addEventListener("focus", stageFocus);
+    EL.addEventListener("blur", stageBlur);
   }
   function dettachHandlers() {
     console.log("detaching");
-    _refs.stage.removeEventListener("keydown", handleKeyDown);
-    _refs.stage.removeEventListener("focus", stageFocus);
-    _refs.stage.removeEventListener("blur", stageBlur);
+    const EL = _options.block_render ? _root : _refs.stage;
+    EL.removeEventListener("keydown", handleKeyDown);
+    EL.removeEventListener("focus", stageFocus);
+    EL.removeEventListener("blur", stageBlur);
   }
 
   // RENDERERS
@@ -176,19 +178,22 @@ function GameGrid(query, config) {
     });
   }
   function render() {
-    _matrix.forEach((row, i) => renderRow(i));
+    if (!_options.block_render) {
+      _matrix.forEach((row, i) => renderRow(i));
 
-    _refs.rows.forEach((row, index) => {
-      const frag = document.createDocumentFragment();
-      _refs.tiles[index].forEach((tile) => {
-        frag.appendChild(tile);
+      _refs.rows.forEach((row, index) => {
+        const frag = document.createDocumentFragment();
+        _refs.tiles[index].forEach((tile) => {
+          frag.appendChild(tile);
+        });
+        row.appendChild(frag);
+        _refs.stage.appendChild(row);
+        fireCustomEvent(row, gridEventsEnum.ROW_RENDER);
       });
-      row.appendChild(frag);
-      _refs.stage.appendChild(row);
-      fireCustomEvent(row, gridEventsEnum.ROW_RENDER);
-    });
 
-    _root.appendChild(_refs.stage);
+      _root.appendChild(_refs.stage);
+    }
+
     attachHandlers();
     fireCustomEvent(_refs.stage, gridEventsEnum.STAGE_RENDER);
   }
@@ -196,6 +201,10 @@ function GameGrid(query, config) {
   return {
     destroy,
     render,
+    moveLeft,
+    moveUp,
+    moveRight,
+    moveDown,
     setState,
     getState,
   };
