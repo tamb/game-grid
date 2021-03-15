@@ -151,7 +151,7 @@ const g = new GameGrid("#app", {
   ],
   options: {
     infinite_y: false,
-  }
+  },
 });
 
 g.render();
@@ -163,7 +163,9 @@ Object.keys(gridEventsEnum).forEach((key) => {
       .getElementById("event")
       .insertAdjacentHTML(
         "afterbegin",
-        `<p>${event.type} - <small>${new Date().toLocaleTimeString()}</small></p>`
+        `<p>${
+          event.type
+        } - <small>${new Date().toLocaleTimeString()}</small></p>`
       );
   });
 });
