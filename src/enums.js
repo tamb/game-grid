@@ -1,5 +1,6 @@
 export const gridEventsEnum = {
   STATE_UPDATED: "gamegrid:state:updated",
+  STAGE_RENDER: "gamegrid:stage:render",
 
   MOVE_LEFT: "gamegrid:move:left",
   MOVED_LEFT: "gamegrid:moved:left",
@@ -9,12 +10,6 @@ export const gridEventsEnum = {
   MOVED_UP: "gamegrid:moved:up",
   MOVE_DOWN: "gamegrid:move:down",
   MOVED_DOWN: "gamegrid:moved:down",
-
-  TILE_HOVER: "gamegrid:tile:hover",
-  TILE_FOCUS: "gamegrid:tile:focus",
-  TILE_BLUR: "gamegrid:tile:blur",
-
-  STAGE_RENDER: "gamegrid:stage:render",
 
   ROW_LIMIT: "gamegrid:row:limit", // hits stage limit via row
   ROW_WRAP: "gamegrid:row:wrap", // wraps to other side of stage via row

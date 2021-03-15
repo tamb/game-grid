@@ -151,6 +151,7 @@ const g = new GameGrid("#app", {
   ],
   options: {
     infinite_y: false,
+    // maintain_squares: false,
   },
 });
 

@@ -39,7 +39,8 @@
  *
  * @property {boolean} [infinite_x=true] - when moving columns the active tile will wrap when it hits edge
  * @property {boolean}  [infinite_y=true] - when moving rows the active tile will wrap when it hits the edge
- * @property {number} [rewind_limit=20] maximum number of moves stored in state
+ * @property {number} [rewind_limit=20] - maximum number of moves stored in state
+ * @property {boolean} [square_tiles=true] - maintain all tiles as squares / sets max-width on tile elements
  */
 
 /**

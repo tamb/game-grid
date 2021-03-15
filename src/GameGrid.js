@@ -9,7 +9,13 @@ const INITIAL_STATE = {
 };
 
 function GameGrid(query, config) {
-  const _options = config.options;
+  const _options = {
+    infinite_x: true,
+    infinite_y: true,
+    maintain_squares: true,
+    rewind_limit: 20,
+    ...config.options,
+  };
   const _matrix = config.matrix;
 
   let _state = {
@@ -20,7 +26,7 @@ function GameGrid(query, config) {
   const _root = document.querySelector(query);
   const _refs = {
     stage: createStage(),
-    rows: null,
+    rows: [],
     tiles: [],
   };
 
@@ -141,8 +147,9 @@ function GameGrid(query, config) {
     return stage;
   }
 
-  function renderRows(_rows) {
-    _refs.rows = _rows.map((_row, _rowIndex) => {
+  function renderRow(index) {
+    // todo accept index and render this way.
+    _refs.rows[index] = _rows.map((_row, _rowIndex) => {
       renderTilesByRow(_row, _rowIndex);
       const newRow = document.createElement("div");
       newRow.classList.add("GameGrid__row");
@@ -154,7 +161,9 @@ function GameGrid(query, config) {
     _refs.tiles[_rowIndex] = _row.map((_tile, _tileIndex) => {
       const newTile = document.createElement("div");
       newTile.classList.add("GameGrid__tile");
-      newTile.style.maxWidth = `${100 / _row.length}%`;
+      _options.maintain_squares
+        ? (newTile.style.maxWidth = `${100 / _row.length}%`)
+        : null;
 
       if (_tile.renderObject) {
         newTile.appendChild(_tile.renderObject());
@@ -167,7 +176,7 @@ function GameGrid(query, config) {
     });
   }
   function render() {
-    renderRows(_matrix);
+    _matrix.forEach((row, i) => renderRow(i));
 
     _refs.rows.forEach((row, index) => {
       const frag = document.createDocumentFragment();
