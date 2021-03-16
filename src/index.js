@@ -150,8 +150,9 @@ const g = new GameGrid("#app", {
     ],
   ],
   options: {
-    infinite_y: false,
-    // maintain_squares: false,
+    infinite_y: true,
+    infinite_x: false,
+    block_render: true,
   },
 });
 
@@ -160,6 +161,7 @@ console.log(g);
 
 Object.keys(gridEventsEnum).forEach((key) => {
   document.addEventListener(gridEventsEnum[key], (event) => {
+    console.log(event);
     document
       .getElementById("event")
       .insertAdjacentHTML(

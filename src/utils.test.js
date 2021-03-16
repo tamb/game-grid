@@ -2,6 +2,8 @@ import {
   getCoordsFromElement,
   renderDataAttributes,
   fireCustomEvent,
+  mapRowColIndicesToXY,
+  mapXYToRowColIndices
 } from "./utils";
 describe("Utility Tests", () => {
   let div = null;
@@ -44,5 +46,15 @@ describe("Utility Tests", () => {
       expect(e.detail.fname).toBe(true);
     });
     fireCustomEvent(div, "custom", { fname: "marco" });
+  });
+
+  test("xy maps to indices", ()=> {
+    const map = mapXYToRowColIndices(3,1);
+    expect(map).toEqual([0,2]);
+  });
+
+  test("row col maps to xy", ()=> {
+    const map = mapRowColIndicesToXY(3,1);
+    expect(map).toEqual([2,4]);
   });
 });

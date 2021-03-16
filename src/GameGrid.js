@@ -1,12 +1,42 @@
-import { fireCustomEvent } from "./utils";
-import { gridEventsEnum } from "./enums";
+import { fireCustomEvent, mapRowColIndicesToXY } from "./utils";
+import { gridEventsEnum, tileTypeEnum } from "./enums";
 
 const INITIAL_STATE = {
   active_coords: [0, 0],
   prev_coords: [0, 0],
   moves: [],
+  row_col:[0,0],
+  xy: mapRowColIndicesToXY(...[0,0])
 };
 
+/*
+coords: [Y,X]
+
+         3
+        /
+    Z  2
+      /
+     1
+    /    X
+  0----1----2----3
+  |
+  1
+Y |
+  2
+  |
+  3
+
+
+  Y
+X 0 1 2
+  1
+  2
+
+  00, 01, 02
+  10, 11, 12,
+  20, 21, 22
+
+*/
 function GameGrid(query, config) {
   const _options = {
     infinite_x: true,
@@ -23,9 +53,10 @@ function GameGrid(query, config) {
     ...config.state,
   };
 
-  const _root = document.querySelector(query);
   const _refs = {
-    stage: createStage(),
+    stage: _options.block_render
+      ? document.querySelector(query)
+      : createStage(),
     rows: [],
     tiles: [],
   };
@@ -38,7 +69,7 @@ function GameGrid(query, config) {
   function setState(obj) {
     const newState = { ..._state, ...obj };
     _state = newState;
-    fireCustomEvent(_refs.stage, gridEventsEnum.STATE_UPDATED, _state);
+    // fireCustomEvent(_refs.stage, gridEventsEnum.STATE_UPDATED, _state);
   }
   function getState() {
     return _state;
@@ -52,36 +83,102 @@ function GameGrid(query, config) {
     }
   }
 
-  function moveLeft() {
+  function finishMove(potentialCoords, event) {
+    let progress = true;
+
+    // LIMIT TESTING
+    // Y) out of bounds? ---> can wrap? ---> set to end Y
+    //                                  no-> stay at active_coords
+    // X) out of bounds? ---> can wrap? ---> set to end X
+    //                                  no-> stay at active_coords
+    if (potentialCoords[0] < 0 || potentialCoords[0] >= _matrix[0].length) {
+      if (_options.infinite_y) {
+        if (event.which === 38) {
+          potentialCoords[0] = _matrix[0].length - 1;
+        } else {
+          potentialCoords[0] = 0;
+        }
+        fireCustomEvent(_refs.stage, gridEventsEnum.ROW_WRAP, _state);
+      } else {
+        progress = false;
+        potentialCoords = _state.active_coords;
+        fireCustomEvent(_refs.stage, gridEventsEnum.ROW_LIMIT, _state);
+      }
+    }
+    if (potentialCoords[1] < 0 || potentialCoords[1] >= _matrix[1].length) {
+      if (_options.infinite_x) {
+        if (event.which === 37) {
+          potentialCoords[1] = _matrix[1].length - 1;
+        } else {
+          potentialCoords[1] = 0;
+        }
+        fireCustomEvent(_refs.stage, gridEventsEnum.COL_WRAP, _state);
+      } else {
+        progress = false;
+        potentialCoords = _state.active_coords;
+        fireCustomEvent(_refs.stage, gridEventsEnum.COL_LIMIT, _state);
+      }
+    }
+
+    const type = _matrix[potentialCoords[0]][potentialCoords[1]].type;
+    // Barrier or Interactive
+    if (type === tileTypeEnum.BARRIER) {
+      fireCustomEvent(_refs.stage, gridEventsEnum.POINT_BLOCK, _state);
+      progress = false;
+    } else {
+      if (type === tileTypeEnum.INTERACTIVE) {
+        fireCustomEvent(_refs.stage, gridEventsEnum.POINT_COLLIDE, _state);
+      }
+    }
+
+    // Update the state
+    if (progress) {
+      setState({
+        active_coords: [..._state.active_coords],
+        prev_coords: _state.active_coords,
+      });
+    } else {
+      setState({
+        active_coords: potentialCoords,
+        prev_coords: _state.active_coords,
+      });
+    }
+  }
+
+  function moveLeft(event) {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_LEFT, _state);
-    setState({
-      active_coords: [_state.active_coords[0], _state.active_coords[1] - 1],
-      prev_coords: _state.active_coords,
-    });
+    const potentialCoords = [
+      _state.active_coords[0],
+      _state.active_coords[1] - 1,
+    ];
+    finishMove(potentialCoords, event);
   }
 
-  function moveUp() {
+  function moveUp(event) {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_UP, _state);
-    setState({
-      active_coords: [_state.active_coords[0] - 1, _state.active_coords[1]],
-      prev_coords: _state.active_coords,
-    });
+    const potentialCoords = [
+      _state.active_coords[0] - 1,
+      _state.active_coords[1],
+    ];
+    finishMove(potentialCoords, event);
   }
 
-  function moveRight() {
+  function moveRight(event) {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_RIGHT, _state);
-    setState({
-      active_coords: [_state.active_coords[0], _state.active_coords[1] + 1],
-      prev_coords: _state.active_coords,
-    });
+    const potentialCoords = [
+      _state.active_coords[0],
+      _state.active_coords[1] + 1,
+    ];
+    finishMove(potentialCoords, event);
   }
 
-  function moveDown() {
+  function moveDown(event) {
     fireCustomEvent(_refs.stage, gridEventsEnum.MOVE_DOWN, _state);
-    setState({
-      active_coords: [_state.active_coords[0] + 1, _state.active_coords[1]],
-      prev_coords: _state.active_coords,
-    });
+    const potentialCoords = [
+      _state.active_coords[0] + 1,
+      _state.active_coords[1],
+    ];
+    finishMove(potentialCoords, event);
   }
 
   function handleDirection(event) {
@@ -106,6 +203,7 @@ function GameGrid(query, config) {
     addToMoves();
   }
   function handleKeyDown(event) {
+    console.log(event);
     if (
       event.which === 37 ||
       event.which === 38 ||
@@ -128,17 +226,14 @@ function GameGrid(query, config) {
   // SET UP
   function attachHandlers() {
     console.log("attaching");
-    const EL = _options.block_render ? _root : _refs.stage;
-    EL.addEventListener("keydown", handleKeyDown);
-    EL.addEventListener("focus", stageFocus);
-    EL.addEventListener("blur", stageBlur);
+    _refs.stage.addEventListener("keydown", handleKeyDown);
+    _refs.stage.addEventListener("focus", stageFocus);
+    _refs.stage.addEventListener("blur", stageBlur);
   }
   function dettachHandlers() {
-    console.log("detaching");
-    const EL = _options.block_render ? _root : _refs.stage;
-    EL.removeEventListener("keydown", handleKeyDown);
-    EL.removeEventListener("focus", stageFocus);
-    EL.removeEventListener("blur", stageBlur);
+    _refs.stage.removeEventListener("keydown", handleKeyDown);
+    _refs.stage.removeEventListener("focus", stageFocus);
+    _refs.stage.removeEventListener("blur", stageBlur);
   }
 
   // RENDERERS
@@ -191,7 +286,7 @@ function GameGrid(query, config) {
         fireCustomEvent(row, gridEventsEnum.ROW_RENDER);
       });
 
-      _root.appendChild(_refs.stage);
+      _refs.root.appendChild(_refs.stage);
     }
 
     attachHandlers();
