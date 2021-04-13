@@ -1,9 +1,3 @@
-interface IConfig {
-  options: IOptions;
-  matrix: object[][];
-  state: IState;
-}
-
 interface IState {
   active_coords?: number[];
   prev_coords?: number[];
@@ -34,6 +28,12 @@ interface IOptions {
   rewind_limit?: number;
   block_on_type?: string[];
   interact_on_type?: string[];
+}
+
+interface IConfig {
+  options: IOptions;
+  matrix: object[][];
+  state: IState;
 }
 
 const INITIAL_STATE: IState = {
