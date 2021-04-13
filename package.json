@@ -1,6 +1,6 @@
 {
-  "name": "game-grid",
-  "version": "1.0.0",
+  "name": "html-game-grid",
+  "version": "0.0.1-alpha.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "dev:test": "jest --watch",
     "start": "npm run dev",
     "dev": "webpack --watch --mode=development",
-    "build": "webpack",
+    "build": "webpack --mode=production --config ./webpack.config.prod.js",
     "docs": "jsdoc src/docs.js"
   },
   "keywords": [],

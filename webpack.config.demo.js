@@ -1,7 +1,13 @@
+const path = require('path');
+
 const config = {
   entry: {
-    index: "./src/index.ts",
-    demo: "./demo.js",
+    ts_demo: "./src/demo.ts",
+    js_demo: "./src/demo.js",
+  },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].bundle.js'
   },
   module: {
     rules: [
@@ -39,7 +45,7 @@ const config = {
     ],
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"],
+    extensions: [".tsx", ".ts", ".js", ".jsx"],
   },
 };
 

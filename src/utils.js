@@ -1,8 +1,4 @@
-export function renderDataAttributes(el, tuples) {
-  tuples.forEach((tuple) => {
-    el.setAttribute(`data-${tuple[0]}`, tuple[1]);
-  });
-}
+
 
 export function getCoordsFromElement(el) {
   try {

@@ -225,3 +225,7 @@ function GameGrid(query: string, config: IConfig): IGameGrid {
 }
 
 export default GameGrid;
+
+
+// TODO refactor as class with private methods
+// in class add an optional render method -- do this last
