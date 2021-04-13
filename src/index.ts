@@ -1,19 +1,48 @@
-import { fireCustomEvent } from "./utils";
-import { gridEventsEnum, tileTypeEnum } from "./enums";
+interface IConfig {
+  options: IOptions;
+  matrix: object[][];
+  state: IState;
+}
 
-/**
- * move
- * what is the next spot's type
- * what is custom type? -> fire event
- */
+interface IState {
+  active_coords?: number[];
+  prev_coords?: number[];
+  next_coords?: number[];
+  moves?: number[][];
+  current_direction?: string;
+}
 
-const INITIAL_STATE = {
+interface IGameGrid {
+  destroy: Function;
+  init: Function;
+  moveLeft: Function;
+  moveUp: Function;
+  moveRight: Function;
+  moveDown: Function;
+  setMatrix: Function;
+  setStateSync: Function;
+  getState: Function;
+}
+
+interface IOptions {
+  active_class?: string;
+  arrow_controls?: boolean;
+  wasd_controls?: boolean;
+  controls_class?: string;
+  infinite_x?: boolean;
+  infinite_y?: boolean;
+  rewind_limit?: number;
+  block_on_type?: string[];
+  interact_on_type?: string[];
+}
+
+const INITIAL_STATE: IState = {
   active_coords: [0, 0],
   prev_coords: [0, 0],
-  moves: [],
+  current_direction: "",
 };
 
-function GameGrid2D(query, config) {
+function GameGrid(query: string, config: IConfig): IGameGrid {
   const _options = {
     active_class: "gg-active",
     arrow_controls: true,
@@ -28,84 +57,90 @@ function GameGrid2D(query, config) {
     ...config.options,
   };
   const _controls = document.querySelector(query);
-  let _matrix = config.matrix;
+  let _matrix: object[][] = config.matrix;
   let _state = {
     ...INITIAL_STATE,
     ...config.state,
   };
-  let _move = "";
 
   // API
-  function destroy() {
+  function destroy(): void {
     _dettachHandlers();
   }
-  function getState() {
+  function getState(): IState {
     return _state;
   }
-  function init() {
+  function init(): void {
     _attachHandlers();
   }
 
-  function moveLeft() {
-    const nextCoords = [_state.active_coords[0], _state.active_coords[1] - 1];
-    _move = "left";
+  function moveLeft(): void {
+    setStateSync({
+      next_coords: [_state.active_coords[0], _state.active_coords[1] - 1],
+      current_direction: "left",
+    });
+    _finishMove();
   }
 
-  function moveUp() {
-    const nextCoords = [_state.active_coords[0] - 1, _state.active_coords[1]];
-    _move = "up";
+  function moveUp(): void {
+    setStateSync({
+      next_coords: [_state.active_coords[0] - 1, _state.active_coords[1]],
+      current_direction: "up",
+    });
+    _finishMove();
   }
 
-  function moveRight() {
-    const nextCoords = [_state.active_coords[0], _state.active_coords[1] + 1];
-    _move = "right";
+  function moveRight(): void {
+    setStateSync({
+      next_coords: [_state.active_coords[0], _state.active_coords[1] + 1],
+      current_direction: "right",
+    });
+    _finishMove();
   }
 
-  function moveDown() {
-    const nextCoords = [_state.active_coords[0] + 1, _state.active_coords[1]];
-    _move = "down";
+  function moveDown(): void {
+    setStateSync({
+      next_coords: [_state.active_coords[0] + 1, _state.active_coords[1]],
+      current_direction: "down",
+    });
+    _finishMove();
   }
-  function setMatrix(m) {
+  function setMatrix(m: object[][]): void {
     _matrix = m;
   }
-  function setStateSync(obj) {
-    const newState = { ..._state, ...obj };
+  function setStateSync(obj: IState): void {
+    const newState: IState = { ..._state, ...obj };
     _state = newState;
-    // fireCustomEvent(_refs.controls, gridEventsEnum.STATE_UPDATED, _state);
-  }
-  function updateOptions(confObj) {
-    _options = {
-      ..._options,
-      ...confObj,
-    };
   }
 
   //INPUT
-  function _addToMoves() {
+  function _addToMoves(): void {
     _state.moves.unshift(_state.active_coords);
     if (_state.moves.length > _options.rewind_limit) {
       _state.moves.pop();
     }
   }
 
-  function _testLimit() {
-    console.log(_state);
+  function _testLimit(): void {
+    console.log("test limit");
   }
 
-  function _testInteractive() {}
+  function _testInteractive(): void {
+    console.log("test interactive");
+  }
 
-  function _testBarrier() {}
+  function _testBarrier(): void {
+    console.log("test barrier");
+  }
 
-  function _finishMove(nextCoords, event) {
-    setStateSync({ active_coords: nextCoords });
+  function _finishMove(): void {
     _testLimit();
     _testInteractive();
     _testBarrier();
-    fireCustomEvent(_refs.controls, "move", _state);
     _addToMoves();
   }
 
-  function _handleDirection(event) {
+  function _handleDirection(event: KeyboardEvent): void {
     switch (event.which) {
       case 37 || 65: {
         //left
@@ -130,7 +165,7 @@ function GameGrid2D(query, config) {
     }
     _finishMove();
   }
-  function _handleKeyDown(event) {
+  function _handleKeyDown(event: KeyboardEvent) {
     console.log(event);
     if (_options.arrow_controls) {
       if (
@@ -186,34 +221,7 @@ function GameGrid2D(query, config) {
     setMatrix,
     setStateSync,
     getState,
-    updateOptions,
   };
 }
 
-export default GameGrid2D;
-
-/* 
-initial render:
-1) create controls _ref in memory
-2) create row _refs individually 
-3) inside create tile _refs individually
-4) append each tile to row
-5) append rows to controls
-6) render controls to root
-
-
-rerenderRow
-1) create new row
-2) create tiles
-3) append tiles to row
-4) update tile refs
-5) replace row with new row
-6) update row ref
-
-
-rerenderTile
-1) create new tile in memory
-2) replace tile in DOM
-3) reassign ref
-
-*/
+export default GameGrid;
