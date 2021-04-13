@@ -53,27 +53,8 @@
  * @typedef Tile
  * @type {object}
  *
- * @property {string|number} key specific key of tile
  * @property {string} type type of tile "space", "barrier", "interactive"
- * @property {DataAttributes[]} [data] array of tuples for assigning data attributes
- * @property {function|string} renderString HTML string to render contents of tile
- * @property {HTMLObject} renderObject HTML created with document.createElement as
  *
- */
-
-/**
- * @typedef DataAttributes
- * @type {string[]}
- *
- *
- */
-
-/**
- * @typedef Refs
- * @type {object}
- * @property {HTMLDivElement} stage - containing div of grid
- * @property {HTMLDivElement[]} rows - ordered list of divs containing row of Tiles
- * @property {HTMLDivElement[][]} tiles - 2-dimensional array of divs, which are your tiles
  */
 
 /**

@@ -1,6 +1,15 @@
 const config = {
+  entry: {
+    index: "./src/index.ts",
+    demo: "./demo.js",
+  },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
       {
         test: /\.s[ac]ss$/i,
         use: [
@@ -28,6 +37,9 @@ const config = {
         ],
       },
     ],
+  },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"],
   },
 };
 
