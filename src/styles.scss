@@ -1,7 +1,7 @@
 // base styles
 // @import "./../mixins";
 
-.GameGrid {
+.lib-GameGrid {
   * {
     box-sizing: border-box; // 1
   }
@@ -20,12 +20,16 @@
     box-sizing: border-box; // 1
   }
 
-  &__tile {
+  &__cell {
     flex: 1 0 auto;
     height: auto;
     overflow: hidden;
     box-sizing: border-box; // 1
     border: 1px solid;
+
+    &:focus {
+      outline: 4px solid red;
+    }
 
     &::before {
       content: "";

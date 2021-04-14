@@ -2,8 +2,8 @@ const path = require('path');
 
 const config = {
   entry: {
-    ts_demo: "./src/demo.ts",
-    js_demo: "./src/demo.js",
+    ts_demo: "./demo/demo.ts",
+    js_demo: "./demo/demo.js",
   },
   output: {
     path: path.resolve(__dirname, 'dist'),

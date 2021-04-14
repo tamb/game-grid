@@ -1,14 +1,17 @@
-const path = require('path');
+const path = require("path");
 
 const config = {
+  mode: "production",
   entry: {
-    index: "./src/index.ts",
+    index: "./src/GameGridHtml.ts",
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'main.js',
-
-   library: "GamGrid",
+    path: path.resolve(__dirname, "dist"),
+    filename: "main.js",
+    library: {
+      name: "GamGridHtml",
+      type: "umd",
+    },
   },
   module: {
     rules: [

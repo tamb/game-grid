@@ -1,23 +1,47 @@
-import "./styles.scss";
 import "./demo.scss";
 
-import GameGrid2D from "../src/index";
-import { gridEventsEnum, tileTypeEnum } from "../src/enums.js";
+import GameGridHtml from "./../dist/main";
+
+import { gridEventsEnum, tileTypeEnum } from "../src/old/enums";
+
+console.log(GameGridHtml);
 
 const matrix = [
-  [[{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}]],
-  [[{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}]],
-  [[{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}]],
-  [[{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}], [{type: tileTypeEnum.OPEN}]],
+  [
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+  ],
+  [
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+  ],
+  [
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+  ],
+  [
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+    [{ type: tileTypeEnum.OPEN }],
+  ],
 ];
 
-const g = new GameGrid2D("#app", {
+const g = new GameGridHtml("#app", {
   matrix,
   options: {
     infinite_y: true,
     infinite_x: false,
   },
 });
+
+g.render();
 
 g.init();
 console.log(g);

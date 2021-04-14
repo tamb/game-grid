@@ -1,4 +1,4 @@
-import { renderDataAttributes } from "./utils";
+import "./styles.scss";
 
 interface IState {
   active_coords?: number[];
@@ -54,13 +54,15 @@ const INITIAL_STATE: IState = {
 // TODO refactor as class with private methods
 // in class add an optional render method -- do this last
 
-class HtmlGameGrid {
+export default class HtmlGameGrid {
   private options: IOptions;
   private matrix: Object[][];
   private refs: IRefs;
   private state: IState;
+  private name: string;
 
   constructor(query: string, config: IConfig) {
+    this.name = "BUTTT";
     this.options = {
       active_class: "gg-active",
       arrow_controls: true,
@@ -149,14 +151,16 @@ class HtmlGameGrid {
   }
 
   public render(): void {
+    this.refs.container.classList.add("lib-GameGrid");
     const grid: DocumentFragment = document.createDocumentFragment();
     this.matrix.forEach((rowData: any, rI: number) => {
       const row: HTMLDivElement = document.createElement("div");
       this.options.row_class ? row.classList.add(this.options.row_class) : null;
       row.setAttribute("data-row-index", rI.toString());
+      row.classList.add("lib-GameGrid__row");
+      this.refs.cells.push([]);
 
       rowData.forEach((cellData: any, cI: number) => {
-        // todo: fix this logic (not addressing nesting )
         const cell: HTMLDivElement = document.createElement("div");
         cell.setAttribute("data-row-index", rI.toString());
         cell.setAttribute("data-col-index", cI.toString());
@@ -164,12 +168,15 @@ class HtmlGameGrid {
         cellData.attributes?.forEach((attr: string[][], attrI: number) => {
           cell.setAttribute(attr[attrI][0], attr[attrI][1]);
         });
+        cell.classList.add("lib-GameGrid__cell");
+        cell.setAttribute("tabindex", "0");
         row.appendChild(cell);
-        // todo: append cells to refs array or arrays
+        this.refs.cells[rI].push(cell);
       });
       this.refs.rows.push(row);
       grid.appendChild(row);
     });
+    this.refs.container.appendChild(grid);
   }
 
   //INPUT
