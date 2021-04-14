@@ -104,7 +104,7 @@
     
 
     
-    <h4 class="name" id="GameGrid"><span class="type-signature"></span>GameGrid<span class="signature">(query, config)</span><span class="type-signature"> &rarr; {<a href="global.html#GameGridInstance">GameGridInstance</a>}</span></h4>
+    <h4 class="name" id="GameGrid"><span class="type-signature"></span>GameGrid<span class="signature">(query, config)</span><span class="type-signature"> &rarr; {GameGridInstance}</span></h4>
     
 
     
@@ -234,7 +234,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line79">line 79</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line73">line 73</a>
     </li></ul></dd>
     
 
@@ -274,7 +274,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#GameGridInstance">GameGridInstance</a></span>
+<span class="param-type">GameGridInstance</span>
 
 
     </dd>
@@ -502,7 +502,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line16">line 16</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line29">line 29</a>
     </li></ul></dd>
     
 
@@ -520,75 +520,7 @@
 
             
                 
-<h4 class="name" id="DataAttributes">DataAttributes</h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Array.&lt;string></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line64">line 64</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-            
-                
-<h4 class="name" id="GameGridInstance">GameGridInstance</h4>
+<h4 class="name" id="GameGridHtmlInstance">GameGridHtmlInstance</h4>
 
 
 
@@ -681,7 +613,7 @@
 
         <tr>
             
-                <td class="name"><code>getConfig</code></td>
+                <td class="name"><code>moveLeft</code></td>
             
 
             <td class="type">
@@ -704,7 +636,53 @@
 
         <tr>
             
-                <td class="name"><code>getRefs</code></td>
+                <td class="name"><code>moveRight</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">returns internal _refs object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>moveUp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">returns internal _refs object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>moveDown</code></td>
             
 
             <td class="type">
@@ -744,6 +722,98 @@
             
 
             <td class="description last">returns internal State</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setMatrix</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">sets grid matrix data and values</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setStateSync</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">updates the internal state of the GameGridInstance in a synchronous manner</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setFocusToCell</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#setFocusToCell">setFocusToCell</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">focuses on specified cell give row and column respectively.  Defaults focus to active cell</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>setFocusToContainer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">sets focus to the gamegrid container</td>
         </tr>
 
     
@@ -850,7 +920,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line47">line 47</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line60">line 60</a>
     </li></ul></dd>
     
 
@@ -1097,7 +1167,7 @@
                 </td>
             
 
-            <td class="description last">if true, will only render the stage. Will not render rows or tiles</td>
+            <td class="description last">if true, will not render anything and use query as listener</td>
         </tr>
 
     
@@ -1136,7 +1206,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line36">line 36</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line49">line 49</a>
     </li></ul></dd>
     
 
@@ -1154,32 +1224,29 @@
 
             
                 
-<h4 class="name" id="Refs">Refs</h4>
-
-
-
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">object</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
 
     
 
-<table class="props">
+    
+    <h4 class="name" id="setFocusToCell"><span class="type-signature"></span>setFocusToCell<span class="signature">(row, cell)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
     <thead>
     <tr>
         
@@ -1201,13 +1268,13 @@
 
         <tr>
             
-                <td class="name"><code>stage</code></td>
+                <td class="name"><code>row</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">HTMLDivElement</span>
+<span class="param-type">number</span>
 
 
             
@@ -1217,20 +1284,20 @@
 
             
 
-            <td class="description last">containing div of grid</td>
+            <td class="description last"></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>rows</code></td>
+                <td class="name"><code>cell</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;HTMLDivElement></span>
+<span class="param-type">number</span>
 
 
             
@@ -1240,35 +1307,14 @@
 
             
 
-            <td class="description last">ordered list of divs containing row of Tiles</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tiles</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Array.&lt;HTMLDivElement>></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">2-dimensional array of divs, which are your tiles</td>
+            <td class="description last"></td>
         </tr>
 
     
     </tbody>
 </table>
+
+
 
 
 
@@ -1302,7 +1348,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line71">line 71</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -1312,6 +1358,20 @@
 
     
 </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1547,7 +1607,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line26">line 26</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line39">line 39</a>
     </li></ul></dd>
     
 
@@ -1600,8 +1660,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -1610,38 +1668,6 @@
     </thead>
 
     <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">specific key of tile</td>
-        </tr>
-
     
 
         <tr>
@@ -1659,108 +1685,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-                </td>
-            
 
             
 
             <td class="description last">type of tile "space", "barrier", "interactive"</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>data</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;<a href="global.html#DataAttributes">DataAttributes</a>></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">array of tuples for assigning data attributes</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>renderString</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">function</span>
-|
-
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">HTML string to render contents of tile</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>renderObject</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">HTMLObject</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">HTML created with document.createElement as</td>
         </tr>
 
     
@@ -1799,7 +1727,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line52">line 52</a>
+        <a href="docs.js.html">docs.js</a>, <a href="docs.js.html#line65">line 65</a>
     </li></ul></dd>
     
 
@@ -1835,7 +1763,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Sun Mar 14 2021 23:19:15 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.6</a> on Wed Apr 14 2021 15:24:02 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

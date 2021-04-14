@@ -1,16 +1,29 @@
 /**
- * @file Describes the exposed API and configuration for [GameGrid]{@link GameGrid}
+ * @file Describes the exposed API and configuration for [GameGridHtml]{@link GameGridHtml}
  */
 
 /**
- * @typedef GameGridInstance
+ * @typedef GameGridHtmlInstance
  * @type {object}
  * @property {function} render - render the HTML for the GameGrid.
  * @property {function} destroy - removes all EventListeners
- * @property {function} getConfig - returns Config object of GameGrid
- * @property {function} getRefs - returns internal _refs object
+ * @property {function} moveLeft - returns Config object of GameGrid
+ * @property {function} moveRight - returns internal _refs object
+ * @property {function} moveUp - returns internal _refs object
+ * @property {function} moveDown - returns internal _refs object
  * @property {function} getState - returns internal State
+ * @property {function} setMatrix - sets grid matrix data and values
+ * @property {function} setStateSync - updates the internal state of the GameGridInstance in a synchronous manner
+ * @property {setFocusToCell} setFocusToCell - focuses on specified cell give row and column respectively.  Defaults focus to active cell
+ * @property {function} setFocusToContainer - sets focus to the gamegrid container
  *
+ */
+
+/**
+ * @typedef setFocusToCell
+ * @type {function}
+ * @param {number} row
+ * @param {number} cell
  */
 
 /**

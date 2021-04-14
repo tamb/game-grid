@@ -86,6 +86,7 @@ export default class HtmlGameGrid {
       ...INITIAL_STATE,
       ...config.state,
     };
+    this.init();
   }
 
   // API
@@ -94,9 +95,6 @@ export default class HtmlGameGrid {
   }
   public getState(): IState {
     return this.state;
-  }
-  public init(): void {
-    this.attachHandlers();
   }
 
   public moveLeft(): void {
@@ -151,24 +149,25 @@ export default class HtmlGameGrid {
   }
 
   public render(): void {
-    this.refs.container.classList.add("lib-GameGrid");
+    this.refs.container.classList.add("lib-GameGridHtml");
+    this.refs.container.setAttribute("tabindex", "0");
     const grid: DocumentFragment = document.createDocumentFragment();
     this.matrix.forEach((rowData: any, rI: number) => {
       const row: HTMLDivElement = document.createElement("div");
       this.options.row_class ? row.classList.add(this.options.row_class) : null;
       row.setAttribute("data-row-index", rI.toString());
-      row.classList.add("lib-GameGrid__row");
+      row.classList.add("lib-GameGridHtml__row");
       this.refs.cells.push([]);
 
       rowData.forEach((cellData: any, cI: number) => {
         const cell: HTMLDivElement = document.createElement("div");
         cell.setAttribute("data-row-index", rI.toString());
         cell.setAttribute("data-col-index", cI.toString());
-        cell.setAttribute("data-coord", `${rI},${cI}`);
+        cell.setAttribute("data-coords", `${rI},${cI}`);
         cellData.attributes?.forEach((attr: string[][], attrI: number) => {
           cell.setAttribute(attr[attrI][0], attr[attrI][1]);
         });
-        cell.classList.add("lib-GameGrid__cell");
+        cell.classList.add("lib-GameGridHtml__cell");
         cell.setAttribute("tabindex", "0");
         row.appendChild(cell);
         this.refs.cells[rI].push(cell);
@@ -179,7 +178,25 @@ export default class HtmlGameGrid {
     this.refs.container.appendChild(grid);
   }
 
+  public setFocusToCell(row?: number, col?: number): void {
+    if (row && col) {
+      this.refs.cells[row][col].focus();
+    } else {
+      this.refs.cells[this.state.active_coords[0]][
+        this.state.active_coords[1]
+      ].focus();
+    }
+  }
+
+  public setFocusToContainer(): void {
+    this.refs.container.focus();
+  }
+
   //INPUT
+  private init(): void {
+    this.attachHandlers();
+  }
+
   private addToMoves(): void {
     this.state.moves.unshift(this.state.active_coords);
     if (this.state.moves.length > this.options.rewind_limit) {
