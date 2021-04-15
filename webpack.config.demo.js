@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require("path");
 
 const config = {
   entry: {
@@ -6,9 +6,10 @@ const config = {
     js_demo: "./demo/demo.js",
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].bundle.js'
+    path: path.resolve(__dirname, "dist"),
+    filename: "[name].bundle.js",
   },
+  devtool: "inline-source-map",
   module: {
     rules: [
       {

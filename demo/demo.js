@@ -8,28 +8,34 @@ console.log(GameGridHtml);
 
 const matrix = [
   [
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
+    {
+      type: tileTypeEnum.OPEN,
+      cellAttributes: [["data-butt", "sauce"]],
+      renderFunction: function () {
+        return document.createElement("input");
+      },
+    },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
   [
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
   [
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
   [
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
-    [{ type: tileTypeEnum.OPEN }],
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
 ];
 

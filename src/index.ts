@@ -1,41 +1,37 @@
 import "./styles.scss";
 
+type AttributeTuple = [string, string];
+interface ICell {
+  renderFunction?: (cell: HTMLDivElement) => HTMLElement;
+  cellAttributes?: AttributeTuple[];
+  type: string | string[];
+}
 interface IState {
   active_coords?: number[];
   prev_coords?: number[];
   next_coords?: number[];
   moves?: number[][];
   current_direction?: string;
+  rendered?: boolean;
 }
-
-interface IGameGrid {
-  destroy: Function;
-  init: Function;
-  moveLeft: Function;
-  moveUp: Function;
-  moveRight: Function;
-  moveDown: Function;
-  setMatrix: Function;
-  setStateSync: Function;
-  getState: Function;
-}
-
 interface IOptions {
-  active_class?: string;
   arrow_controls?: boolean;
   wasd_controls?: boolean;
-  container_class?: string;
-  row_class?: string;
   infinite_x?: boolean;
   infinite_y?: boolean;
   rewind_limit?: number;
   block_on_type?: string[];
   interact_on_type?: string[];
+  move_on_type?: string[];
+  // render options
+  active_class?: string;
+  container_class?: string;
+  row_class?: string;
 }
 
 interface IConfig {
   options: IOptions;
-  matrix: object[][];
+  matrix: ICell[][];
   state: IState;
 }
 
@@ -49,6 +45,14 @@ const INITIAL_STATE: IState = {
   active_coords: [0, 0],
   prev_coords: [0, 0],
   current_direction: "",
+  rendered: false,
+};
+
+const DIRECTIONS = {
+  UP: "up",
+  DOWN: "down",
+  LEFT: "left",
+  RIGHT: "right",
 };
 
 // TODO refactor as class with private methods
@@ -59,10 +63,8 @@ export default class HtmlGameGrid {
   private matrix: Object[][];
   private refs: IRefs;
   private state: IState;
-  private name: string;
 
   constructor(query: string, config: IConfig) {
-    this.name = "BUTTT";
     this.options = {
       active_class: "gg-active",
       arrow_controls: true,
@@ -73,6 +75,7 @@ export default class HtmlGameGrid {
       rewind_limit: 20,
       block_on_type: ["barrier"],
       interact_on_type: ["interactive"],
+      move_on_type: ["open"],
       // overrides
       ...config.options,
     };
@@ -103,7 +106,7 @@ export default class HtmlGameGrid {
         this.state.active_coords[0],
         this.state.active_coords[1] - 1,
       ],
-      current_direction: "left",
+      current_direction: DIRECTIONS.LEFT,
     });
     this.finishMove();
   }
@@ -114,7 +117,7 @@ export default class HtmlGameGrid {
         this.state.active_coords[0] - 1,
         this.state.active_coords[1],
       ],
-      current_direction: "up",
+      current_direction: DIRECTIONS.UP,
     });
     this.finishMove();
   }
@@ -125,7 +128,7 @@ export default class HtmlGameGrid {
         this.state.active_coords[0],
         this.state.active_coords[1] + 1,
       ],
-      current_direction: "right",
+      current_direction: DIRECTIONS.RIGHT,
     });
     this.finishMove();
   }
@@ -136,7 +139,7 @@ export default class HtmlGameGrid {
         this.state.active_coords[0] + 1,
         this.state.active_coords[1],
       ],
-      current_direction: "down",
+      current_direction: DIRECTIONS.DOWN,
     });
     this.finishMove();
   }
@@ -164,11 +167,18 @@ export default class HtmlGameGrid {
         cell.setAttribute("data-row-index", rI.toString());
         cell.setAttribute("data-col-index", cI.toString());
         cell.setAttribute("data-coords", `${rI},${cI}`);
-        cellData.attributes?.forEach((attr: string[][], attrI: number) => {
-          cell.setAttribute(attr[attrI][0], attr[attrI][1]);
+        cell.style.width = `${100 / rowData.length}%`;
+        console.log("CELL", cellData);
+        console.log("ROW", rowData);
+        cellData.cellAttributes?.forEach((attr: AttributeTuple) => {
+          cell.setAttribute(attr[0], attr[1]);
         });
+
         cell.classList.add("lib-GameGridHtml__cell");
         cell.setAttribute("tabindex", "0");
+        if (cellData.renderFunction) {
+          cell.appendChild(cellData.renderFunction());
+        }
         row.appendChild(cell);
         this.refs.cells[rI].push(cell);
       });
@@ -176,6 +186,7 @@ export default class HtmlGameGrid {
       grid.appendChild(row);
     });
     this.refs.container.appendChild(grid);
+    this.setStateSync({ rendered: true });
   }
 
   public setFocusToCell(row?: number, col?: number): void {
@@ -206,6 +217,17 @@ export default class HtmlGameGrid {
 
   private testLimit(): void {
     console.log("test limit");
+    // use state direction, and state active coords
+    switch (this.state.current_direction) {
+      case DIRECTIONS.DOWN:
+        break;
+      case DIRECTIONS.LEFT:
+        break;
+      case DIRECTIONS.RIGHT:
+        break;
+      case DIRECTIONS.UP:
+        break;
+    }
   }
 
   private testInteractive(): void {
@@ -220,6 +242,7 @@ export default class HtmlGameGrid {
     this.testLimit();
     this.testInteractive();
     this.testBarrier();
+    this.state.rendered ? this.setFocusToCell() : null;
     this.addToMoves();
   }
 

@@ -1,4 +1,5 @@
 const path = require("path");
+const TypescriptDeclarationPlugin = require("typescript-declaration-webpack-plugin");
 
 const config = {
   mode: "production",
@@ -51,6 +52,7 @@ const config = {
   resolve: {
     extensions: [".tsx", ".ts", ".js", ".jsx"],
   },
+  plugins: [new TypescriptDeclarationPlugin()],
 };
 
 module.exports = config;
