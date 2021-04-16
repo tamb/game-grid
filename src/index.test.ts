@@ -97,12 +97,30 @@ describe("GameGridHtml class", () => {
 
   // // api tests
   // test("destroy removes event listeners", () => {});
-  // test("getState return full state", () => {});
+  test("getState return full state", () => {
+    expect(workingGrid.getState()).toEqual(defaultState);
+  });
   // test("setMatrix applies given matrix", () => {});
-  // test("setStateSync updates whole state correctly", () => {});
-  // test("setStateSync updates partial state correctly", () => {});
+  test("setStateSync updates whole state correctly", () => {
+    const newState = {
+      active_coords: [0, 0],
+      prev_coords: [0, 0],
+      current_direction: "",
+      rendered: false,
+    };
+    workingGrid.setStateSync(newState);
+    expect(workingGrid.getState()).toEqual(newState);
+  });
+  test("setStateSync updates partial state correctly", () => {
+    workingGrid.setStateSync({current_direction: "blueberry"});
+    expect(workingGrid.getState().current_direction).toMatch("blueberry");
+    expect(workingGrid.getState().rendered).toBe(false);
+  });
   // test("render outputs full grid", () => {});
-  // test("setFocusToContainer sets focus to container", () => {});
+  test("setFocusToContainer sets focus to container", () => {
+    workingGrid.setFocusToContainer();
+    expect(document.activeElement).toEqual(workingGrid.getRefs().container);
+  });
   // test("setFocusToCell sets to given cell", () => {});
   // test("setFocusToCell defaults to active_coords", () => {});
 
