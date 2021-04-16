@@ -1,9 +1,8 @@
 import "./styles.scss";
 
-type AttributeTuple = [string, string];
 interface ICell {
   renderFunction?: (cell: HTMLDivElement) => HTMLElement;
-  cellAttributes?: AttributeTuple[];
+  cellAttributes?: string[][];
   type: string | string[];
 }
 interface IState {
@@ -30,9 +29,9 @@ interface IOptions {
 }
 
 interface IConfig {
-  options: IOptions;
+  options?: IOptions;
   matrix: ICell[][];
-  state: IState;
+  state?: IState;
 }
 
 interface IRefs {
@@ -93,6 +92,12 @@ export default class HtmlGameGrid {
   }
 
   // API
+  public getOptions():IOptions{
+    return this.options;
+  }
+  public getRefs():IRefs{
+    return this.refs;
+  }
   public destroy(): void {
     this.dettachHandlers();
   }
@@ -168,9 +173,7 @@ export default class HtmlGameGrid {
         cell.setAttribute("data-col-index", cI.toString());
         cell.setAttribute("data-coords", `${rI},${cI}`);
         cell.style.width = `${100 / rowData.length}%`;
-        console.log("CELL", cellData);
-        console.log("ROW", rowData);
-        cellData.cellAttributes?.forEach((attr: AttributeTuple) => {
+        cellData.cellAttributes?.forEach((attr: string[]) => {
           cell.setAttribute(attr[0], attr[1]);
         });
 
