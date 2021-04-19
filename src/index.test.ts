@@ -104,7 +104,11 @@ describe("GameGridHtml class", () => {
   test("getState return full state", () => {
     expect(workingGrid.getState()).toEqual(defaultState);
   });
-  // test("setMatrix applies given matrix", () => {});
+  test("setMatrix applies given matrix and getMatrix gets", () => {
+    workingGrid.setMatrix([[{ type: "open" }, { type: "open" }]]);
+    expect(workingGrid.getMatrix().length).toBe(1);
+    expect(workingGrid.getMatrix()[0].length).toBe(2);
+  });
   test("setStateSync updates whole state correctly", () => {
     const newState = {
       active_coords: [0, 0],

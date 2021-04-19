@@ -153,6 +153,10 @@ export default class HtmlGameGrid {
   public setMatrix(m: object[][]): void {
     this.matrix = m;
   }
+
+  public getMatrix(): object[][] {
+    return this.matrix;
+  }
   public setStateSync(obj: IState): void {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;

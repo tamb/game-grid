@@ -1,5 +1,6 @@
 const path = require("path");
 const TypescriptDeclarationPlugin = require("typescript-declaration-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 const config = {
   mode: "production",
@@ -53,6 +54,10 @@ const config = {
     extensions: [".tsx", ".ts", ".js", ".jsx"],
   },
   plugins: [new TypescriptDeclarationPlugin()],
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin()],
+  },
 };
 
 module.exports = config;
