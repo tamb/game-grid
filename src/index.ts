@@ -88,14 +88,16 @@ export default class HtmlGameGrid {
       ...INITIAL_STATE,
       ...config.state,
     };
+    this.containerFocus = this.containerFocus.bind(this);
+    this.containerBlur = this.containerBlur.bind(this);
     this.init();
   }
 
   // API
-  public getOptions():IOptions{
+  public getOptions(): IOptions {
     return this.options;
   }
-  public getRefs():IRefs{
+  public getRefs(): IRefs {
     return this.refs;
   }
   public destroy(): void {
@@ -193,17 +195,16 @@ export default class HtmlGameGrid {
   }
 
   public setFocusToCell(row?: number, col?: number): void {
+    const cells = this.getRefs().cells;
     if (row && col) {
-      this.refs.cells[row][col].focus();
+      cells[row][col].focus();
     } else {
-      this.refs.cells[this.state.active_coords[0]][
-        this.state.active_coords[1]
-      ].focus();
+      cells[this.state.active_coords[0]][this.state.active_coords[1]].focus();
     }
   }
 
   public setFocusToContainer(): void {
-    this.refs.container.focus();
+    this.getRefs().container.focus();
   }
 
   //INPUT
@@ -301,22 +302,22 @@ export default class HtmlGameGrid {
   }
 
   private containerFocus(): void {
-    this.refs.container.classList.add(this.options.active_class);
+    this.getRefs().container.classList.add(this.options.active_class);
   }
 
   private containerBlur(): void {
-    this.refs.container.classList.remove(this.options.active_class);
+    this.getRefs().container.classList.remove(this.options.active_class);
   }
 
   // SET UP
   private attachHandlers(): void {
-    this.refs.container.addEventListener("keydown", this.handleKeyDown);
-    this.refs.container.addEventListener("focus", this.containerFocus);
-    this.refs.container.addEventListener("blur", this.containerBlur);
+    this.getRefs().container.addEventListener("keydown", this.handleKeyDown);
+    this.getRefs().container.addEventListener("focus", this.containerFocus);
+    this.getRefs().container.addEventListener("blur", this.containerBlur);
   }
   private dettachHandlers(): void {
-    this.refs.container.removeEventListener("keydown", this.handleKeyDown);
-    this.refs.container.removeEventListener("focus", this.containerFocus);
-    this.refs.container.removeEventListener("blur", this.containerBlur);
+    this.getRefs().container.removeEventListener("keydown", this.handleKeyDown);
+    this.getRefs().container.removeEventListener("focus", this.containerFocus);
+    this.getRefs().container.removeEventListener("blur", this.containerBlur);
   }
 }
