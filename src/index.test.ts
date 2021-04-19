@@ -28,6 +28,7 @@ describe("GameGridHtml class", () => {
   let defaultState: any = null;
 
   beforeEach(() => {
+    workingGrid = null;
     workingGrid = new GameGridHtml("#root", { matrix });
     defaultOptions = {
       active_class: "gg-active",
@@ -48,6 +49,10 @@ describe("GameGridHtml class", () => {
       rendered: false,
       moves: [[0, 0]],
     };
+  });
+
+  afterEach(() => {
+    workingGrid = null;
   });
   // instantiation tests
   test("options are set correctly", () => {
@@ -92,12 +97,25 @@ describe("GameGridHtml class", () => {
       moves: [[0, 0]],
     });
   });
-
+  test("move length initializes as 1", () => {
+    expect(workingGrid.getState().moves.length).toBe(1);
+    // expect(workingGrid.getState()).toEqual(defaultState);
+  });
   //internal workings
   test("move is added to moves", () => {
     workingGrid.moveRight();
     workingGrid.moveDown();
     expect(workingGrid.getState().moves.length).toBe(3);
+  });
+
+  test("move length doesnt pass rewind limit", () => {
+    const x = new GameGridHtml("#root", {
+      matrix,
+      options: { rewind_limit: 2 },
+    });
+    x.moveRight();
+    x.moveRight();
+    expect(x.getState().moves.length).toBe(2);
   });
   // test("handlers attach on instantiation", () => {});
   // test("hitting limit fires events", () => {});
@@ -108,6 +126,7 @@ describe("GameGridHtml class", () => {
   // // api tests
   // test("destroy removes event listeners", () => {});
   test("getState return full state", () => {
+    expect(workingGrid.getState().moves.length).toBe(1);
     expect(workingGrid.getState()).toEqual(defaultState);
   });
   test("setMatrix applies given matrix and getMatrix gets", () => {
@@ -146,6 +165,46 @@ describe("GameGridHtml class", () => {
   });
 
   // // move API
+  test("moveLeft moves left", () => {
+    const x = new GameGridHtml("#root", {
+      matrix,
+    });
+    x.moveLeft();
+    const state = x.getState();
+    expect(state.current_direction).toMatch("left");
+    expect(state.active_coords).toEqual([0, 0]);
+    expect(state.next_coords).toEqual([0, -1]);
+  });
+  test("moveRight moves right", () => {
+    const x = new GameGridHtml("#root", {
+      matrix,
+    });
+    x.moveRight();
+    const state = x.getState();
+    expect(state.current_direction).toMatch("right");
+    expect(state.active_coords).toEqual([0, 0]);
+    expect(state.next_coords).toEqual([0, 1]);
+  });
+  test("moveUp moves up", () => {
+    const x = new GameGridHtml("#root", {
+      matrix,
+    });
+    x.moveUp();
+    const state = x.getState();
+    expect(state.current_direction).toMatch("up");
+    expect(state.active_coords).toEqual([0, 0]);
+    expect(state.next_coords).toEqual([-1, 0]);
+  });
+  test("moveDown moves down", () => {
+    const x = new GameGridHtml("#root", {
+      matrix,
+    });
+    x.moveDown();
+    const state = x.getState();
+    expect(state.current_direction).toMatch("down");
+    expect(state.active_coords).toEqual([0, 0]);
+    expect(state.next_coords).toEqual([1, 0]);
+  });
   // test("moveLeft unblocked goes left", () => {});
   // test("moveLeft blocked stays", () => {});
   // test("moveRight unblocked goes left", () => {});

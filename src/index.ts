@@ -45,7 +45,7 @@ const INITIAL_STATE: IState = {
   prev_coords: [0, 0],
   current_direction: "",
   rendered: false,
-  moves: [[0,0]],
+  moves: [[0, 0]],
 };
 
 const DIRECTIONS = {
@@ -215,14 +215,15 @@ export default class HtmlGameGrid {
   }
 
   private addToMoves(): void {
-    this.state.moves.push(this.state.active_coords);
-    if (this.state.moves.length > this.options.rewind_limit) {
-      this.state.moves.pop();
+    const clonedMoves = [...this.getState().moves];
+    clonedMoves.push(this.state.active_coords);
+    if (clonedMoves.length > this.options.rewind_limit) {
+      clonedMoves.shift();
     }
+    this.setStateSync({ moves: clonedMoves });
   }
 
   private testLimit(): void {
-    console.log("test limit");
     // use state direction, and state active coords
     switch (this.state.current_direction) {
       case DIRECTIONS.DOWN:
@@ -237,25 +238,25 @@ export default class HtmlGameGrid {
   }
 
   private testInteractive(): void {
-    console.log("test interactive");
-    const coords = this.state.next_coords;
-    if (this.matrix[coords[0]][coords[1]].type === "interactive") {
-      console.log("interactive");
-    }
+    // const coords = this.state.next_coords;
+    // if (this.matrix[coords[0]][coords[1]].type === "interactive") {
+    //   console.log("interactive");
+    // }
   }
 
   private testBarrier(): void {
-    const coords = this.state.next_coords;
-    if (this.matrix[coords[0]][coords[1]].type === "barrier") {
-      console.log("barrier");
-    }
+    // const coords = this.state.next_coords;
+    // if (this.matrix[coords[0]][coords[1]].type === "barrier") {
+    //   console.log("barrier");
+    // }
   }
 
   private testSpace(): void {
-    const coords = this.state.next_coords;
-    if (this.matrix[coords[0]][coords[1]].type === "space") {
-      console.log("space");
-    }
+    // const coords = this.state.next_coords;
+    // console.log(coords);
+    // if (this.matrix[coords[0]][coords[1]].type === "space") {
+    //   console.log("space");
+    // }
   }
 
   private finishMove(): void {
