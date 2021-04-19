@@ -45,6 +45,7 @@ const INITIAL_STATE: IState = {
   prev_coords: [0, 0],
   current_direction: "",
   rendered: false,
+  moves: [[0,0]],
 };
 
 const DIRECTIONS = {
@@ -54,12 +55,9 @@ const DIRECTIONS = {
   RIGHT: "right",
 };
 
-// TODO refactor as class with private methods
-// in class add an optional render method -- do this last
-
 export default class HtmlGameGrid {
   private options: IOptions;
-  private matrix: Object[][];
+  private matrix: ICell[][];
   private refs: IRefs;
   private state: IState;
 
@@ -150,11 +148,11 @@ export default class HtmlGameGrid {
     });
     this.finishMove();
   }
-  public setMatrix(m: object[][]): void {
+  public setMatrix(m: ICell[][]): void {
     this.matrix = m;
   }
 
-  public getMatrix(): object[][] {
+  public getMatrix(): ICell[][] {
     return this.matrix;
   }
   public setStateSync(obj: IState): void {
@@ -217,7 +215,7 @@ export default class HtmlGameGrid {
   }
 
   private addToMoves(): void {
-    this.state.moves.unshift(this.state.active_coords);
+    this.state.moves.push(this.state.active_coords);
     if (this.state.moves.length > this.options.rewind_limit) {
       this.state.moves.pop();
     }
@@ -240,17 +238,32 @@ export default class HtmlGameGrid {
 
   private testInteractive(): void {
     console.log("test interactive");
+    const coords = this.state.next_coords;
+    if (this.matrix[coords[0]][coords[1]].type === "interactive") {
+      console.log("interactive");
+    }
   }
 
   private testBarrier(): void {
-    console.log("test barrier");
+    const coords = this.state.next_coords;
+    if (this.matrix[coords[0]][coords[1]].type === "barrier") {
+      console.log("barrier");
+    }
+  }
+
+  private testSpace(): void {
+    const coords = this.state.next_coords;
+    if (this.matrix[coords[0]][coords[1]].type === "space") {
+      console.log("space");
+    }
   }
 
   private finishMove(): void {
     this.testLimit();
+    this.testSpace();
     this.testInteractive();
     this.testBarrier();
-    this.state.rendered ? this.setFocusToCell() : null;
+    // this.state.rendered ? this.setFocusToCell() : null;
     this.addToMoves();
   }
 

@@ -46,6 +46,7 @@ describe("GameGridHtml class", () => {
       prev_coords: [0, 0],
       current_direction: "",
       rendered: false,
+      moves: [[0, 0]],
     };
   });
   // instantiation tests
@@ -88,11 +89,16 @@ describe("GameGridHtml class", () => {
       rendered: false,
       prev_coords: [0, 0],
       active_coords: [1, 1],
+      moves: [[0, 0]],
     });
   });
 
   //internal workings
-  // test("move is added to moves", () => {});
+  test("move is added to moves", () => {
+    workingGrid.moveRight();
+    workingGrid.moveDown();
+    expect(workingGrid.getState().moves.length).toBe(3);
+  });
   // test("handlers attach on instantiation", () => {});
   // test("hitting limit fires events", () => {});
   // test("hitting interactive fires interactive", () => {});
@@ -115,6 +121,7 @@ describe("GameGridHtml class", () => {
       prev_coords: [0, 0],
       current_direction: "",
       rendered: false,
+      moves: [[0, 0]],
     };
     workingGrid.setStateSync(newState);
     expect(workingGrid.getState()).toEqual(newState);
