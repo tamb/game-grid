@@ -1,5 +1,8 @@
 import "./styles.scss";
 
+import { fireCustomEvent } from "./utils";
+import { gridEventsEnum } from "./enums";
+
 interface ICell {
   renderFunction?: (cell: HTMLDivElement) => HTMLElement;
   cellAttributes?: string[][];
@@ -19,9 +22,13 @@ interface IOptions {
   infinite_x?: boolean;
   infinite_y?: boolean;
   rewind_limit?: number;
+
+  // TODO: Utilize these options to add additional supported cell types
   block_on_type?: string[];
   interact_on_type?: string[];
   move_on_type?: string[];
+
+  // TODO: Add support for this
   // render options
   active_class?: string;
   container_class?: string;
@@ -63,16 +70,17 @@ export default class HtmlGameGrid {
 
   constructor(query: string, config: IConfig) {
     this.options = {
-      active_class: "gg-active",
+      // active_class: "gg-active",
       arrow_controls: true,
       wasd_controls: true,
-      container_class: "",
+      // container_class: "",
       infinite_x: true,
       infinite_y: true,
       rewind_limit: 20,
-      block_on_type: ["barrier"],
-      interact_on_type: ["interactive"],
-      move_on_type: ["open"],
+
+      // block_on_type: ["barrier"],
+      // interact_on_type: ["interactive"],
+      // move_on_type: ["open"],
       // overrides
       ...config.options,
     };
@@ -88,6 +96,7 @@ export default class HtmlGameGrid {
     };
     this.containerFocus = this.containerFocus.bind(this);
     this.containerBlur = this.containerBlur.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.init();
   }
 
@@ -106,6 +115,7 @@ export default class HtmlGameGrid {
   }
 
   public moveLeft(): void {
+    console.log("left");
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0],
@@ -117,6 +127,7 @@ export default class HtmlGameGrid {
   }
 
   public moveUp(): void {
+    console.log("up");
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0] - 1,
@@ -128,6 +139,8 @@ export default class HtmlGameGrid {
   }
 
   public moveRight(): void {
+    console.log("right");
+
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0],
@@ -139,6 +152,8 @@ export default class HtmlGameGrid {
   }
 
   public moveDown(): void {
+    console.log("down");
+
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0] + 1,
@@ -209,6 +224,12 @@ export default class HtmlGameGrid {
     this.getRefs().container.focus();
   }
 
+  public getActiveCell(): HTMLDivElement {
+    return this.getRefs().cells[this.state.active_coords[0]][
+      this.state.active_coords[1]
+    ];
+  }
+
   //INPUT
   private init(): void {
     this.attachHandlers();
@@ -225,38 +246,85 @@ export default class HtmlGameGrid {
 
   private testLimit(): void {
     // use state direction, and state active coords
+    let row: number = this.state.next_coords[0];
+    let col: number = this.state.next_coords[1];
+    let rowFinalIndex: number = this.matrix.length - 1;
+    let colFinalIndex: number = this.matrix[0].length - 1;
+
     switch (this.state.current_direction) {
       case DIRECTIONS.DOWN:
+        if (this.state.next_coords[0] > rowFinalIndex) {
+          if (!this.options.infinite_y) {
+            row = rowFinalIndex;
+          } else {
+            row = 0;
+          }
+        }
         break;
       case DIRECTIONS.LEFT:
+        if (this.state.next_coords[1] < 0) {
+          if (this.options.infinite_x) {
+            col = colFinalIndex;
+          } else {
+            col = 0;
+          }
+        }
         break;
       case DIRECTIONS.RIGHT:
+        if (this.state.next_coords[1] > colFinalIndex) {
+          if (!this.options.infinite_x) {
+            col = colFinalIndex;
+          } else {
+            col = 0;
+          }
+        }
         break;
       case DIRECTIONS.UP:
+        if (this.state.next_coords[0] < 0) {
+          if (this.options.infinite_y) {
+            row = rowFinalIndex;
+          } else {
+            row = 0;
+          }
+        }
         break;
     }
+
+    this.setStateSync({
+      next_coords: [row, col],
+      active_coords: [row, col],
+      prev_coords: this.state.active_coords,
+    });
   }
 
   private testInteractive(): void {
-    // const coords = this.state.next_coords;
-    // if (this.matrix[coords[0]][coords[1]].type === "interactive") {
-    //   console.log("interactive");
-    // }
+    const coords = this.state.next_coords;
+    if (this.matrix[coords[0]][coords[1]].type === "interactive") {
+      fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_COLLISION, {
+        gg_instance: this,
+      });    }
   }
 
   private testBarrier(): void {
-    // const coords = this.state.next_coords;
-    // if (this.matrix[coords[0]][coords[1]].type === "barrier") {
-    //   console.log("barrier");
-    // }
+    const coords = this.state.next_coords;
+    if (this.matrix[coords[0]][coords[1]].type === "barrier") {
+      this.setStateSync({
+        active_coords: this.state.prev_coords,
+        prev_coords: this.state.active_coords,
+      });
+      fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_BLOCKED, {
+        gg_instance: this,
+      });
+    }
   }
 
   private testSpace(): void {
-    // const coords = this.state.next_coords;
-    // console.log(coords);
-    // if (this.matrix[coords[0]][coords[1]].type === "space") {
-    //   console.log("space");
-    // }
+    const coords = this.state.next_coords;
+    if (this.matrix[coords[0]][coords[1]].type === "open") {
+      fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_LAND, {
+        gg_instance: this,
+      });
+    }
   }
 
   private finishMove(): void {
@@ -265,6 +333,7 @@ export default class HtmlGameGrid {
     this.testInteractive();
     this.testBarrier();
     // this.state.rendered ? this.setFocusToCell() : null;
+    this.setFocusToCell();
     this.addToMoves();
   }
 
@@ -291,10 +360,8 @@ export default class HtmlGameGrid {
         break;
       }
     }
-    this.finishMove();
   }
   private handleKeyDown(event: KeyboardEvent): void {
-    console.log(event);
     if (this.options.arrow_controls) {
       if (
         event.which === 37 ||

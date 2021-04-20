@@ -14,6 +14,7 @@ export const gridEventsEnum = {
   MOVE_BLOCKED: "gamegrid:move:block", // hits a wall
   MOVE_COLLISION: "gamegrid:move:collide", // overlaps another entity
   MOVE_DETTACH: "gamegrid:move:dettach", // leaves overlapping an entity
+  MOVE_BARRIER: "gamegridhtml:move:barrier"
 };
 
 export const tileTypeEnum = {

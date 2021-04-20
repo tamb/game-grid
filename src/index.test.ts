@@ -54,6 +54,7 @@ describe("GameGridHtml class", () => {
   afterEach(() => {
     workingGrid = null;
   });
+
   // instantiation tests
   test("options are set correctly", () => {
     const fakeGrid = new GameGridHtml("#root", {
@@ -65,20 +66,25 @@ describe("GameGridHtml class", () => {
 
     expect(fakeGrid.getOptions().infinite_x).toBe(false);
   });
+
   test("default options exist", () => {
     expect(workingGrid.options).toEqual(defaultOptions);
   });
+
   test("container ref is always made", () => {
     expect(workingGrid.getRefs().container.id).toMatch("root");
   });
+
   test("refs are made", () => {
     workingGrid.render();
     expect(workingGrid.getRefs().rows.length).toBe(3),
       expect(workingGrid.getRefs().cells[0].length).toBe(3);
   });
+
   test("initial state defaults correctly", () => {
     expect(workingGrid.getState()).toEqual(defaultState);
   });
+
   test("initial state accepts values", () => {
     const newState = {
       current_direction: "up",
@@ -125,15 +131,18 @@ describe("GameGridHtml class", () => {
 
   // // api tests
   // test("destroy removes event listeners", () => {});
+
   test("getState return full state", () => {
     expect(workingGrid.getState().moves.length).toBe(1);
     expect(workingGrid.getState()).toEqual(defaultState);
   });
+
   test("setMatrix applies given matrix and getMatrix gets", () => {
     workingGrid.setMatrix([[{ type: "open" }, { type: "open" }]]);
     expect(workingGrid.getMatrix().length).toBe(1);
     expect(workingGrid.getMatrix()[0].length).toBe(2);
   });
+
   test("setStateSync updates whole state correctly", () => {
     const newState = {
       active_coords: [0, 0],
@@ -145,26 +154,33 @@ describe("GameGridHtml class", () => {
     workingGrid.setStateSync(newState);
     expect(workingGrid.getState()).toEqual(newState);
   });
+
   test("setStateSync updates partial state correctly", () => {
     workingGrid.setStateSync({ current_direction: "blueberry" });
     expect(workingGrid.getState().current_direction).toMatch("blueberry");
     expect(workingGrid.getState().rendered).toBe(false);
   });
+
   test("setFocusToContainer sets focus to container", () => {
     workingGrid.setFocusToContainer();
     expect(document.activeElement).toEqual(workingGrid.getRefs().container);
   });
+
   test("setFocusToCell sets to given cell", () => {
     workingGrid.render();
     workingGrid.setFocusToCell(1, 1);
     expect(document.activeElement).toEqual(workingGrid.getRefs().cells[1][1]);
   });
+
   test("setFocusToCell defaults to active_coords", () => {
     workingGrid.render();
     workingGrid.setFocusToCell();
   });
 
   // // move API
+  // TODO: finish this test
+  test("getActiveCell returns active cell element", () => {});
+
   test("moveLeft moves left", () => {
     const x = new GameGridHtml("#root", {
       matrix,
@@ -175,6 +191,7 @@ describe("GameGridHtml class", () => {
     expect(state.active_coords).toEqual([0, 0]);
     expect(state.next_coords).toEqual([0, -1]);
   });
+
   test("moveRight moves right", () => {
     const x = new GameGridHtml("#root", {
       matrix,
@@ -185,6 +202,7 @@ describe("GameGridHtml class", () => {
     expect(state.active_coords).toEqual([0, 0]);
     expect(state.next_coords).toEqual([0, 1]);
   });
+
   test("moveUp moves up", () => {
     const x = new GameGridHtml("#root", {
       matrix,
@@ -195,6 +213,7 @@ describe("GameGridHtml class", () => {
     expect(state.active_coords).toEqual([0, 0]);
     expect(state.next_coords).toEqual([-1, 0]);
   });
+
   test("moveDown moves down", () => {
     const x = new GameGridHtml("#root", {
       matrix,
@@ -205,6 +224,7 @@ describe("GameGridHtml class", () => {
     expect(state.active_coords).toEqual([0, 0]);
     expect(state.next_coords).toEqual([1, 0]);
   });
+
   // test("moveLeft unblocked goes left", () => {});
   // test("moveLeft blocked stays", () => {});
   // test("moveRight unblocked goes left", () => {});
@@ -221,6 +241,7 @@ describe("GameGridHtml class", () => {
       workingGrid.getRefs().container.classList.contains("lib-GameGridHtml")
     ).toBe(true);
   });
+
   test("row classes are applied", () => {
     workingGrid.render();
     const rows = workingGrid.getRefs().rows;
@@ -228,6 +249,7 @@ describe("GameGridHtml class", () => {
     expect(rows[1].classList.contains("lib-GameGridHtml__row")).toBe(true);
     expect(rows[2].classList.contains("lib-GameGridHtml__row")).toBe(true);
   });
+
   test("cell classes are applied", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
@@ -235,21 +257,25 @@ describe("GameGridHtml class", () => {
     expect(cells[1][1].classList.contains("lib-GameGridHtml__cell")).toBe(true);
     expect(cells[2][2].classList.contains("lib-GameGridHtml__cell")).toBe(true);
   });
+
   test("cell width is correct", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
     expect(cells[0][0].style.width.substring(0, 4)).toMatch("33.3");
   });
+
   test("cell content renders", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
     expect(cells[0][1].querySelector("input").nodeName).toMatch("INPUT");
   });
+
   test("default row attributes rendered", () => {
     workingGrid.render();
     const rows = workingGrid.getRefs().rows;
     expect(rows[0].getAttribute("data-row-index")).toMatch("0");
   });
+
   test("default cell attributes are rendered", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
