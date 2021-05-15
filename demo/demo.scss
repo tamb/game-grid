@@ -27,7 +27,7 @@
   &__stage {
     // max-height: 200px;
     max-width: 400px;
-    &.active{
+    &.active {
       outline: 2px solid red;
     }
   }
@@ -47,9 +47,9 @@
     }
   }
 }
-[data-type="barrier"] {
+[data-cell-type="barrier"] {
   background-color: coral;
 }
-[data-type="interactive"] {
+[data-cell-type="interactive"] {
   background-color: green;
 }

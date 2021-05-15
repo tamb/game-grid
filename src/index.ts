@@ -21,6 +21,7 @@ interface IOptions {
   wasd_controls?: boolean;
   infinite_x?: boolean;
   infinite_y?: boolean;
+  clickable?: boolean;
   rewind_limit?: number;
 
   // TODO: Utilize these options to add additional supported cell types
@@ -76,6 +77,7 @@ export default class HtmlGameGrid {
       // container_class: "",
       infinite_x: true,
       infinite_y: true,
+      clickable: true,
       rewind_limit: 20,
 
       // block_on_type: ["barrier"],
@@ -97,12 +99,16 @@ export default class HtmlGameGrid {
     this.containerFocus = this.containerFocus.bind(this);
     this.containerBlur = this.containerBlur.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleCellClick = this.handleCellClick.bind(this);
     this.init();
   }
 
   // API
   public getOptions(): IOptions {
     return this.options;
+  }
+  public setOptions(newOptions: IOptions): void {
+    this.options = { ...this.options, ...newOptions };
   }
   public getRefs(): IRefs {
     return this.refs;
@@ -178,26 +184,29 @@ export default class HtmlGameGrid {
   public render(): void {
     this.refs.container.classList.add("lib-GameGridHtml");
     this.refs.container.setAttribute("tabindex", "0");
+    this.refs.container.setAttribute("data-gg-ref", "container");
     const grid: DocumentFragment = document.createDocumentFragment();
     this.matrix.forEach((rowData: any, rI: number) => {
       const row: HTMLDivElement = document.createElement("div");
       this.options.row_class ? row.classList.add(this.options.row_class) : null;
-      row.setAttribute("data-row-index", rI.toString());
+      row.setAttribute("data-gg-row-index", rI.toString());
+      row.setAttribute("data-gg-ref", "row");
       row.classList.add("lib-GameGridHtml__row");
       this.refs.cells.push([]);
 
       rowData.forEach((cellData: any, cI: number) => {
         const cell: HTMLDivElement = document.createElement("div");
-        cell.setAttribute("data-row-index", rI.toString());
-        cell.setAttribute("data-col-index", cI.toString());
-        cell.setAttribute("data-coords", `${rI},${cI}`);
+        cell.setAttribute("data-gg-ref", "cell");
+        cell.setAttribute("data-gg-row-index", rI.toString());
+        cell.setAttribute("data-gg-col-index", cI.toString());
+        cell.setAttribute("data-gg-coords", `${rI},${cI}`);
         cell.style.width = `${100 / rowData.length}%`;
         cellData.cellAttributes?.forEach((attr: string[]) => {
           cell.setAttribute(attr[0], attr[1]);
         });
 
         cell.classList.add("lib-GameGridHtml__cell");
-        cell.setAttribute("tabindex", "0");
+        cell.setAttribute("tabindex", this.options.clickable ? "0" : "-1");
         if (cellData.renderFunction) {
           cell.appendChild(cellData.renderFunction());
         }
@@ -213,8 +222,9 @@ export default class HtmlGameGrid {
 
   public setFocusToCell(row?: number, col?: number): void {
     const cells = this.getRefs().cells;
-    if (row && col) {
+    if (typeof row === "number" && typeof col === "number") {
       cells[row][col].focus();
+      this.setStateSync({ active_coords: [row, col] });
     } else {
       cells[this.state.active_coords[0]][this.state.active_coords[1]].focus();
     }
@@ -237,7 +247,7 @@ export default class HtmlGameGrid {
 
   private addToMoves(): void {
     const clonedMoves = [...this.getState().moves];
-    clonedMoves.push(this.state.active_coords);
+    clonedMoves.unshift(this.state.active_coords);
     if (clonedMoves.length > this.options.rewind_limit) {
       clonedMoves.shift();
     }
@@ -302,7 +312,8 @@ export default class HtmlGameGrid {
     if (this.matrix[coords[0]][coords[1]].type === "interactive") {
       fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_COLLISION, {
         gg_instance: this,
-      });    }
+      });
+    }
   }
 
   private testBarrier(): void {
@@ -386,6 +397,25 @@ export default class HtmlGameGrid {
     }
   }
 
+  private handleCellClick(event: MouseEvent): void {
+    if (this.getOptions().clickable) {
+      if (event.target instanceof HTMLElement) {
+        const cellEl: HTMLElement = event.target.closest(
+          '[data-gg-ref="cell"]'
+        );
+        if (cellEl) {
+          const coords: number[] = cellEl
+            .getAttribute("data-gg-coords")
+            .split(",")
+            .map((n) => Number(n));
+          this.setFocusToCell(...coords);
+        } else {
+          this.setFocusToCell();
+        }
+      }
+    }
+  }
+
   private containerFocus(): void {
     this.getRefs().container.classList.add(this.options.active_class);
   }
@@ -399,10 +429,12 @@ export default class HtmlGameGrid {
     this.getRefs().container.addEventListener("keydown", this.handleKeyDown);
     this.getRefs().container.addEventListener("focus", this.containerFocus);
     this.getRefs().container.addEventListener("blur", this.containerBlur);
+    this.getRefs().container.addEventListener("click", this.handleCellClick);
   }
   private dettachHandlers(): void {
     this.getRefs().container.removeEventListener("keydown", this.handleKeyDown);
     this.getRefs().container.removeEventListener("focus", this.containerFocus);
     this.getRefs().container.removeEventListener("blur", this.containerBlur);
+    this.getRefs().container.removeEventListener("click", this.handleCellClick);
   }
 }

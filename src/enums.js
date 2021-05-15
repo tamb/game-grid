@@ -18,10 +18,10 @@ export const gridEventsEnum = {
  * You COLLIDE with Interactive cells
  * You DETTACH from Interactive cells
  * You LAND on an open cell
- * 
+ *
  */
 
-export const tileTypeEnum = {
+export const cellTypeEnum = {
   OPEN: "open",
   BARRIER: "barrier",
   INTERACTIVE: "interactive",

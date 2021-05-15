@@ -273,16 +273,16 @@ describe("GameGridHtml class", () => {
   test("default row attributes rendered", () => {
     workingGrid.render();
     const rows = workingGrid.getRefs().rows;
-    expect(rows[0].getAttribute("data-row-index")).toMatch("0");
+    expect(rows[0].getAttribute("data-gg-row-index")).toMatch("0");
   });
 
   test("default cell attributes are rendered", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
-    expect(cells[0][0].getAttribute("data-row-index")).toMatch("0");
-    expect(cells[1][0].getAttribute("data-row-index")).toMatch("1");
-    expect(cells[1][1].getAttribute("data-col-index")).toMatch("1");
-    expect(cells[1][0].getAttribute("data-coords")).toMatch("1,0");
+    expect(cells[0][0].getAttribute("data-gg-row-index")).toMatch("0");
+    expect(cells[1][0].getAttribute("data-gg-row-index")).toMatch("1");
+    expect(cells[1][1].getAttribute("data-gg-col-index")).toMatch("1");
+    expect(cells[1][0].getAttribute("data-gg-coords")).toMatch("1,0");
   });
 
   test("cell custom attributes render", () => {
