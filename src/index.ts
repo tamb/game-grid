@@ -2,51 +2,7 @@ import "./styles.scss";
 
 import { fireCustomEvent } from "./utils";
 import { gridEventsEnum } from "./enums";
-
-interface ICell {
-  renderFunction?: (cell: HTMLDivElement) => HTMLElement;
-  cellAttributes?: string[][];
-  type: string | string[];
-}
-interface IState {
-  active_coords?: number[];
-  prev_coords?: number[];
-  next_coords?: number[];
-  moves?: number[][];
-  current_direction?: string;
-  rendered?: boolean;
-}
-interface IOptions {
-  arrow_controls?: boolean;
-  wasd_controls?: boolean;
-  infinite_x?: boolean;
-  infinite_y?: boolean;
-  clickable?: boolean;
-  rewind_limit?: number;
-
-  // TODO: Utilize these options to add additional supported cell types
-  block_on_type?: string[];
-  interact_on_type?: string[];
-  move_on_type?: string[];
-
-  // TODO: Add support for this
-  // render options
-  active_class?: string;
-  container_class?: string;
-  row_class?: string;
-}
-
-interface IConfig {
-  options?: IOptions;
-  matrix: ICell[][];
-  state?: IState;
-}
-
-interface IRefs {
-  container: HTMLElement;
-  rows?: HTMLDivElement[];
-  cells?: HTMLDivElement[][];
-}
+import { IState, IOptions, ICell, IRefs, IConfig } from "./interfaces";
 
 const INITIAL_STATE: IState = {
   active_coords: [0, 0],

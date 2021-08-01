@@ -40,12 +40,18 @@ const matrix = [
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
-    { type: tileTypeEnum.OPEN },
+    {
+      type: tileTypeEnum.BARRIER,
+      cellAttributes: [["data-cell-type", "barrier"]],
+    },
   ],
   [
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
-    { type: tileTypeEnum.OPEN },
+    {
+      type: tileTypeEnum.BARRIER,
+      cellAttributes: [["data-cell-type", "barrier"]],
+    },
     { type: tileTypeEnum.OPEN },
   ],
 ];
