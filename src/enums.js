@@ -9,7 +9,23 @@ export const gridEventsEnum = {
   MOVE_BLOCKED: "gamegridhmtl:move:blocked", // hits a wall
   MOVE_COLLISION: "gamegridhtml:move:collide", // overlaps another entity
   MOVE_DETTACH: "gamegridhtml:move:dettach", // leaves overlapping an entity
-  MOVE_LAND: "gamegridhtml:move:land",
+  MOVE_LAND: "gamegridhtml:move:land", // move finished
+
+  LIMIT: "gamegridhtml:limit",
+  LIMIT_X: "gamegridhtml:limit:x",
+  LIMIT_Y: "gamegridhtml:limit:y",
+  LIMIT_LEFT: "gamegridhtml:limit:left",
+  LIMIT_RIGHT: "gamegridhtml:limit:right",
+  LIMIT_UP: "gamegridhtml:limit:up",
+  LIMIT_DOWN: "gamegridhtml:limit:down",
+
+  WRAP: "gamegridhtml:wrap",
+  WRAP_X: "gamegridhtml:wrap:x",
+  WRAP_Y: "gamegridhtml:wrap:y",
+  WRAP_LEFT: "gamegridhtml:wrap:left",
+  WRAP_RIGHT: "gamegridhtml:wrap:right",
+  WRAP_UP: "gamegridhtml:wrap:up",
+  WRAP_DOWN: "gamegridhtml:wrap:down",
 };
 
 /**
