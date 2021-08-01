@@ -215,7 +215,7 @@ export default class HtmlGameGrid {
     let row: number = this.state.next_coords[0];
     let col: number = this.state.next_coords[1];
     let rowFinalIndex: number = this.matrix.length - 1;
-    let colFinalIndex: number = this.matrix[0].length - 1;
+    let colFinalIndex: number = this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
 
     switch (this.state.current_direction) {
       case DIRECTIONS.DOWN:
