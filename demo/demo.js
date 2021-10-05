@@ -1,6 +1,7 @@
 import "./demo.scss";
 
 import GameGridHtml from "./../dist/main";
+import {gridEventsEnum} from "./../src/enums";
 
 // import { gridEventsEnum, tileTypeEnum } from "../src/old/enums";
 const tileTypeEnum = {
@@ -102,6 +103,7 @@ const checkboxes = Array.from(form.querySelectorAll('input[type="checkbox"]'));
 
 checkboxes.forEach((cb) => {
   cb.addEventListener("change", () => {
+    console.log($wasd_controls.checked)
     g.setOptions({
       infinite_y: $infinite_y.checked,
       infinite_x: $infinite_x.checked,
@@ -109,5 +111,12 @@ checkboxes.forEach((cb) => {
       arrow_controls: $arrow_controls.checked,
       wasd_controls: $wasd_controls.checked,
     });
+  });
+});
+
+Object.keys(gridEventsEnum).forEach(function(key) {
+  window.addEventListener(gridEventsEnum[key], function(event){
+    console.log(event);
+    document.querySelector("#event").textContent = JSON.stringify(event, undefined, 4);
   });
 });
