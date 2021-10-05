@@ -9,20 +9,6 @@
   }
 }
 
-#event {
-  margin-top: 20px;
-  border: 1px solid;
-  height: 200px;
-  overflow-y: auto;
-  padding: 5px;
-  font-weight: bold;
-
-  p {
-    animation: glow 2s ease-out;
-    animation-fill-mode: forwards;
-  }
-}
-
 .GameGrid {
   &__stage {
     // max-height: 200px;

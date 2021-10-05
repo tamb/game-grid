@@ -1,6 +1,6 @@
-export function renderDataAttributes(el, tuples) {
+export function renderAttributes(el, tuples) {
   tuples.forEach((tuple) => {
-    el.setAttribute(`data-${tuple[0]}`, tuple[1]);
+    el.setAttribute(tuple[0], tuple[1]);
   });
 }
 

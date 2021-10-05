@@ -1,6 +1,6 @@
 import "./styles.scss";
 
-import { fireCustomEvent } from "./utils";
+import { fireCustomEvent, renderAttributes } from "./utils";
 import { gridEventsEnum } from "./enums";
 import { IState, IOptions, ICell, IRefs, IConfig } from "./interfaces";
 
@@ -77,7 +77,6 @@ export default class HtmlGameGrid {
   }
 
   public moveLeft(): void {
-    console.log("left");
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0],
@@ -89,7 +88,6 @@ export default class HtmlGameGrid {
   }
 
   public moveUp(): void {
-    console.log("up");
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0] - 1,
@@ -101,7 +99,6 @@ export default class HtmlGameGrid {
   }
 
   public moveRight(): void {
-    console.log("right");
 
     this.setStateSync({
       next_coords: [
@@ -114,7 +111,6 @@ export default class HtmlGameGrid {
   }
 
   public moveDown(): void {
-    console.log("down");
 
     this.setStateSync({
       next_coords: [
@@ -152,10 +148,13 @@ export default class HtmlGameGrid {
 
       rowData.forEach((cellData: any, cI: number) => {
         const cell: HTMLDivElement = document.createElement("div");
-        cell.setAttribute("data-gg-ref", "cell");
-        cell.setAttribute("data-gg-row-index", rI.toString());
-        cell.setAttribute("data-gg-col-index", cI.toString());
-        cell.setAttribute("data-gg-coords", `${rI},${cI}`);
+        renderAttributes(cell, [
+          ["data-gg-ref", "cell"],
+          ["data-gg-row-index", rI.toString()],
+          ["data-gg-col-index", cI.toString()],
+          ["data-gg-coords", `${rI},${cI}`]
+          ]);
+        
         cell.style.width = `${100 / rowData.length}%`;
         cellData.cellAttributes?.forEach((attr: string[]) => {
           cell.setAttribute(attr[0], attr[1]);
@@ -182,7 +181,7 @@ export default class HtmlGameGrid {
       cells[row][col].focus();
       this.setStateSync({ active_coords: [row, col] });
     } else {
-      cells[this.state.active_coords[0]][this.state.active_coords[1]].focus();
+      cells[this.state.active_coords[0]][this.state.active_coords[1]]?.focus();
     }
   }
 
@@ -265,7 +264,7 @@ export default class HtmlGameGrid {
 
   private testInteractive(): void {
     const coords = this.state.next_coords;
-    if (this.matrix[coords[0]][coords[1]].type === "interactive") {
+    if (this.matrix[coords[0]][coords[1]]?.type === "interactive") {
       fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_COLLISION, {
         gg_instance: this,
       });
@@ -274,7 +273,7 @@ export default class HtmlGameGrid {
 
   private testBarrier(): void {
     const coords = this.state.next_coords;
-    if (this.matrix[coords[0]][coords[1]].type === "barrier") {
+    if (this.matrix[coords[0]][coords[1]]?.type === "barrier") {
       this.setStateSync({
         active_coords: this.state.prev_coords,
         prev_coords: this.state.active_coords,
@@ -287,7 +286,7 @@ export default class HtmlGameGrid {
 
   private testSpace(): void {
     const coords = this.state.next_coords;
-    if (this.matrix[coords[0]][coords[1]].type === "open") {
+    if (this.matrix[coords[0]][coords[1]]?.type === "open") {
       fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_LAND, {
         gg_instance: this,
       });
@@ -305,23 +304,43 @@ export default class HtmlGameGrid {
   }
 
   private handleDirection(event: KeyboardEvent): void {
-    switch (event.which) {
-      case 37 || 65: {
+    switch (event.code) {
+      case "ArrowLeft": {
         //left
         this.moveLeft();
         break;
       }
-      case 38 || 87: {
+       case "KeyA": {
+        //left
+        this.moveLeft();
+        break;
+      }
+      case "ArrowUp": {
         //up
         this.moveUp();
         break;
       }
-      case 39 || 68: {
+        case "KeyW": {
+        //up
+        this.moveUp();
+        break;
+      }
+      case "ArrowRight": {
         //right
         this.moveRight();
         break;
       }
-      case 40 || 83: {
+      case "KeyD": {
+        //right
+        this.moveRight();
+        break;
+      }
+      case "ArrowDown": {
+        //down
+        this.moveDown();
+        break;
+      }
+       case "KeyS": {
         //down
         this.moveDown();
         break;
@@ -331,10 +350,10 @@ export default class HtmlGameGrid {
   private handleKeyDown(event: KeyboardEvent): void {
     if (this.options.arrow_controls) {
       if (
-        event.which === 37 ||
-        event.which === 38 ||
-        event.which === 39 ||
-        event.which === 40
+        event.code === "ArrowUp" ||
+        event.code === "ArrowRight" ||
+        event.code === "ArrowDown" ||
+        event.code === "ArrowLeft"
       ) {
         event.preventDefault();
         this.handleDirection(event);
@@ -342,10 +361,10 @@ export default class HtmlGameGrid {
     }
     if (this.options.wasd_controls) {
       if (
-        event.which === 65 || //left
-        event.which === 87 || //up
-        event.which === 68 || // right
-        event.which === 83 //down
+        event.code === "KeyW" || 
+        event.code === "KeyD" || 
+        event.code === "KeyS" || 
+        event.code === "KeyA" 
       ) {
         event.preventDefault();
         this.handleDirection(event);
