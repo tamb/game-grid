@@ -29,6 +29,7 @@ export interface IOptions {
   active_class?: string;
   container_class?: string;
   row_class?: string;
+  callbacks?: ICallbacks;
 }
 
 interface ICallbacks {
@@ -44,24 +45,15 @@ interface ICallbacks {
   LIMIT?: Function;
   LIMIT_X?: Function;
   LIMIT_Y?: Function;
-  LIMIT_LEFT?: Function;
-  LIMIT_RIGHT?: Function;
-  LIMIT_UP?: Function;
-  LIMIT_DOWN?: Function;
   WRAP?: Function;
   WRAP_X?: Function;
   WRAP_Y?: Function;
-  WRAP_LEFT?: Function;
-  WRAP_RIGHT?: Function;
-  WRAP_UP?: Function;
-  WRAP_DOWN?: Function;
 }
 
 export interface IConfig {
   options?: IOptions;
   matrix: ICell[][];
   state?: IState;
-  callbacks?: ICallbacks;
 }
 
 export interface IRefs {

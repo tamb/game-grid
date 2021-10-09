@@ -1,4 +1,10 @@
-export function renderAttributes(el: HTMLElement, tuples:any) {
+import { gridEventsEnum } from "./enums";
+
+function getKeyByValue(object: any, value: string) {
+  return Object.keys(object).find((key) => object[key] === value);
+}
+
+export function renderAttributes(el: HTMLElement, tuples: any) {
   tuples.forEach((tuple: any) => {
     el.setAttribute(tuple[0], tuple[1]);
   });
@@ -25,6 +31,11 @@ export function fireCustomEvent(eventName: string, data: any): void {
       bubbles: true,
     })
   );
+  if (this.options.callbacks) {
+    this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)]
+      ? this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)](this)
+      : null;
+  }
 }
 
 export function mapRowColIndicesToXY(rI: number, cI: number): number[] {
