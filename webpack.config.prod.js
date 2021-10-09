@@ -11,7 +11,7 @@ const config = {
     path: path.resolve(__dirname, "dist"),
     filename: "main.js",
     library: {
-      name: "GamGridHtml",
+      name: "GamGrid",
       type: "umd",
     },
   },
