@@ -6,9 +6,9 @@
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
-    "declaration": true
+    "declaration": true,
   },
   "exclude": ["node_modules/**/*"],
   "include": ["src/index.ts"],
-  "declarations": true
+  "declarations": true,
 }
