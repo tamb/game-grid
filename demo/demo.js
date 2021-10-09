@@ -117,6 +117,8 @@ checkboxes.forEach((cb) => {
 Object.keys(gridEventsEnum).forEach(function(key) {
   window.addEventListener(gridEventsEnum[key], function(event){
     console.log(event);
-    document.querySelector("#event").textContent = JSON.stringify(event, undefined, 4);
+    document.querySelector("#event").textContent = `
+    ${event.type}
+    ${document.querySelector("#event").textContent}`; 
   });
 });

@@ -84,6 +84,7 @@ export default class HtmlGameGrid {
       ],
       current_direction: DIRECTIONS.LEFT,
     });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
     this.finishMove();
   }
 
@@ -95,11 +96,11 @@ export default class HtmlGameGrid {
       ],
       current_direction: DIRECTIONS.UP,
     });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
     this.finishMove();
   }
 
   public moveRight(): void {
-
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0],
@@ -107,11 +108,11 @@ export default class HtmlGameGrid {
       ],
       current_direction: DIRECTIONS.RIGHT,
     });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
     this.finishMove();
   }
 
   public moveDown(): void {
-
     this.setStateSync({
       next_coords: [
         this.state.active_coords[0] + 1,
@@ -119,6 +120,7 @@ export default class HtmlGameGrid {
       ],
       current_direction: DIRECTIONS.DOWN,
     });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
     this.finishMove();
   }
   public setMatrix(m: ICell[][]): void {
@@ -131,6 +133,7 @@ export default class HtmlGameGrid {
   public setStateSync(obj: IState): void {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;
+    fireCustomEvent.call(this, gridEventsEnum.STATE_UPDATED);
   }
 
   public render(): void {
@@ -152,9 +155,9 @@ export default class HtmlGameGrid {
           ["data-gg-ref", "cell"],
           ["data-gg-row-index", rI.toString()],
           ["data-gg-col-index", cI.toString()],
-          ["data-gg-coords", `${rI},${cI}`]
-          ]);
-        
+          ["data-gg-coords", `${rI},${cI}`],
+        ]);
+
         cell.style.width = `${100 / rowData.length}%`;
         cellData.cellAttributes?.forEach((attr: string[]) => {
           cell.setAttribute(attr[0], attr[1]);
@@ -173,6 +176,7 @@ export default class HtmlGameGrid {
     });
     this.refs.container.appendChild(grid);
     this.setStateSync({ rendered: true });
+    fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
   public setFocusToCell(row?: number, col?: number): void {
@@ -214,15 +218,20 @@ export default class HtmlGameGrid {
     let row: number = this.state.next_coords[0];
     let col: number = this.state.next_coords[1];
     let rowFinalIndex: number = this.matrix.length - 1;
-    let colFinalIndex: number = this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
+    let colFinalIndex: number =
+      this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
 
     switch (this.state.current_direction) {
       case DIRECTIONS.DOWN:
         if (this.state.next_coords[0] > rowFinalIndex) {
           if (!this.options.infinite_y) {
             row = rowFinalIndex;
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT_Y);
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
           } else {
             row = 0;
+            fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+            fireCustomEvent.call(this, gridEventsEnum.WRAP);
           }
         }
         break;
@@ -230,8 +239,12 @@ export default class HtmlGameGrid {
         if (this.state.next_coords[1] < 0) {
           if (this.options.infinite_x) {
             col = colFinalIndex;
+            fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+            fireCustomEvent.call(this, gridEventsEnum.WRAP);
           } else {
             col = 0;
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT_X);
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
           }
         }
         break;
@@ -239,8 +252,12 @@ export default class HtmlGameGrid {
         if (this.state.next_coords[1] > colFinalIndex) {
           if (!this.options.infinite_x) {
             col = colFinalIndex;
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT_X);
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
           } else {
             col = 0;
+            fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+            fireCustomEvent.call(this, gridEventsEnum.WRAP);
           }
         }
         break;
@@ -248,8 +265,12 @@ export default class HtmlGameGrid {
         if (this.state.next_coords[0] < 0) {
           if (this.options.infinite_y) {
             row = rowFinalIndex;
+            fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+            fireCustomEvent.call(this, gridEventsEnum.WRAP);
           } else {
             row = 0;
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT_Y);
+            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
           }
         }
         break;
@@ -265,9 +286,7 @@ export default class HtmlGameGrid {
   private testInteractive(): void {
     const coords = this.state.next_coords;
     if (this.matrix[coords[0]][coords[1]]?.type === "interactive") {
-      fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_COLLISION, {
-        gg_instance: this,
-      });
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
     }
   }
 
@@ -278,18 +297,20 @@ export default class HtmlGameGrid {
         active_coords: this.state.prev_coords,
         prev_coords: this.state.active_coords,
       });
-      fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_BLOCKED, {
-        gg_instance: this,
-      });
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
     }
   }
 
   private testSpace(): void {
     const coords = this.state.next_coords;
     if (this.matrix[coords[0]][coords[1]]?.type === "open") {
-      fireCustomEvent(this.getActiveCell(), gridEventsEnum.MOVE_LAND, {
-        gg_instance: this,
-      });
+      if (
+        this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]]
+          .type === "interactive"
+      ) {
+        fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
+      }
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
     }
   }
 
@@ -310,7 +331,7 @@ export default class HtmlGameGrid {
         this.moveLeft();
         break;
       }
-       case "KeyA": {
+      case "KeyA": {
         //left
         this.moveLeft();
         break;
@@ -320,7 +341,7 @@ export default class HtmlGameGrid {
         this.moveUp();
         break;
       }
-        case "KeyW": {
+      case "KeyW": {
         //up
         this.moveUp();
         break;
@@ -340,7 +361,7 @@ export default class HtmlGameGrid {
         this.moveDown();
         break;
       }
-       case "KeyS": {
+      case "KeyS": {
         //down
         this.moveDown();
         break;
@@ -361,10 +382,10 @@ export default class HtmlGameGrid {
     }
     if (this.options.wasd_controls) {
       if (
-        event.code === "KeyW" || 
-        event.code === "KeyD" || 
-        event.code === "KeyS" || 
-        event.code === "KeyA" 
+        event.code === "KeyW" ||
+        event.code === "KeyD" ||
+        event.code === "KeyS" ||
+        event.code === "KeyA"
       ) {
         event.preventDefault();
         this.handleDirection(event);
