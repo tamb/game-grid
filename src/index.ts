@@ -35,7 +35,6 @@ export default class HtmlGameGrid {
       infinite_y: true,
       clickable: true,
       rewind_limit: 20,
-      active_class: "gamegrid-"
 
       // block_on_type: ["barrier"],
       // interact_on_type: ["interactive"],
@@ -71,7 +70,12 @@ export default class HtmlGameGrid {
     return this.refs;
   }
   public destroy(): void {
-    this.dettachHandlers();
+    this.state.rendered ? this.dettachHandlers() : null;
+    this.refs = {
+      ...this.refs,
+      rows: [],
+      cells: [],
+    };
   }
   public getState(): IState {
     return this.state;
@@ -188,18 +192,18 @@ export default class HtmlGameGrid {
       cells[row][col].classList.add("gamegrid__cell--active");
       this.setStateSync({ active_coords: [row, col] });
     } else {
-      cells[this.state.active_coords[0]][this.state.active_coords[1]]?.focus();
+      this.getActiveCell()?.focus();
       this.removeActiveClasses();
-      cells[this.state.active_coords[0]][this.state.active_coords[1]]?.classList.add("gamegrid__cell--active");
+      this.getActiveCell()?.classList.add("gamegrid__cell--active");
     }
   }
 
-  public removeActiveClasses(){
-    this.getRefs().cells.forEach(cellRow => {
-      cellRow.forEach(cell => {
+  public removeActiveClasses(): void {
+    this.getRefs().cells.forEach((cellRow) => {
+      cellRow.forEach((cell) => {
         cell.classList.remove("gamegrid__cell--active");
       });
-    })
+    });
   }
 
   public setFocusToContainer(): void {
@@ -214,7 +218,7 @@ export default class HtmlGameGrid {
 
   //INPUT
   private init(): void {
-    this.attachHandlers();
+    this.state.rendered ? this.attachHandlers() : null;
   }
 
   private addToMoves(): void {
@@ -332,8 +336,7 @@ export default class HtmlGameGrid {
     this.testSpace();
     this.testInteractive();
     this.testBarrier();
-    // this.state.rendered ? this.setFocusToCell() : null;
-    this.setFocusToCell();
+    this.state.rendered ? this.setFocusToCell() : null;
     this.addToMoves();
   }
 

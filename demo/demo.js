@@ -99,8 +99,10 @@ checkboxes.forEach((cb) => {
       arrow_controls: $arrow_controls.checked,
       wasd_controls: $wasd_controls.checked,
     });
+    g.destroy();
     document.querySelector("#app").innerHTML = '';
     g.render();
+    g.init();
   });
 });
 

@@ -27,7 +27,7 @@
     box-sizing: border-box; // 1
     border: 1px solid;
 
-    &:focus {
+    &--active {
       outline: 4px solid red;
     }
 
