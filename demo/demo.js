@@ -1,7 +1,7 @@
 import "./demo.scss";
 
 import GameGridHtml from "./../dist/main";
-import {gridEventsEnum} from "./../src/enums";
+import { gridEventsEnum } from "./../src/enums";
 
 // import { gridEventsEnum, tileTypeEnum } from "../src/old/enums";
 const tileTypeEnum = {
@@ -76,7 +76,13 @@ const g = new GameGridHtml("#app", {
     // clickable: $clickable.checked,
     arrow_controls: $arrow_controls.checked,
     wasd_controls: $wasd_controls.checked,
+    callbacks: {
+      LIMIT: function (x) {
+        console.log("callback", x);
+      },
+    },
   },
+ 
 });
 
 g.render();
@@ -103,7 +109,7 @@ const checkboxes = Array.from(form.querySelectorAll('input[type="checkbox"]'));
 
 checkboxes.forEach((cb) => {
   cb.addEventListener("change", () => {
-    console.log($wasd_controls.checked)
+    console.log($wasd_controls.checked);
     g.setOptions({
       infinite_y: $infinite_y.checked,
       infinite_x: $infinite_x.checked,
@@ -114,11 +120,11 @@ checkboxes.forEach((cb) => {
   });
 });
 
-Object.keys(gridEventsEnum).forEach(function(key) {
-  window.addEventListener(gridEventsEnum[key], function(event){
+Object.keys(gridEventsEnum).forEach(function (key) {
+  window.addEventListener(gridEventsEnum[key], function (event) {
     console.log(event);
     document.querySelector("#event").textContent = `
     ${event.type}
-    ${document.querySelector("#event").textContent}`; 
+    ${document.querySelector("#event").textContent}`;
   });
 });
