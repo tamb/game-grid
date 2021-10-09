@@ -54,6 +54,7 @@
     }
   },
   "dependencies": {
-    "typescript-declaration-webpack-plugin": "^0.2.2"
+    "typescript-declaration-webpack-plugin": "^0.2.2",
+    "webpack-dev-server": "^4.3.1"
   }
 }

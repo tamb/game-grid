@@ -31,10 +31,37 @@ export interface IOptions {
   row_class?: string;
 }
 
+interface ICallbacks {
+  STATE_UPDATED?: Function;
+  MOVE_LEFT?: Function;
+  MOVE_RIGHT?: Function;
+  MOVE_UP?: Function;
+  MOVE_DOWN?: Function;
+  MOVE_BLOCKED?: Function;
+  MOVE_COLLISION?: Function;
+  MOVE_DETTACH?: Function;
+  MOVE_LAND?: Function;
+  LIMIT?: Function;
+  LIMIT_X?: Function;
+  LIMIT_Y?: Function;
+  LIMIT_LEFT?: Function;
+  LIMIT_RIGHT?: Function;
+  LIMIT_UP?: Function;
+  LIMIT_DOWN?: Function;
+  WRAP?: Function;
+  WRAP_X?: Function;
+  WRAP_Y?: Function;
+  WRAP_LEFT?: Function;
+  WRAP_RIGHT?: Function;
+  WRAP_UP?: Function;
+  WRAP_DOWN?: Function;
+}
+
 export interface IConfig {
   options?: IOptions;
   matrix: ICell[][];
   state?: IState;
+  callbacks?: ICallbacks;
 }
 
 export interface IRefs {
