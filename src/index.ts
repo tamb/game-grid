@@ -176,6 +176,7 @@ export default class HtmlGameGrid {
     });
     this.refs.container.appendChild(grid);
     this.setStateSync({ rendered: true });
+    console.log("rendered");
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
