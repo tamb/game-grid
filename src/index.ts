@@ -27,7 +27,7 @@ export default class HtmlGameGrid {
 
   constructor(query: string, config: IConfig) {
     this.options = {
-      // active_class: "gg-active",
+      // active_class: "gamegrid-active",
       arrow_controls: true,
       wasd_controls: true,
       // container_class: "",
@@ -35,6 +35,7 @@ export default class HtmlGameGrid {
       infinite_y: true,
       clickable: true,
       rewind_limit: 20,
+      active_class: "gamegrid-"
 
       // block_on_type: ["barrier"],
       // interact_on_type: ["interactive"],
@@ -137,25 +138,25 @@ export default class HtmlGameGrid {
   }
 
   public render(): void {
-    this.refs.container.classList.add("lib-GameGridHtml");
+    this.refs.container.classList.add("gamegrid");
     this.refs.container.setAttribute("tabindex", "0");
-    this.refs.container.setAttribute("data-gg-ref", "container");
+    this.refs.container.setAttribute("data-gamegrid-ref", "container");
     const grid: DocumentFragment = document.createDocumentFragment();
     this.matrix.forEach((rowData: any, rI: number) => {
       const row: HTMLDivElement = document.createElement("div");
       this.options.row_class ? row.classList.add(this.options.row_class) : null;
-      row.setAttribute("data-gg-row-index", rI.toString());
-      row.setAttribute("data-gg-ref", "row");
-      row.classList.add("lib-GameGridHtml__row");
+      row.setAttribute("data-gamegrid-row-index", rI.toString());
+      row.setAttribute("data-gamegrid-ref", "row");
+      row.classList.add("gamegrid__row");
       this.refs.cells.push([]);
 
       rowData.forEach((cellData: any, cI: number) => {
         const cell: HTMLDivElement = document.createElement("div");
         renderAttributes(cell, [
-          ["data-gg-ref", "cell"],
-          ["data-gg-row-index", rI.toString()],
-          ["data-gg-col-index", cI.toString()],
-          ["data-gg-coords", `${rI},${cI}`],
+          ["data-gamegrid-ref", "cell"],
+          ["data-gamegrid-row-index", rI.toString()],
+          ["data-gamegrid-col-index", cI.toString()],
+          ["data-gamegrid-coords", `${rI},${cI}`],
         ]);
 
         cell.style.width = `${100 / rowData.length}%`;
@@ -163,7 +164,7 @@ export default class HtmlGameGrid {
           cell.setAttribute(attr[0], attr[1]);
         });
 
-        cell.classList.add("lib-GameGridHtml__cell");
+        cell.classList.add("gamegrid__cell");
         cell.setAttribute("tabindex", this.options.clickable ? "0" : "-1");
         if (cellData.renderFunction) {
           cell.appendChild(cellData.renderFunction());
@@ -176,7 +177,6 @@ export default class HtmlGameGrid {
     });
     this.refs.container.appendChild(grid);
     this.setStateSync({ rendered: true });
-    console.log("rendered");
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
@@ -184,10 +184,22 @@ export default class HtmlGameGrid {
     const cells = this.getRefs().cells;
     if (typeof row === "number" && typeof col === "number") {
       cells[row][col].focus();
+      this.removeActiveClasses();
+      cells[row][col].classList.add("gamegrid__cell--active");
       this.setStateSync({ active_coords: [row, col] });
     } else {
       cells[this.state.active_coords[0]][this.state.active_coords[1]]?.focus();
+      this.removeActiveClasses();
+      cells[this.state.active_coords[0]][this.state.active_coords[1]]?.classList.add("gamegrid__cell--active");
     }
+  }
+
+  public removeActiveClasses(){
+    this.getRefs().cells.forEach(cellRow => {
+      cellRow.forEach(cell => {
+        cell.classList.remove("gamegrid__cell--active");
+      });
+    })
   }
 
   public setFocusToContainer(): void {
@@ -398,11 +410,11 @@ export default class HtmlGameGrid {
     if (this.getOptions().clickable) {
       if (event.target instanceof HTMLElement) {
         const cellEl: HTMLElement = event.target.closest(
-          '[data-gg-ref="cell"]'
+          '[data-gamegrid-ref="cell"]'
         );
         if (cellEl) {
           const coords: number[] = cellEl
-            .getAttribute("data-gg-coords")
+            .getAttribute("data-gamegrid-coords")
             .split(",")
             .map((n) => Number(n));
           this.setFocusToCell(...coords);
