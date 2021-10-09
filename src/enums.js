@@ -1,24 +1,25 @@
-export const gridEventsEnum = {
-  RENDERED: "gamegridhtml:grid:rendered",
-  STATE_UPDATED: "gamegridhtml:state:updated",
 
-  MOVE_LEFT: "gamegridhtml:move:left",
-  MOVE_RIGHT: "gamegridhtml:move:right",
-  MOVE_UP: "gamegridhtml:move:up",
-  MOVE_DOWN: "gamegridhtml:move:down",
+export const gridEventsEnum = {
+  RENDERED: "gamegrid:grid:rendered",
+  STATE_UPDATED: "gamegrid:state:updated",
+
+  MOVE_LEFT: "gamegrid:move:left",
+  MOVE_RIGHT: "gamegrid:move:right",
+  MOVE_UP: "gamegrid:move:up",
+  MOVE_DOWN: "gamegrid:move:down",
 
   MOVE_BLOCKED: "gamegridhmtl:move:blocked", // hits a wall
-  MOVE_COLLISION: "gamegridhtml:move:collide", // overlaps another entity
-  MOVE_DETTACH: "gamegridhtml:move:dettach", // leaves overlapping an entity
-  MOVE_LAND: "gamegridhtml:move:land", // move finished
+  MOVE_COLLISION: "gamegrid:move:collide", // overlaps another entity
+  MOVE_DETTACH: "gamegrid:move:dettach", // leaves overlapping an entity
+  MOVE_LAND: "gamegrid:move:land", // move finished
 
-  LIMIT: "gamegridhtml:limit",
-  LIMIT_X: "gamegridhtml:limit:x",
-  LIMIT_Y: "gamegridhtml:limit:y",
+  LIMIT: "gamegrid:limit",
+  LIMIT_X: "gamegrid:limit:x",
+  LIMIT_Y: "gamegrid:limit:y",
 
-  WRAP: "gamegridhtml:wrap",
-  WRAP_X: "gamegridhtml:wrap:x",
-  WRAP_Y: "gamegridhtml:wrap:y",
+  WRAP: "gamegrid:wrap",
+  WRAP_X: "gamegrid:wrap:x",
+  WRAP_Y: "gamegrid:wrap:y",
 };
 
 /**

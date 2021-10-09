@@ -12,7 +12,8 @@
     "demo:dev": "webpack --watch --mode=development --config ./webpack.config.demo.js",
     "dev": "concurrently \"npm run library:dev\" \"npm run demo:dev\" \"node openDemo.js\"",
     "build": "webpack --mode=production --config ./webpack.config.prod.js",
-    "docs": "jsdoc src/docs.js"
+    "docs": "jsdoc src/docs.js",
+    "safe:publish": "npm run test && npm run build && npm publish"
   },
   "keywords": [],
   "author": "",
