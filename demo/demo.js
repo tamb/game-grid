@@ -78,30 +78,15 @@ const g = new GameGridHtml("#app", {
     wasd_controls: $wasd_controls.checked,
     callbacks: {
       LIMIT: function (x) {
-        console.log("callback", x);
+        console.log("callback for LIMIT", x);
+      },
+      WRAP_Y: function (x) {
+        console.log("callback WRAP_Y", x);
       },
     },
   },
- 
 });
 
-g.render();
-
-g.init();
-console.log(g);
-document.addEventListener("move", (event) => {
-  document
-    .getElementById("event")
-    .insertAdjacentHTML(
-      "afterbegin",
-      `<p>${
-        event.detail.active_coords
-      } - <small>${new Date().toLocaleTimeString()}</small></p>`
-    );
-});
-window.addEventListener("gamegridhtml:move:barrier", (e) => {
-  console.log(e);
-});
 window.gamegrid = g;
 
 const form = document.querySelector('[data-ref="Form.settings"]');
@@ -123,8 +108,11 @@ checkboxes.forEach((cb) => {
 Object.keys(gridEventsEnum).forEach(function (key) {
   window.addEventListener(gridEventsEnum[key], function (event) {
     console.log(event);
-    document.querySelector("#event").textContent = `
-    ${event.type}
+    document.querySelector("#event").textContent = `${event.type}
     ${document.querySelector("#event").textContent}`;
   });
 });
+
+g.render();
+
+g.init();
