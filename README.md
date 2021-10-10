@@ -101,3 +101,19 @@ The GameGrid instance has a `refs` object that contains references to the HTML e
 ## Methods
 
 The GameGrid instance has many methods that can be used to update the state of the grid
+
+- `getOptions() : options`
+- `setOptions(newOptions : options) : void`
+- `getRefs() : refs`
+- `destroy() : void`
+- `getState() : state`
+- `moveLeft() : void`
+- `moveRight() : void`
+- `moveUp() : void`
+- `moveDown() : void`
+- `setMatrix(cell[][]) : void`
+- `getMatrix() : matrix`
+- `setStateSync(state) : void`
+- `render() : void`
+- `getActiveCell() : cell`
+- `init() : void`

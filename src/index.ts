@@ -184,7 +184,7 @@ export default class HtmlGameGrid {
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
-  public setFocusToCell(row?: number, col?: number): void {
+  private setFocusToCell(row?: number, col?: number): void {
     const cells = this.getRefs().cells;
     if (typeof row === "number" && typeof col === "number") {
       cells[row][col].focus();
@@ -198,18 +198,6 @@ export default class HtmlGameGrid {
     }
   }
 
-  public removeActiveClasses(): void {
-    this.getRefs().cells.forEach((cellRow) => {
-      cellRow.forEach((cell) => {
-        cell.classList.remove("gamegrid__cell--active");
-      });
-    });
-  }
-
-  public setFocusToContainer(): void {
-    this.getRefs().container.focus();
-  }
-
   public getActiveCell(): HTMLDivElement {
     return this.getRefs().cells[this.state.active_coords[0]][
       this.state.active_coords[1]
@@ -217,8 +205,16 @@ export default class HtmlGameGrid {
   }
 
   //INPUT
-  private init(): void {
+  public init(): void {
     this.state.rendered ? this.attachHandlers() : null;
+  }
+
+  private removeActiveClasses(): void {
+    this.getRefs().cells.forEach((cellRow) => {
+      cellRow.forEach((cell) => {
+        cell.classList.remove("gamegrid__cell--active");
+      });
+    });
   }
 
   private addToMoves(): void {
