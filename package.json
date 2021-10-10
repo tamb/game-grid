@@ -2,7 +2,7 @@
   "name": "@tamb/gamegrid",
   "version": "0.0.1-alpha.2",
   "description": "",
-  "main": "index.js",
+  "main": "dist/main.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",

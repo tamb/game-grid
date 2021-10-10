@@ -2,6 +2,7 @@ export interface ICell {
     renderFunction?: (cell: HTMLDivElement) => HTMLElement;
     cellAttributes?: string[][];
     type: string | string[];
+    [key: string]: any;
 }
 export interface IState {
     active_coords?: number[];
@@ -19,7 +20,7 @@ export interface IOptions {
     clickable?: boolean;
     rewind_limit?: number;
     block_on_type?: string[];
-    interact_on_type?: string[];
+    collide_on_type?: string[];
     move_on_type?: string[];
     active_class?: string;
     container_class?: string;

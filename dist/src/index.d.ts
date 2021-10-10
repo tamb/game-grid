@@ -19,11 +19,10 @@ export default class HtmlGameGrid {
     getMatrix(): ICell[][];
     setStateSync(obj: IState): void;
     render(): void;
-    setFocusToCell(row?: number, col?: number): void;
-    removeActiveClasses(): void;
-    setFocusToContainer(): void;
+    private setFocusToCell;
     getActiveCell(): HTMLDivElement;
-    private init;
+    init(): void;
+    private removeActiveClasses;
     private addToMoves;
     private testLimit;
     private testInteractive;
