@@ -2,6 +2,7 @@ export interface ICell {
   renderFunction?: (cell: HTMLDivElement) => HTMLElement;
   cellAttributes?: string[][];
   type: string | string[];
+  [key: string]: any;
 }
 export interface IState {
   active_coords?: number[];
@@ -21,7 +22,7 @@ export interface IOptions {
 
   // TODO: Utilize these options to add additional supported cell types
   block_on_type?: string[];
-  interact_on_type?: string[];
+  collide_on_type?: string[];
   move_on_type?: string[];
 
   // TODO: Add support for this
