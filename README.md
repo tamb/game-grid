@@ -140,3 +140,23 @@ Each event has a `detail` object with the `game_grid_instance` containing all of
 - `gamegrid:wrap`
 - `gamegrid:wrap:x`
 - `gamegrid:wrap:y`
+
+## Instantiation
+
+```js
+import GameGrid from "@tamb.gamegrid";
+
+const config = // my config settings
+
+const gg = new GameGrid("#grid-container", config);
+
+//render the grid
+gg.render();
+//init
+gg.init();
+```
+
+## TODO:
+
+- remove need to call `init` and place inside `render`
+- attach initial keypress listeners to the container in the constructor

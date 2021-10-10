@@ -7,10 +7,8 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "start": "npm run dev",
-    "library:dev": "webpack --mode=development --watch --config ./webpack.config.prod.js",
-    "demo:dev": "webpack --watch --mode=development --config ./webpack.config.demo.js",
-    "dev": "concurrently \"npm run library:dev\" \"npm run demo:dev\" \"node openDemo.js\"",
+    "demo:js": "cd demos/js && npm start",
+    "demo:ts": "cd demos/ts && npm start",
     "build": "webpack --mode=production --config ./webpack.config.prod.js",
     "safe:publish": "npm run test && npm run build && npm publish"
   },
