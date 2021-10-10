@@ -1,2 +1,4 @@
 node_modules
-js-packed-demo/node_modules
+demos/js/node_modules
+demos/ts/node_modules
+*.tgz
