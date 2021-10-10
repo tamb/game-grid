@@ -20,15 +20,15 @@ const grid = new GameGrid(query: string, config: IConfig): GameGridInstance;
 - `query` {string} - the DOMString used to select the grid container.
 - `config` {object} - configuration for GameGrid
 
-## `config`
+## `config : IConfig`
 
 The `config` argument has the follow fields:
 
-- `options`
-- `matrix`
-- `state`
+- `options : IOptions`
+- `matrix : IMatrix`
+- `state : IState`
 
-### `options`
+### `options : IOptions`
 
 - `arrow_controls=true : boolean`
 - `wasd_controls=false : boolean`
@@ -36,7 +36,7 @@ The `config` argument has the follow fields:
 - `infinite_y=true : boolean`
 - `clickable=true : boolean`
 - `rewind_limit=20 : number`
-- `callbacks={} : object`
+- `callbacks={} : ICallbacks`
 - `block_on_type` - coming soon
 - `collide_on_type` - coming soon
 - `move_on_type` - coming soon
@@ -44,9 +44,10 @@ The `config` argument has the follow fields:
 - `container_class` - coming soon
 - `row_class` - coming soon
 
-#### `callbacks`
+#### `callbacks : ICallbacks`
 
-These are callbacks you can define to fire at certain parts of the `gamegrid` lifecycle. Assign your functions to following keys...
+These are callbacks you can define to fire at certain parts of the `gamegrid` lifecycle. Think of them as hooks.
+Assign your functions to following keys...
 
 - `STATE_UPDATED`
 - `MOVE_LEFT`
@@ -64,13 +65,13 @@ These are callbacks you can define to fire at certain parts of the `gamegrid` li
 - `WRAP_X`
 - `WRAP_Y`
 
-### `matrix`
+### `matrix : ICell[][]`
 
 The Matrix is a great movie. It's also a 2D representation of the game grid you're making.
 
-- `Cell[][]`
+- `ICell[][]`
 
-#### `Cell`
+#### `cell : ICell`
 
 Cells have the following properties
 
@@ -79,7 +80,7 @@ Cells have the following properties
 - `type : string ("interactive", "open", "barrier")` - this determines the type of cell to render, which in turns determines how the active cell will react.
 - `[key : string] : any` - you can add any additional data to the cell you will be able to access it through the matrix and helper methods.
 
-### `state`
+### `state : IState`
 
 The `state` contains the following fields
 
@@ -117,3 +118,25 @@ The GameGrid instance has many methods that can be used to update the state of t
 - `render() : void`
 - `getActiveCell() : cell`
 - `init() : void`
+
+## Events
+
+GameGrid emits the following custom events. Each one corresponds with the `callbacks`.  
+Each event has a `detail` object with the `game_grid_instance` containing all of the above.
+
+- `gamegrid:grid:rendered`
+- `gamegrid:state:updated`
+- `gamegrid:move:left`
+- `gamegrid:move:right`
+- `gamegrid:move:up`
+- `gamegrid:move:down`
+- `gamegrid:move:blocked`
+- `gamegrid:move:collide`
+- `gamegrid:move:dettach`
+- `gamegrid:move:land`
+- `gamegrid:limit`
+- `gamegrid:limit:x`
+- `gamegrid:limit:y`
+- `gamegrid:wrap`
+- `gamegrid:wrap:x`
+- `gamegrid:wrap:y`

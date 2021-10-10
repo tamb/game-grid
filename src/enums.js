@@ -1,4 +1,3 @@
-
 export const gridEventsEnum = {
   RENDERED: "gamegrid:grid:rendered",
   STATE_UPDATED: "gamegrid:state:updated",
@@ -8,7 +7,7 @@ export const gridEventsEnum = {
   MOVE_UP: "gamegrid:move:up",
   MOVE_DOWN: "gamegrid:move:down",
 
-  MOVE_BLOCKED: "gamegridhmtl:move:blocked", // hits a wall
+  MOVE_BLOCKED: "gamegrid:move:blocked", // hits a wall
   MOVE_COLLISION: "gamegrid:move:collide", // overlaps another entity
   MOVE_DETTACH: "gamegrid:move:dettach", // leaves overlapping an entity
   MOVE_LAND: "gamegrid:move:land", // move finished
