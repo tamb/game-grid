@@ -10,7 +10,10 @@
     "demo:js": "cd demos/js && npm start",
     "demo:ts": "cd demos/ts && npm start",
     "build": "webpack --mode=production --config ./webpack.config.prod.js",
-    "safe:publish": "npm run test && npm run build && npm publish"
+    "safe:publish": "npm run test && npm run build && npm publish",
+    "e2e": "npm run build && npm pack && concurrently \"npm run e2e:js\" \"npm run e2e:ts\" ",
+    "e2e:js": "cd demos/js && npm cache clean --force && npm install && npm start",
+    "e2e:ts": "cd demos/ts && npm cache clean --force && npm install && npm start"
   },
   "keywords": [],
   "author": "",
