@@ -149,13 +149,10 @@ const config = // my config settings
 
 const gg = new GameGrid("#grid-container", config);
 
-//render the grid
+// optionally render the grid
 gg.render();
-//init
-gg.init();
+
+// create moves like so
+gg.moveLeft();
+gg.moveRight();
 ```
-
-## TODO:
-
-- remove need to call `init` and place inside `render`
-- attach initial keypress listeners to the container in the constructor
