@@ -19,7 +19,6 @@ export default class HtmlGameGrid {
     render(): void;
     private setFocusToCell;
     getActiveCell(): HTMLDivElement;
-    init(): void;
     private removeActiveClasses;
     private addToMoves;
     private testLimit;

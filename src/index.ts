@@ -56,7 +56,8 @@ export default class HtmlGameGrid {
     this.containerBlur = this.containerBlur.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleCellClick = this.handleCellClick.bind(this);
-    this.init();
+    this.render = this.render.bind(this);
+    this.attachHandlers = this.attachHandlers.bind(this);
   }
 
   // API
@@ -142,6 +143,7 @@ export default class HtmlGameGrid {
   }
 
   public render(): void {
+    console.log("rendering");
     this.refs.container.classList.add("gamegrid");
     this.refs.container.setAttribute("tabindex", "0");
     this.refs.container.setAttribute("data-gamegrid-ref", "container");
@@ -181,6 +183,8 @@ export default class HtmlGameGrid {
     });
     this.refs.container.appendChild(grid);
     this.setStateSync({ rendered: true });
+    console.log("rendered");
+    this.attachHandlers();
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
@@ -202,11 +206,6 @@ export default class HtmlGameGrid {
     return this.getRefs().cells[this.state.active_coords[0]][
       this.state.active_coords[1]
     ];
-  }
-
-  //INPUT
-  public init(): void {
-    this.state.rendered ? this.attachHandlers() : null;
   }
 
   private removeActiveClasses(): void {
@@ -381,6 +380,7 @@ export default class HtmlGameGrid {
     }
   }
   private handleKeyDown(event: KeyboardEvent): void {
+    console.log("handling keydown");
     if (this.options.arrow_controls) {
       if (
         event.code === "ArrowUp" ||
@@ -406,6 +406,7 @@ export default class HtmlGameGrid {
   }
 
   private handleCellClick(event: MouseEvent): void {
+    console.log("handling click", this);
     if (this.getOptions().clickable) {
       if (event.target instanceof HTMLElement) {
         const cellEl: HTMLElement = event.target.closest(
@@ -425,15 +426,18 @@ export default class HtmlGameGrid {
   }
 
   private containerFocus(): void {
+    console.log("container focus");
     this.getRefs().container.classList.add(this.options.active_class);
   }
 
   private containerBlur(): void {
+    console.log("container blur");
     this.getRefs().container.classList.remove(this.options.active_class);
   }
 
   // SET UP
   private attachHandlers(): void {
+    console.log("attaching");
     this.getRefs().container.addEventListener("keydown", this.handleKeyDown);
     this.getRefs().container.addEventListener("focus", this.containerFocus);
     this.getRefs().container.addEventListener("blur", this.containerBlur);

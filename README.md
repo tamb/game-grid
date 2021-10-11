@@ -117,7 +117,6 @@ The GameGrid instance has many methods that can be used to update the state of t
 - `setStateSync(state) : void`
 - `render() : void`
 - `getActiveCell() : cell`
-- `init() : void`
 
 ## Events
 
