@@ -188,8 +188,9 @@ describe("GameGrid class", () => {
     x.moveLeft();
     const state = x.getState();
     expect(state.current_direction).toMatch("left");
-    expect(state.active_coords).toEqual([0, 0]);
-    expect(state.next_coords).toEqual([0, -1]);
+    expect(state.prev_coords).toEqual([0, 0]);
+    expect(state.active_coords).toEqual([0, x.getMatrix()[0].length - 1]);
+    expect(state.next_coords).toEqual([0, x.getMatrix()[0].length - 1]);
   });
 
   test("moveRight moves right", () => {
@@ -199,7 +200,8 @@ describe("GameGrid class", () => {
     x.moveRight();
     const state = x.getState();
     expect(state.current_direction).toMatch("right");
-    expect(state.active_coords).toEqual([0, 0]);
+    expect(state.prev_coords).toEqual([0, 0]);
+    expect(state.active_coords).toEqual([0, 1]);
     expect(state.next_coords).toEqual([0, 1]);
   });
 
@@ -210,8 +212,9 @@ describe("GameGrid class", () => {
     x.moveUp();
     const state = x.getState();
     expect(state.current_direction).toMatch("up");
-    expect(state.active_coords).toEqual([0, 0]);
-    expect(state.next_coords).toEqual([-1, 0]);
+    expect(state.prev_coords).toEqual([0, 0]);
+    expect(state.active_coords).toEqual([x.getMatrix().length - 1, 0]);
+    expect(state.next_coords).toEqual([x.getMatrix().length - 1, 0]);
   });
 
   test("moveDown moves down", () => {
@@ -221,7 +224,8 @@ describe("GameGrid class", () => {
     x.moveDown();
     const state = x.getState();
     expect(state.current_direction).toMatch("down");
-    expect(state.active_coords).toEqual([0, 0]);
+    expect(state.prev_coords).toEqual([0, 0]);
+    expect(state.active_coords).toEqual([1, 0]);
     expect(state.next_coords).toEqual([1, 0]);
   });
 
