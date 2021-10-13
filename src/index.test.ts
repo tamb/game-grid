@@ -31,15 +31,15 @@ describe("GameGrid class", () => {
     workingGrid = null;
     workingGrid = new GameGrid("#root", { matrix });
     defaultOptions = {
-      active_class: "gg-active",
+      active_class: "gamegrid__cell--active",
       arrow_controls: true,
+      clickable: true,
       wasd_controls: true,
-      container_class: "",
       infinite_x: true,
       infinite_y: true,
       rewind_limit: 20,
       block_on_type: ["barrier"],
-      interact_on_type: ["interactive"],
+      collide_on_type: ["interactive"],
       move_on_type: ["open"],
     };
     defaultState = {
@@ -237,25 +237,25 @@ describe("GameGrid class", () => {
   // // render tests
   test("container classes are applied", () => {
     workingGrid.render();
-    expect(
-      workingGrid.getRefs().container.classList.contains("lib-GameGrid")
-    ).toBe(true);
+    expect(workingGrid.getRefs().container.classList.contains("gamegrid")).toBe(
+      true
+    );
   });
 
   test("row classes are applied", () => {
     workingGrid.render();
     const rows = workingGrid.getRefs().rows;
-    expect(rows[0].classList.contains("lib-GameGrid__row")).toBe(true);
-    expect(rows[1].classList.contains("lib-GameGrid__row")).toBe(true);
-    expect(rows[2].classList.contains("lib-GameGrid__row")).toBe(true);
+    expect(rows[0].classList.contains("gamegrid__row")).toBe(true);
+    expect(rows[1].classList.contains("gamegrid__row")).toBe(true);
+    expect(rows[2].classList.contains("gamegrid__row")).toBe(true);
   });
 
   test("cell classes are applied", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
-    expect(cells[0][0].classList.contains("lib-GameGrid__cell")).toBe(true);
-    expect(cells[1][1].classList.contains("lib-GameGrid__cell")).toBe(true);
-    expect(cells[2][2].classList.contains("lib-GameGrid__cell")).toBe(true);
+    expect(cells[0][0].classList.contains("gamegrid__cell")).toBe(true);
+    expect(cells[1][1].classList.contains("gamegrid__cell")).toBe(true);
+    expect(cells[2][2].classList.contains("gamegrid__cell")).toBe(true);
   });
 
   test("cell width is correct", () => {
@@ -273,16 +273,17 @@ describe("GameGrid class", () => {
   test("default row attributes rendered", () => {
     workingGrid.render();
     const rows = workingGrid.getRefs().rows;
-    expect(rows[0].getAttribute("data-gg-row-index")).toMatch("0");
+    expect(rows[0].getAttribute("data-gamegrid-row-index")).toMatch("0");
   });
 
   test("default cell attributes are rendered", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
-    expect(cells[0][0].getAttribute("data-gg-row-index")).toMatch("0");``
-    expect(cells[1][0].getAttribute("data-gg-row-index")).toMatch("1");
-    expect(cells[1][1].getAttribute("data-gg-col-index")).toMatch("1");
-    expect(cells[1][0].getAttribute("data-gg-coords")).toMatch("1,0");
+    expect(cells[0][0].getAttribute("data-gamegrid-row-index")).toMatch("0");
+    ``;
+    expect(cells[1][0].getAttribute("data-gamegrid-row-index")).toMatch("1");
+    expect(cells[1][1].getAttribute("data-gamegrid-col-index")).toMatch("1");
+    expect(cells[1][0].getAttribute("data-gamegrid-coords")).toMatch("1,0");
   });
 
   test("cell custom attributes render", () => {

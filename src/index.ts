@@ -27,18 +27,16 @@ export default class HtmlGameGrid {
 
   constructor(query: string, config: IConfig) {
     this.options = {
-      // active_class: "gamegrid-active",
+      active_class: "gamegrid__cell--active",
       arrow_controls: true,
       wasd_controls: true,
-      // container_class: "",
       infinite_x: true,
       infinite_y: true,
       clickable: true,
       rewind_limit: 20,
-
-      // block_on_type: ["barrier"],
-      // interact_on_type: ["interactive"],
-      // move_on_type: ["open"],
+      block_on_type: ["barrier"],
+      collide_on_type: ["interactive"],
+      move_on_type: ["open"],
       // overrides
       ...config.options,
     };
@@ -188,7 +186,7 @@ export default class HtmlGameGrid {
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
-  private setFocusToCell(row?: number, col?: number): void {
+  public setFocusToCell(row?: number, col?: number): void {
     const cells = this.getRefs().cells;
     if (typeof row === "number" && typeof col === "number") {
       cells[row][col].focus();
@@ -200,6 +198,10 @@ export default class HtmlGameGrid {
       this.removeActiveClasses();
       this.getActiveCell()?.classList.add("gamegrid__cell--active");
     }
+  }
+
+  public setFocusToContainer(): void {
+    this.getRefs().container.focus();
   }
 
   public getActiveCell(): HTMLDivElement {
