@@ -6,7 +6,6 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
-    "test:watch": "jest --watch",
     "demo:js": "cd demos/js && npm start",
     "demo:ts": "cd demos/ts && npm start",
     "build": "webpack --mode=production --config ./webpack.config.prod.js",
