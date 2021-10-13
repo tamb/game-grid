@@ -2,6 +2,7 @@ export interface ICell {
   renderFunction?: (cell: HTMLDivElement) => HTMLElement;
   cellAttributes?: string[][];
   type: string | string[];
+  
   [key: string]: any;
 }
 export interface IState {
