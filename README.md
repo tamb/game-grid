@@ -143,7 +143,7 @@ Each event has a `detail` object with the `game_grid_instance` containing all of
 ## Instantiation
 
 ```js
-import GameGrid from "@tamb.gamegrid";
+import GameGrid from "@tamb/gamegrid";
 
 const config = // my config settings
 
