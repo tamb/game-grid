@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import GameGridHtml from "./index";
+import GameGrid from "./index";
 document.body.insertAdjacentHTML("afterbegin", '<div id="root"></div>');
 
 const matrix = [
@@ -22,14 +22,14 @@ const matrix = [
   [{ type: "open" }, { type: "open" }, { type: "open" }],
 ];
 
-describe("GameGridHtml class", () => {
+describe("GameGrid class", () => {
   let workingGrid: any = null;
   let defaultOptions: any = null;
   let defaultState: any = null;
 
   beforeEach(() => {
     workingGrid = null;
-    workingGrid = new GameGridHtml("#root", { matrix });
+    workingGrid = new GameGrid("#root", { matrix });
     defaultOptions = {
       active_class: "gg-active",
       arrow_controls: true,
@@ -57,7 +57,7 @@ describe("GameGridHtml class", () => {
 
   // instantiation tests
   test("options are set correctly", () => {
-    const fakeGrid = new GameGridHtml("#root", {
+    const fakeGrid = new GameGrid("#root", {
       matrix,
       options: {
         infinite_x: false,
@@ -90,7 +90,7 @@ describe("GameGridHtml class", () => {
       current_direction: "up",
       active_coords: [1, 1],
     };
-    const newGrid = new GameGridHtml("#root", {
+    const newGrid = new GameGrid("#root", {
       matrix,
       state: newState,
     });
@@ -115,7 +115,7 @@ describe("GameGridHtml class", () => {
   });
 
   test("move length doesnt pass rewind limit", () => {
-    const x = new GameGridHtml("#root", {
+    const x = new GameGrid("#root", {
       matrix,
       options: { rewind_limit: 2 },
     });
@@ -182,7 +182,7 @@ describe("GameGridHtml class", () => {
   test("getActiveCell returns active cell element", () => {});
 
   test("moveLeft moves left", () => {
-    const x = new GameGridHtml("#root", {
+    const x = new GameGrid("#root", {
       matrix,
     });
     x.moveLeft();
@@ -193,7 +193,7 @@ describe("GameGridHtml class", () => {
   });
 
   test("moveRight moves right", () => {
-    const x = new GameGridHtml("#root", {
+    const x = new GameGrid("#root", {
       matrix,
     });
     x.moveRight();
@@ -204,7 +204,7 @@ describe("GameGridHtml class", () => {
   });
 
   test("moveUp moves up", () => {
-    const x = new GameGridHtml("#root", {
+    const x = new GameGrid("#root", {
       matrix,
     });
     x.moveUp();
@@ -215,7 +215,7 @@ describe("GameGridHtml class", () => {
   });
 
   test("moveDown moves down", () => {
-    const x = new GameGridHtml("#root", {
+    const x = new GameGrid("#root", {
       matrix,
     });
     x.moveDown();
@@ -238,24 +238,24 @@ describe("GameGridHtml class", () => {
   test("container classes are applied", () => {
     workingGrid.render();
     expect(
-      workingGrid.getRefs().container.classList.contains("lib-GameGridHtml")
+      workingGrid.getRefs().container.classList.contains("lib-GameGrid")
     ).toBe(true);
   });
 
   test("row classes are applied", () => {
     workingGrid.render();
     const rows = workingGrid.getRefs().rows;
-    expect(rows[0].classList.contains("lib-GameGridHtml__row")).toBe(true);
-    expect(rows[1].classList.contains("lib-GameGridHtml__row")).toBe(true);
-    expect(rows[2].classList.contains("lib-GameGridHtml__row")).toBe(true);
+    expect(rows[0].classList.contains("lib-GameGrid__row")).toBe(true);
+    expect(rows[1].classList.contains("lib-GameGrid__row")).toBe(true);
+    expect(rows[2].classList.contains("lib-GameGrid__row")).toBe(true);
   });
 
   test("cell classes are applied", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
-    expect(cells[0][0].classList.contains("lib-GameGridHtml__cell")).toBe(true);
-    expect(cells[1][1].classList.contains("lib-GameGridHtml__cell")).toBe(true);
-    expect(cells[2][2].classList.contains("lib-GameGridHtml__cell")).toBe(true);
+    expect(cells[0][0].classList.contains("lib-GameGrid__cell")).toBe(true);
+    expect(cells[1][1].classList.contains("lib-GameGrid__cell")).toBe(true);
+    expect(cells[2][2].classList.contains("lib-GameGrid__cell")).toBe(true);
   });
 
   test("cell width is correct", () => {
@@ -279,7 +279,7 @@ describe("GameGridHtml class", () => {
   test("default cell attributes are rendered", () => {
     workingGrid.render();
     const cells = workingGrid.getRefs().cells;
-    expect(cells[0][0].getAttribute("data-gg-row-index")).toMatch("0");
+    expect(cells[0][0].getAttribute("data-gg-row-index")).toMatch("0");``
     expect(cells[1][0].getAttribute("data-gg-row-index")).toMatch("1");
     expect(cells[1][1].getAttribute("data-gg-col-index")).toMatch("1");
     expect(cells[1][0].getAttribute("data-gg-coords")).toMatch("1,0");
