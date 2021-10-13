@@ -6,7 +6,11 @@ function getKeyByValue(object: any, value: string) {
 
 export function renderAttributes(el: HTMLElement, tuples: any) {
   tuples.forEach((tuple: any) => {
-    el.setAttribute(tuple[0], tuple[1]);
+    if (tuple[0] === "class") {
+      el.classList.add(...tuple[1].split(" "));
+    } else {
+      el.setAttribute(tuple[0], tuple[1]);
+    }
   });
 }
 

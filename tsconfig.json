@@ -7,8 +7,9 @@
     "jsx": "react",
     "allowJs": true,
     "declaration": true,
+    "esModuleInterop": true
   },
   "exclude": ["node_modules/**/*"],
   "include": ["src/index.ts"],
-  "declarations": true,
+  "declarations": true
 }
