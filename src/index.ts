@@ -446,3 +446,5 @@ export default class HtmlGameGrid {
     this.getRefs().container.removeEventListener("click", this.handleCellClick);
   }
 }
+
+export const gameGridEventsEnum = gridEventsEnum;

@@ -1,1 +1,525 @@
-!function(t,e){"object"==typeof exports&&"object"==typeof module?module.exports=e():"function"==typeof define&&define.amd?define([],e):"object"==typeof exports?exports.GamGrid=e():t.GamGrid=e()}(self,(function(){return(()=>{"use strict";var t={433:(t,e,i)=>{i.d(e,{Z:()=>n});var o=i(645),r=i.n(o)()((function(t){return t[1]}));r.push([t.id,'.gamegrid *{box-sizing:border-box}.gamegrid__stage{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;box-sizing:border-box;border:1px solid}.gamegrid__row{display:flex;flex-basis:100%;max-width:100%;box-sizing:border-box}.gamegrid__cell{flex:1 0 auto;height:auto;overflow:hidden;box-sizing:border-box;border:1px solid}.gamegrid__cell--active{outline:4px solid red}.gamegrid__cell::before{content:"";float:left;padding-top:100%}\n',""]);const n=r},645:t=>{t.exports=function(t){var e=[];return e.toString=function(){return this.map((function(e){var i=t(e);return e[2]?"@media ".concat(e[2]," {").concat(i,"}"):i})).join("")},e.i=function(t,i,o){"string"==typeof t&&(t=[[null,t,""]]);var r={};if(o)for(var n=0;n<this.length;n++){var s=this[n][0];null!=s&&(r[s]=!0)}for(var a=0;a<t.length;a++){var c=[].concat(t[a]);o&&r[c[0]]||(i&&(c[2]?c[2]="".concat(i," and ").concat(c[2]):c[2]=i),e.push(c))}},e}},379:(t,e,i)=>{var o,r=function(){return void 0===o&&(o=Boolean(window&&document&&document.all&&!window.atob)),o},n=function(){var t={};return function(e){if(void 0===t[e]){var i=document.querySelector(e);if(window.HTMLIFrameElement&&i instanceof window.HTMLIFrameElement)try{i=i.contentDocument.head}catch(t){i=null}t[e]=i}return t[e]}}(),s=[];function a(t){for(var e=-1,i=0;i<s.length;i++)if(s[i].identifier===t){e=i;break}return e}function c(t,e){for(var i={},o=[],r=0;r<t.length;r++){var n=t[r],c=e.base?n[0]+e.base:n[0],l=i[c]||0,d="".concat(c," ").concat(l);i[c]=l+1;var h=a(d),u={css:n[1],media:n[2],sourceMap:n[3]};-1!==h?(s[h].references++,s[h].updater(u)):s.push({identifier:d,updater:g(u,e),references:1}),o.push(d)}return o}function l(t){var e=document.createElement("style"),o=t.attributes||{};if(void 0===o.nonce){var r=i.nc;r&&(o.nonce=r)}if(Object.keys(o).forEach((function(t){e.setAttribute(t,o[t])})),"function"==typeof t.insert)t.insert(e);else{var s=n(t.insert||"head");if(!s)throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");s.appendChild(e)}return e}var d,h=(d=[],function(t,e){return d[t]=e,d.filter(Boolean).join("\n")});function u(t,e,i,o){var r=i?"":o.media?"@media ".concat(o.media," {").concat(o.css,"}"):o.css;if(t.styleSheet)t.styleSheet.cssText=h(e,r);else{var n=document.createTextNode(r),s=t.childNodes;s[e]&&t.removeChild(s[e]),s.length?t.insertBefore(n,s[e]):t.appendChild(n)}}function f(t,e,i){var o=i.css,r=i.media,n=i.sourceMap;if(r?t.setAttribute("media",r):t.removeAttribute("media"),n&&"undefined"!=typeof btoa&&(o+="\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(n))))," */")),t.styleSheet)t.styleSheet.cssText=o;else{for(;t.firstChild;)t.removeChild(t.firstChild);t.appendChild(document.createTextNode(o))}}var p=null,v=0;function g(t,e){var i,o,r;if(e.singleton){var n=v++;i=p||(p=l(e)),o=u.bind(null,i,n,!1),r=u.bind(null,i,n,!0)}else i=l(e),o=f.bind(null,i,e),r=function(){!function(t){if(null===t.parentNode)return!1;t.parentNode.removeChild(t)}(i)};return o(t),function(e){if(e){if(e.css===t.css&&e.media===t.media&&e.sourceMap===t.sourceMap)return;o(t=e)}else r()}}t.exports=function(t,e){(e=e||{}).singleton||"boolean"==typeof e.singleton||(e.singleton=r());var i=c(t=t||[],e);return function(t){if(t=t||[],"[object Array]"===Object.prototype.toString.call(t)){for(var o=0;o<i.length;o++){var r=a(i[o]);s[r].references--}for(var n=c(t,e),l=0;l<i.length;l++){var d=a(i[l]);0===s[d].references&&(s[d].updater(),s.splice(d,1))}i=n}}}}},e={};function i(o){var r=e[o];if(void 0!==r)return r.exports;var n=e[o]={id:o,exports:{}};return t[o](n,n.exports,i),n.exports}i.n=t=>{var e=t&&t.__esModule?()=>t.default:()=>t;return i.d(e,{a:e}),e},i.d=(t,e)=>{for(var o in e)i.o(e,o)&&!i.o(t,o)&&Object.defineProperty(t,o,{enumerable:!0,get:e[o]})},i.o=(t,e)=>Object.prototype.hasOwnProperty.call(t,e),i.r=t=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})};var o={};return(()=>{i.r(o),i.d(o,{default:()=>m});var t=i(379),e=i.n(t),r=i(433),n={insert:"head",singleton:!1};e()(r.Z,n);r.Z.locals;const s={RENDERED:"gamegrid:grid:rendered",STATE_UPDATED:"gamegrid:state:updated",MOVE_LEFT:"gamegrid:move:left",MOVE_RIGHT:"gamegrid:move:right",MOVE_UP:"gamegrid:move:up",MOVE_DOWN:"gamegrid:move:down",MOVE_BLOCKED:"gamegrid:move:blocked",MOVE_COLLISION:"gamegrid:move:collide",MOVE_DETTACH:"gamegrid:move:dettach",MOVE_LAND:"gamegrid:move:land",LIMIT:"gamegrid:limit",LIMIT_X:"gamegrid:limit:x",LIMIT_Y:"gamegrid:limit:y",WRAP:"gamegrid:wrap",WRAP_X:"gamegrid:wrap:x",WRAP_Y:"gamegrid:wrap:y"};var a=function(){return(a=Object.assign||function(t){for(var e,i=1,o=arguments.length;i<o;i++)for(var r in e=arguments[i])Object.prototype.hasOwnProperty.call(e,r)&&(t[r]=e[r]);return t}).apply(this,arguments)};function c(t,e){return Object.keys(t).find((function(i){return t[i]===e}))}function l(t,e){window.dispatchEvent(new CustomEvent(t,{detail:a(a({},e),{game_grid_instance:this}),bubbles:!0})),this.options.callbacks&&this.options.callbacks[c(s,t)]&&this.options.callbacks[c(s,t)](this)}var d=function(){return(d=Object.assign||function(t){for(var e,i=1,o=arguments.length;i<o;i++)for(var r in e=arguments[i])Object.prototype.hasOwnProperty.call(e,r)&&(t[r]=e[r]);return t}).apply(this,arguments)},h=function(t,e){for(var i=0,o=e.length,r=t.length;i<o;i++,r++)t[r]=e[i];return t},u={active_coords:[0,0],prev_coords:[0,0],current_direction:"",rendered:!1,moves:[[0,0]]},f="up",p="down",v="left",g="right";const m=function(){function t(t,e){this.options=d({active_class:"gamegrid__cell--active",arrow_controls:!0,wasd_controls:!0,infinite_x:!0,infinite_y:!0,clickable:!0,rewind_limit:20,block_on_type:["barrier"],collide_on_type:["interactive"],move_on_type:["open"]},e.options),this.refs={container:document.querySelector(t),rows:[],cells:[]},this.matrix=e.matrix,this.state=d(d({},u),e.state),this.containerFocus=this.containerFocus.bind(this),this.containerBlur=this.containerBlur.bind(this),this.handleKeyDown=this.handleKeyDown.bind(this),this.handleCellClick=this.handleCellClick.bind(this),this.render=this.render.bind(this),this.attachHandlers=this.attachHandlers.bind(this)}return t.prototype.getOptions=function(){return this.options},t.prototype.setOptions=function(t){this.options=d(d({},this.options),t)},t.prototype.getRefs=function(){return this.refs},t.prototype.destroy=function(){this.state.rendered&&this.dettachHandlers(),this.refs=d(d({},this.refs),{rows:[],cells:[]})},t.prototype.getState=function(){return this.state},t.prototype.moveLeft=function(){this.setStateSync({next_coords:[this.state.active_coords[0],this.state.active_coords[1]-1],current_direction:v}),l.call(this,s.MOVE_LEFT),this.finishMove()},t.prototype.moveUp=function(){this.setStateSync({next_coords:[this.state.active_coords[0]-1,this.state.active_coords[1]],current_direction:f}),l.call(this,s.MOVE_UP),this.finishMove()},t.prototype.moveRight=function(){this.setStateSync({next_coords:[this.state.active_coords[0],this.state.active_coords[1]+1],current_direction:g}),l.call(this,s.MOVE_RIGHT),this.finishMove()},t.prototype.moveDown=function(){this.setStateSync({next_coords:[this.state.active_coords[0]+1,this.state.active_coords[1]],current_direction:p}),l.call(this,s.MOVE_DOWN),this.finishMove()},t.prototype.setMatrix=function(t){this.matrix=t},t.prototype.getMatrix=function(){return this.matrix},t.prototype.setStateSync=function(t){var e=d(d({},this.state),t);this.state=e,l.call(this,s.STATE_UPDATED)},t.prototype.render=function(){var t=this;this.refs.container.classList.add("gamegrid"),this.refs.container.setAttribute("tabindex","0"),this.refs.container.setAttribute("data-gamegrid-ref","container");var e=document.createDocumentFragment();this.matrix.forEach((function(i,o){var r=document.createElement("div");t.options.row_class&&r.classList.add(t.options.row_class),r.setAttribute("data-gamegrid-row-index",o.toString()),r.setAttribute("data-gamegrid-ref","row"),r.classList.add("gamegrid__row"),t.refs.cells.push([]),i.forEach((function(e,n){var s,a,c=document.createElement("div");a=c,[["data-gamegrid-ref","cell"],["data-gamegrid-row-index",o.toString()],["data-gamegrid-col-index",n.toString()],["data-gamegrid-coords",o+","+n]].forEach((function(t){var e;"class"===t[0]?(e=a.classList).add.apply(e,t[1].split(" ")):a.setAttribute(t[0],t[1])})),c.style.width=100/i.length+"%",null===(s=e.cellAttributes)||void 0===s||s.forEach((function(t){c.setAttribute(t[0],t[1])})),c.classList.add("gamegrid__cell"),c.setAttribute("tabindex",t.options.clickable?"0":"-1"),e.renderFunction&&c.appendChild(e.renderFunction()),r.appendChild(c),t.refs.cells[o].push(c)})),t.refs.rows.push(r),e.appendChild(r)})),this.refs.container.appendChild(e),this.setStateSync({rendered:!0}),this.attachHandlers(),l.call(this,s.RENDERED)},t.prototype.setFocusToCell=function(t,e){var i,o,r=this.getRefs().cells;"number"==typeof t&&"number"==typeof e?(r[t][e].focus(),this.removeActiveClasses(),r[t][e].classList.add("gamegrid__cell--active"),this.setStateSync({active_coords:[t,e]})):(null===(i=this.getActiveCell())||void 0===i||i.focus(),this.removeActiveClasses(),null===(o=this.getActiveCell())||void 0===o||o.classList.add("gamegrid__cell--active"))},t.prototype.setFocusToContainer=function(){this.getRefs().container.focus()},t.prototype.getActiveCell=function(){return this.getRefs().cells[this.state.active_coords[0]][this.state.active_coords[1]]},t.prototype.removeActiveClasses=function(){this.getRefs().cells.forEach((function(t){t.forEach((function(t){t.classList.remove("gamegrid__cell--active")}))}))},t.prototype.addToMoves=function(){var t=h([],this.getState().moves);t.unshift(this.state.active_coords),t.length>this.options.rewind_limit&&t.shift(),this.setStateSync({moves:t})},t.prototype.testLimit=function(){var t=this.state.next_coords[0],e=this.state.next_coords[1],i=this.matrix.length-1,o=this.matrix[this.state.active_coords[0]].length-1;switch(this.state.current_direction){case p:this.state.next_coords[0]>i&&(this.options.infinite_y?(t=0,l.call(this,s.WRAP_Y),l.call(this,s.WRAP)):(t=i,l.call(this,s.LIMIT_Y),l.call(this,s.LIMIT)));break;case v:this.state.next_coords[1]<0&&(this.options.infinite_x?(e=o,l.call(this,s.WRAP_X),l.call(this,s.WRAP)):(e=0,l.call(this,s.LIMIT_X),l.call(this,s.LIMIT)));break;case g:this.state.next_coords[1]>o&&(this.options.infinite_x?(e=0,l.call(this,s.WRAP_X),l.call(this,s.WRAP)):(e=o,l.call(this,s.LIMIT_X),l.call(this,s.LIMIT)));break;case f:this.state.next_coords[0]<0&&(this.options.infinite_y?(t=i,l.call(this,s.WRAP_Y),l.call(this,s.WRAP)):(t=0,l.call(this,s.LIMIT_Y),l.call(this,s.LIMIT)))}this.setStateSync({next_coords:[t,e],active_coords:[t,e],prev_coords:this.state.active_coords})},t.prototype.testInteractive=function(){var t,e=this.state.next_coords;"interactive"===(null===(t=this.matrix[e[0]][e[1]])||void 0===t?void 0:t.type)&&l.call(this,s.MOVE_COLLISION)},t.prototype.testBarrier=function(){var t,e=this.state.next_coords;"barrier"===(null===(t=this.matrix[e[0]][e[1]])||void 0===t?void 0:t.type)&&(this.setStateSync({active_coords:this.state.prev_coords,prev_coords:this.state.active_coords}),l.call(this,s.MOVE_BLOCKED))},t.prototype.testSpace=function(){var t,e=this.state.next_coords;"open"===(null===(t=this.matrix[e[0]][e[1]])||void 0===t?void 0:t.type)&&("interactive"===this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]].type&&l.call(this,s.MOVE_DETTACH),l.call(this,s.MOVE_LAND))},t.prototype.finishMove=function(){this.testLimit(),this.testSpace(),this.testInteractive(),this.testBarrier(),this.state.rendered&&this.setFocusToCell(),this.addToMoves()},t.prototype.handleDirection=function(t){switch(t.code){case"ArrowLeft":case"KeyA":this.moveLeft();break;case"ArrowUp":case"KeyW":this.moveUp();break;case"ArrowRight":case"KeyD":this.moveRight();break;case"ArrowDown":case"KeyS":this.moveDown()}},t.prototype.handleKeyDown=function(t){this.options.arrow_controls&&("ArrowUp"!==t.code&&"ArrowRight"!==t.code&&"ArrowDown"!==t.code&&"ArrowLeft"!==t.code||(t.preventDefault(),this.handleDirection(t))),this.options.wasd_controls&&("KeyW"!==t.code&&"KeyD"!==t.code&&"KeyS"!==t.code&&"KeyA"!==t.code||(t.preventDefault(),this.handleDirection(t)))},t.prototype.handleCellClick=function(t){if(this.getOptions().clickable&&t.target instanceof HTMLElement){var e=t.target.closest('[data-gamegrid-ref="cell"]');if(e){var i=e.getAttribute("data-gamegrid-coords").split(",").map((function(t){return Number(t)}));this.setFocusToCell.apply(this,i)}else this.setFocusToCell()}},t.prototype.containerFocus=function(){this.getRefs().container.classList.add(this.options.active_class)},t.prototype.containerBlur=function(){this.getRefs().container.classList.remove(this.options.active_class)},t.prototype.attachHandlers=function(){this.getRefs().container.addEventListener("keydown",this.handleKeyDown),this.getRefs().container.addEventListener("focus",this.containerFocus),this.getRefs().container.addEventListener("blur",this.containerBlur),this.getRefs().container.addEventListener("click",this.handleCellClick)},t.prototype.dettachHandlers=function(){this.getRefs().container.removeEventListener("keydown",this.handleKeyDown),this.getRefs().container.removeEventListener("focus",this.containerFocus),this.getRefs().container.removeEventListener("blur",this.containerBlur),this.getRefs().container.removeEventListener("click",this.handleCellClick)},t}()})(),o})()}));
+(function (global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+    typeof define === 'function' && define.amd ? define(['exports'], factory) :
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.GameGrid = {}));
+})(this, (function (exports) { 'use strict';
+
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol */
+
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __spreadArray(to, from, pack) {
+        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+            if (ar || !(i in from)) {
+                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                ar[i] = from[i];
+            }
+        }
+        return to.concat(ar || Array.prototype.slice.call(from));
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
+    function styleInject(css, ref) {
+      if ( ref === void 0 ) ref = {};
+      var insertAt = ref.insertAt;
+
+      if (!css || typeof document === 'undefined') { return; }
+
+      var head = document.head || document.getElementsByTagName('head')[0];
+      var style = document.createElement('style');
+      style.type = 'text/css';
+
+      if (insertAt === 'top') {
+        if (head.firstChild) {
+          head.insertBefore(style, head.firstChild);
+        } else {
+          head.appendChild(style);
+        }
+      } else {
+        head.appendChild(style);
+      }
+
+      if (style.styleSheet) {
+        style.styleSheet.cssText = css;
+      } else {
+        style.appendChild(document.createTextNode(css));
+      }
+    }
+
+    var css_248z = ".gamegrid * {\n  box-sizing: border-box;\n}\n.gamegrid__stage {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  flex-wrap: wrap;\n  box-sizing: border-box;\n  border: 1px solid;\n}\n.gamegrid__row {\n  display: flex;\n  flex-basis: 100%;\n  max-width: 100%;\n  box-sizing: border-box;\n}\n.gamegrid__cell {\n  flex: 1 0 auto;\n  height: auto;\n  overflow: hidden;\n  box-sizing: border-box;\n  border: 1px solid;\n}\n.gamegrid__cell--active {\n  outline: 4px solid red;\n}\n.gamegrid__cell::before {\n  content: \"\";\n  float: left;\n  padding-top: 100%;\n}";
+    styleInject(css_248z);
+
+    const gridEventsEnum = {
+      RENDERED: "gamegrid:grid:rendered",
+      STATE_UPDATED: "gamegrid:state:updated",
+
+      MOVE_LEFT: "gamegrid:move:left",
+      MOVE_RIGHT: "gamegrid:move:right",
+      MOVE_UP: "gamegrid:move:up",
+      MOVE_DOWN: "gamegrid:move:down",
+
+      MOVE_BLOCKED: "gamegrid:move:blocked", // hits a wall
+      MOVE_COLLISION: "gamegrid:move:collide", // overlaps another entity
+      MOVE_DETTACH: "gamegrid:move:dettach", // leaves overlapping an entity
+      MOVE_LAND: "gamegrid:move:land", // move finished
+
+      LIMIT: "gamegrid:move:limit",
+      LIMIT_X: "gamegrid:move:limit:x",
+      LIMIT_Y: "gamegrid:move:limit:y",
+
+      WRAP: "gamegrid:move:wrap",
+      WRAP_X: "gamegrid:move:wrap:x",
+      WRAP_Y: "gamegrid:move:wrap:y",
+    };
+
+    function getKeyByValue(object, value) {
+        return Object.keys(object).find(function (key) { return object[key] === value; });
+    }
+    function renderAttributes(el, tuples) {
+        tuples.forEach(function (tuple) {
+            var _a;
+            if (tuple[0] === "class") {
+                (_a = el.classList).add.apply(_a, tuple[1].split(" "));
+            }
+            else {
+                el.setAttribute(tuple[0], tuple[1]);
+            }
+        });
+    }
+    function fireCustomEvent(eventName, data) {
+        window.dispatchEvent(new CustomEvent(eventName, {
+            detail: __assign(__assign({}, data), { game_grid_instance: this }),
+            bubbles: true,
+        }));
+        if (this.options.callbacks) {
+            this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)]
+                ? this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)](this)
+                : null;
+        }
+    }
+
+    var INITIAL_STATE = {
+        active_coords: [0, 0],
+        prev_coords: [0, 0],
+        current_direction: "",
+        rendered: false,
+        moves: [[0, 0]],
+    };
+    var DIRECTIONS = {
+        UP: "up",
+        DOWN: "down",
+        LEFT: "left",
+        RIGHT: "right",
+    };
+    var HtmlGameGrid = /** @class */ (function () {
+        function HtmlGameGrid(query, config) {
+            this.options = __assign({ active_class: "gamegrid__cell--active", arrow_controls: true, wasd_controls: true, infinite_x: true, infinite_y: true, clickable: true, rewind_limit: 20, block_on_type: ["barrier"], collide_on_type: ["interactive"], move_on_type: ["open"] }, config.options);
+            this.refs = {
+                container: document.querySelector(query),
+                rows: [],
+                cells: [],
+            };
+            this.matrix = config.matrix;
+            this.state = __assign(__assign({}, INITIAL_STATE), config.state);
+            this.containerFocus = this.containerFocus.bind(this);
+            this.containerBlur = this.containerBlur.bind(this);
+            this.handleKeyDown = this.handleKeyDown.bind(this);
+            this.handleCellClick = this.handleCellClick.bind(this);
+            this.render = this.render.bind(this);
+            this.attachHandlers = this.attachHandlers.bind(this);
+        }
+        // API
+        HtmlGameGrid.prototype.getOptions = function () {
+            return this.options;
+        };
+        HtmlGameGrid.prototype.setOptions = function (newOptions) {
+            this.options = __assign(__assign({}, this.options), newOptions);
+        };
+        HtmlGameGrid.prototype.getRefs = function () {
+            return this.refs;
+        };
+        HtmlGameGrid.prototype.destroy = function () {
+            this.state.rendered ? this.dettachHandlers() : null;
+            this.refs = __assign(__assign({}, this.refs), { rows: [], cells: [] });
+        };
+        HtmlGameGrid.prototype.getState = function () {
+            return this.state;
+        };
+        HtmlGameGrid.prototype.moveLeft = function () {
+            this.setStateSync({
+                next_coords: [
+                    this.state.active_coords[0],
+                    this.state.active_coords[1] - 1,
+                ],
+                current_direction: DIRECTIONS.LEFT,
+            });
+            fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
+            this.finishMove();
+        };
+        HtmlGameGrid.prototype.moveUp = function () {
+            this.setStateSync({
+                next_coords: [
+                    this.state.active_coords[0] - 1,
+                    this.state.active_coords[1],
+                ],
+                current_direction: DIRECTIONS.UP,
+            });
+            fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
+            this.finishMove();
+        };
+        HtmlGameGrid.prototype.moveRight = function () {
+            this.setStateSync({
+                next_coords: [
+                    this.state.active_coords[0],
+                    this.state.active_coords[1] + 1,
+                ],
+                current_direction: DIRECTIONS.RIGHT,
+            });
+            fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
+            this.finishMove();
+        };
+        HtmlGameGrid.prototype.moveDown = function () {
+            this.setStateSync({
+                next_coords: [
+                    this.state.active_coords[0] + 1,
+                    this.state.active_coords[1],
+                ],
+                current_direction: DIRECTIONS.DOWN,
+            });
+            fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
+            this.finishMove();
+        };
+        HtmlGameGrid.prototype.setMatrix = function (m) {
+            this.matrix = m;
+        };
+        HtmlGameGrid.prototype.getMatrix = function () {
+            return this.matrix;
+        };
+        HtmlGameGrid.prototype.setStateSync = function (obj) {
+            var newState = __assign(__assign({}, this.state), obj);
+            this.state = newState;
+            fireCustomEvent.call(this, gridEventsEnum.STATE_UPDATED);
+        };
+        HtmlGameGrid.prototype.render = function () {
+            var _this = this;
+            this.refs.container.classList.add("gamegrid");
+            this.refs.container.setAttribute("tabindex", "0");
+            this.refs.container.setAttribute("data-gamegrid-ref", "container");
+            var grid = document.createDocumentFragment();
+            this.matrix.forEach(function (rowData, rI) {
+                var row = document.createElement("div");
+                _this.options.row_class ? row.classList.add(_this.options.row_class) : null;
+                row.setAttribute("data-gamegrid-row-index", rI.toString());
+                row.setAttribute("data-gamegrid-ref", "row");
+                row.classList.add("gamegrid__row");
+                _this.refs.cells.push([]);
+                rowData.forEach(function (cellData, cI) {
+                    var _a;
+                    var cell = document.createElement("div");
+                    renderAttributes(cell, [
+                        ["data-gamegrid-ref", "cell"],
+                        ["data-gamegrid-row-index", rI.toString()],
+                        ["data-gamegrid-col-index", cI.toString()],
+                        ["data-gamegrid-coords", "".concat(rI, ",").concat(cI)],
+                    ]);
+                    cell.style.width = "".concat(100 / rowData.length, "%");
+                    (_a = cellData.cellAttributes) === null || _a === void 0 ? void 0 : _a.forEach(function (attr) {
+                        cell.setAttribute(attr[0], attr[1]);
+                    });
+                    cell.classList.add("gamegrid__cell");
+                    cell.setAttribute("tabindex", _this.options.clickable ? "0" : "-1");
+                    if (cellData.renderFunction) {
+                        cell.appendChild(cellData.renderFunction());
+                    }
+                    row.appendChild(cell);
+                    _this.refs.cells[rI].push(cell);
+                });
+                _this.refs.rows.push(row);
+                grid.appendChild(row);
+            });
+            this.refs.container.appendChild(grid);
+            this.setStateSync({ rendered: true });
+            this.attachHandlers();
+            fireCustomEvent.call(this, gridEventsEnum.RENDERED);
+        };
+        HtmlGameGrid.prototype.setFocusToCell = function (row, col) {
+            var _a, _b;
+            var cells = this.getRefs().cells;
+            if (typeof row === "number" && typeof col === "number") {
+                cells[row][col].focus();
+                this.removeActiveClasses();
+                cells[row][col].classList.add("gamegrid__cell--active");
+                this.setStateSync({ active_coords: [row, col] });
+            }
+            else {
+                (_a = this.getActiveCell()) === null || _a === void 0 ? void 0 : _a.focus();
+                this.removeActiveClasses();
+                (_b = this.getActiveCell()) === null || _b === void 0 ? void 0 : _b.classList.add("gamegrid__cell--active");
+            }
+        };
+        HtmlGameGrid.prototype.setFocusToContainer = function () {
+            this.getRefs().container.focus();
+        };
+        HtmlGameGrid.prototype.getActiveCell = function () {
+            return this.getRefs().cells[this.state.active_coords[0]][this.state.active_coords[1]];
+        };
+        HtmlGameGrid.prototype.removeActiveClasses = function () {
+            this.getRefs().cells.forEach(function (cellRow) {
+                cellRow.forEach(function (cell) {
+                    cell.classList.remove("gamegrid__cell--active");
+                });
+            });
+        };
+        HtmlGameGrid.prototype.addToMoves = function () {
+            var clonedMoves = __spreadArray([], this.getState().moves, true);
+            clonedMoves.unshift(this.state.active_coords);
+            if (clonedMoves.length > this.options.rewind_limit) {
+                clonedMoves.shift();
+            }
+            this.setStateSync({ moves: clonedMoves });
+        };
+        HtmlGameGrid.prototype.testLimit = function () {
+            // use state direction, and state active coords
+            var row = this.state.next_coords[0];
+            var col = this.state.next_coords[1];
+            var rowFinalIndex = this.matrix.length - 1;
+            var colFinalIndex = this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
+            switch (this.state.current_direction) {
+                case DIRECTIONS.DOWN:
+                    if (this.state.next_coords[0] > rowFinalIndex) {
+                        if (!this.options.infinite_y) {
+                            row = rowFinalIndex;
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT_Y);
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+                        }
+                        else {
+                            row = 0;
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP);
+                        }
+                    }
+                    break;
+                case DIRECTIONS.LEFT:
+                    if (this.state.next_coords[1] < 0) {
+                        if (this.options.infinite_x) {
+                            col = colFinalIndex;
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP);
+                        }
+                        else {
+                            col = 0;
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT_X);
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+                        }
+                    }
+                    break;
+                case DIRECTIONS.RIGHT:
+                    if (this.state.next_coords[1] > colFinalIndex) {
+                        if (!this.options.infinite_x) {
+                            col = colFinalIndex;
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT_X);
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+                        }
+                        else {
+                            col = 0;
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP);
+                        }
+                    }
+                    break;
+                case DIRECTIONS.UP:
+                    if (this.state.next_coords[0] < 0) {
+                        if (this.options.infinite_y) {
+                            row = rowFinalIndex;
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+                            fireCustomEvent.call(this, gridEventsEnum.WRAP);
+                        }
+                        else {
+                            row = 0;
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT_Y);
+                            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+                        }
+                    }
+                    break;
+            }
+            this.setStateSync({
+                next_coords: [row, col],
+                active_coords: [row, col],
+                prev_coords: this.state.active_coords,
+            });
+        };
+        HtmlGameGrid.prototype.testInteractive = function () {
+            var _a;
+            var coords = this.state.next_coords;
+            if (((_a = this.matrix[coords[0]][coords[1]]) === null || _a === void 0 ? void 0 : _a.type) === "interactive") {
+                fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
+            }
+        };
+        HtmlGameGrid.prototype.testBarrier = function () {
+            var _a;
+            var coords = this.state.next_coords;
+            if (((_a = this.matrix[coords[0]][coords[1]]) === null || _a === void 0 ? void 0 : _a.type) === "barrier") {
+                this.setStateSync({
+                    active_coords: this.state.prev_coords,
+                    prev_coords: this.state.active_coords,
+                });
+                fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
+            }
+        };
+        HtmlGameGrid.prototype.testSpace = function () {
+            var _a;
+            var coords = this.state.next_coords;
+            if (((_a = this.matrix[coords[0]][coords[1]]) === null || _a === void 0 ? void 0 : _a.type) === "open") {
+                if (this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]]
+                    .type === "interactive") {
+                    fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
+                }
+                fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
+            }
+        };
+        HtmlGameGrid.prototype.finishMove = function () {
+            this.testLimit();
+            this.testSpace();
+            this.testInteractive();
+            this.testBarrier();
+            this.state.rendered ? this.setFocusToCell() : null;
+            this.addToMoves();
+        };
+        HtmlGameGrid.prototype.handleDirection = function (event) {
+            switch (event.code) {
+                case "ArrowLeft": {
+                    //left
+                    this.moveLeft();
+                    break;
+                }
+                case "KeyA": {
+                    //left
+                    this.moveLeft();
+                    break;
+                }
+                case "ArrowUp": {
+                    //up
+                    this.moveUp();
+                    break;
+                }
+                case "KeyW": {
+                    //up
+                    this.moveUp();
+                    break;
+                }
+                case "ArrowRight": {
+                    //right
+                    this.moveRight();
+                    break;
+                }
+                case "KeyD": {
+                    //right
+                    this.moveRight();
+                    break;
+                }
+                case "ArrowDown": {
+                    //down
+                    this.moveDown();
+                    break;
+                }
+                case "KeyS": {
+                    //down
+                    this.moveDown();
+                    break;
+                }
+            }
+        };
+        HtmlGameGrid.prototype.handleKeyDown = function (event) {
+            if (this.options.arrow_controls) {
+                if (event.code === "ArrowUp" ||
+                    event.code === "ArrowRight" ||
+                    event.code === "ArrowDown" ||
+                    event.code === "ArrowLeft") {
+                    event.preventDefault();
+                    this.handleDirection(event);
+                }
+            }
+            if (this.options.wasd_controls) {
+                if (event.code === "KeyW" ||
+                    event.code === "KeyD" ||
+                    event.code === "KeyS" ||
+                    event.code === "KeyA") {
+                    event.preventDefault();
+                    this.handleDirection(event);
+                }
+            }
+        };
+        HtmlGameGrid.prototype.handleCellClick = function (event) {
+            if (this.getOptions().clickable) {
+                if (event.target instanceof HTMLElement) {
+                    var cellEl = event.target.closest('[data-gamegrid-ref="cell"]');
+                    if (cellEl) {
+                        var coords = cellEl
+                            .getAttribute("data-gamegrid-coords")
+                            .split(",")
+                            .map(function (n) { return Number(n); });
+                        this.setFocusToCell.apply(this, coords);
+                    }
+                    else {
+                        this.setFocusToCell();
+                    }
+                }
+            }
+        };
+        HtmlGameGrid.prototype.containerFocus = function () {
+            this.getRefs().container.classList.add(this.options.active_class);
+        };
+        HtmlGameGrid.prototype.containerBlur = function () {
+            this.getRefs().container.classList.remove(this.options.active_class);
+        };
+        // SET UP
+        HtmlGameGrid.prototype.attachHandlers = function () {
+            this.getRefs().container.addEventListener("keydown", this.handleKeyDown);
+            this.getRefs().container.addEventListener("focus", this.containerFocus);
+            this.getRefs().container.addEventListener("blur", this.containerBlur);
+            this.getRefs().container.addEventListener("click", this.handleCellClick);
+        };
+        HtmlGameGrid.prototype.dettachHandlers = function () {
+            this.getRefs().container.removeEventListener("keydown", this.handleKeyDown);
+            this.getRefs().container.removeEventListener("focus", this.containerFocus);
+            this.getRefs().container.removeEventListener("blur", this.containerBlur);
+            this.getRefs().container.removeEventListener("click", this.handleCellClick);
+        };
+        return HtmlGameGrid;
+    }());
+    var gameGridEventsEnum = gridEventsEnum;
+
+    exports.default = HtmlGameGrid;
+    exports.gameGridEventsEnum = gameGridEventsEnum;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+}));
