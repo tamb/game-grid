@@ -1,4 +1,5 @@
 import GameGrid from "../../dist/main";
+import { attachListeners } from "./eventListeners";
 
 const tileTypeEnum = {
   OPEN: "open",
@@ -10,7 +11,10 @@ const matrix = [
   [
     {
       type: tileTypeEnum.OPEN,
-      cellAttributes: [["data-butt", "sauce"]],
+      cellAttributes: [
+        ["data-butt", "sauce"],
+        ["class", "butt booty butty"],
+      ],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
@@ -18,6 +22,9 @@ const matrix = [
       type: tileTypeEnum.INTERACTIVE,
       cellAttributes: [["data-cell-type", "interactive"]],
     },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
   [
     { type: tileTypeEnum.OPEN },
@@ -27,6 +34,9 @@ const matrix = [
       type: tileTypeEnum.BARRIER,
       cellAttributes: [["data-cell-type", "barrier"]],
     },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
   [
     { type: tileTypeEnum.OPEN },
@@ -38,6 +48,7 @@ const matrix = [
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
   ],
   [
     { type: tileTypeEnum.OPEN },
@@ -46,11 +57,39 @@ const matrix = [
       type: tileTypeEnum.BARRIER,
       cellAttributes: [["data-cell-type", "barrier"]],
     },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+  ],
+  [
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    {
+      type: tileTypeEnum.BARRIER,
+      cellAttributes: [["data-cell-type", "barrier"]],
+    },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+  ],
+  [
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    {
+      type: tileTypeEnum.BARRIER,
+      cellAttributes: [["data-cell-type", "barrier"]],
+    },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
   ],
 ];
 
 function createGrid() {
+  console.log("building grid");
   return new GameGrid("#grid", {
     matrix,
     options: {
@@ -71,4 +110,9 @@ function createGrid() {
   });
 }
 
-createGrid();
+document.addEventListener("DOMContentLoaded", function () {
+  const grid = createGrid();
+  console.log(grid);
+  grid.render();
+  attachListeners();
+});
