@@ -6,40 +6,30 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "start": "parcel demos/js/index.html",
+    "lint": "eslint src --ext .js,.ts"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "jest": {
-    "transform": {
-      ".(ts|tsx)": "ts-jest",
-      "^.+\\.jsx?$": "babel-jest"
-    },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "moduleNameMapper": {
-      "\\.(css|less|sass|scss)$": "<rootDir>/__mocks__/styleMock.js"
-    },
-    "testPathIgnorePatterns": [
-      "<rootDir>/demos/"
-    ]
-  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-typescript": "^11.1.5",
+    "@types/jest": "^29.5.11",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
     "jest": "^29.7.0",
+    "parcel": "^2.10.3",
     "rollup": "^4.9.1",
     "rollup-plugin-postcss": "^4.0.2",
     "sass": "^1.69.5",
+    "ts-jest": "^29.1.1",
     "tslib": "^2.6.2"
-  },
-  "dependencies": {
-    "parcel": "^2.10.3"
   }
 }

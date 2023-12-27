@@ -2,7 +2,7 @@ export interface ICell {
   renderFunction?: (cell: HTMLDivElement) => HTMLElement;
   cellAttributes?: string[][];
   type: string | string[];
-  
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 export interface IState {

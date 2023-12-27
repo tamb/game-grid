@@ -1,6 +1,4 @@
-import "./styles.scss";
-
-import { fireCustomEvent, renderAttributes } from "./utils";
+import { fireCustomEvent, renderAttributes, insertStyles } from "./utils";
 import { gridEventsEnum } from "./enums";
 import { IState, IOptions, ICell, IRefs, IConfig } from "./interfaces";
 
@@ -82,10 +80,7 @@ export default class HtmlGameGrid {
 
   public moveLeft(): void {
     this.setStateSync({
-      next_coords: [
-        this.state.active_coords[0],
-        this.state.active_coords[1] - 1,
-      ],
+      next_coords: [this.state.active_coords[0], this.state.active_coords[1] - 1],
       current_direction: DIRECTIONS.LEFT,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
@@ -94,10 +89,7 @@ export default class HtmlGameGrid {
 
   public moveUp(): void {
     this.setStateSync({
-      next_coords: [
-        this.state.active_coords[0] - 1,
-        this.state.active_coords[1],
-      ],
+      next_coords: [this.state.active_coords[0] - 1, this.state.active_coords[1]],
       current_direction: DIRECTIONS.UP,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
@@ -106,10 +98,7 @@ export default class HtmlGameGrid {
 
   public moveRight(): void {
     this.setStateSync({
-      next_coords: [
-        this.state.active_coords[0],
-        this.state.active_coords[1] + 1,
-      ],
+      next_coords: [this.state.active_coords[0], this.state.active_coords[1] + 1],
       current_direction: DIRECTIONS.RIGHT,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
@@ -118,10 +107,7 @@ export default class HtmlGameGrid {
 
   public moveDown(): void {
     this.setStateSync({
-      next_coords: [
-        this.state.active_coords[0] + 1,
-        this.state.active_coords[1],
-      ],
+      next_coords: [this.state.active_coords[0] + 1, this.state.active_coords[1]],
       current_direction: DIRECTIONS.DOWN,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
@@ -141,11 +127,12 @@ export default class HtmlGameGrid {
   }
 
   public render(): void {
+    insertStyles();
     this.refs.container.classList.add("gamegrid");
     this.refs.container.setAttribute("tabindex", "0");
     this.refs.container.setAttribute("data-gamegrid-ref", "container");
     const grid: DocumentFragment = document.createDocumentFragment();
-    this.matrix.forEach((rowData: any, rI: number) => {
+    this.matrix.forEach((rowData: ICell[], rI: number) => {
       const row: HTMLDivElement = document.createElement("div");
       this.options.row_class ? row.classList.add(this.options.row_class) : null;
       row.setAttribute("data-gamegrid-row-index", rI.toString());
@@ -153,7 +140,7 @@ export default class HtmlGameGrid {
       row.classList.add("gamegrid__row");
       this.refs.cells.push([]);
 
-      rowData.forEach((cellData: any, cI: number) => {
+      rowData.forEach((cellData: ICell, cI: number) => {
         const cell: HTMLDivElement = document.createElement("div");
         renderAttributes(cell, [
           ["data-gamegrid-ref", "cell"],
@@ -180,7 +167,7 @@ export default class HtmlGameGrid {
     });
     this.refs.container.appendChild(grid);
     this.setStateSync({ rendered: true });
-    
+
     this.attachHandlers();
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
@@ -204,9 +191,7 @@ export default class HtmlGameGrid {
   }
 
   public getActiveCell(): HTMLDivElement {
-    return this.getRefs().cells[this.state.active_coords[0]][
-      this.state.active_coords[1]
-    ];
+    return this.getRefs().cells[this.state.active_coords[0]][this.state.active_coords[1]];
   }
 
   private removeActiveClasses(): void {
@@ -230,9 +215,8 @@ export default class HtmlGameGrid {
     // use state direction, and state active coords
     let row: number = this.state.next_coords[0];
     let col: number = this.state.next_coords[1];
-    let rowFinalIndex: number = this.matrix.length - 1;
-    let colFinalIndex: number =
-      this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
+    const rowFinalIndex: number = this.matrix.length - 1;
+    const colFinalIndex: number = this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
 
     switch (this.state.current_direction) {
       case DIRECTIONS.DOWN:
@@ -318,8 +302,7 @@ export default class HtmlGameGrid {
     const coords = this.state.next_coords;
     if (this.matrix[coords[0]][coords[1]]?.type === "open") {
       if (
-        this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]]
-          .type === "interactive"
+        this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]].type === "interactive"
       ) {
         fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
       }
@@ -408,9 +391,7 @@ export default class HtmlGameGrid {
   private handleCellClick(event: MouseEvent): void {
     if (this.getOptions().clickable) {
       if (event.target instanceof HTMLElement) {
-        const cellEl: HTMLElement = event.target.closest(
-          '[data-gamegrid-ref="cell"]'
-        );
+        const cellEl: HTMLElement = event.target.closest('[data-gamegrid-ref="cell"]');
         if (cellEl) {
           const coords: number[] = cellEl
             .getAttribute("data-gamegrid-coords")

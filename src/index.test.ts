@@ -1,6 +1,7 @@
 /// <reference types="jest" />
 
 import GameGrid from "./index";
+import { IOptions, IState } from "./interfaces";
 document.body.insertAdjacentHTML("afterbegin", '<div id="root"></div>');
 
 const matrix = [
@@ -23,9 +24,9 @@ const matrix = [
 ];
 
 describe("GameGrid class", () => {
-  let workingGrid: any = null;
-  let defaultOptions: any = null;
-  let defaultState: any = null;
+  let workingGrid: GameGrid | null = null;
+  let defaultOptions: IOptions | null = null;
+  let defaultState: IState | null = null;
 
   beforeEach(() => {
     workingGrid = null;
@@ -241,9 +242,7 @@ describe("GameGrid class", () => {
   // // render tests
   test("container classes are applied", () => {
     workingGrid.render();
-    expect(workingGrid.getRefs().container.classList.contains("gamegrid")).toBe(
-      true
-    );
+    expect(workingGrid.getRefs().container.classList.contains("gamegrid")).toBe(true);
   });
 
   test("row classes are applied", () => {
