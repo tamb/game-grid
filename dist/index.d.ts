@@ -1,4 +1,3 @@
-import "./styles.scss";
 import { IState, IOptions, ICell, IRefs, IConfig } from "./interfaces";
 export default class HtmlGameGrid {
     private options;
