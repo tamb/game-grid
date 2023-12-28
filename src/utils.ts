@@ -15,33 +15,30 @@ export function renderAttributes(el: HTMLElement, tuples: [string, string][]) {
   });
 }
 
-export function getCoordsFromElement(el: HTMLElement): number[] {
+export function getCoordsFromElement(el: HTMLElement): number[] | undefined {
   try {
     return el
       ?.getAttribute('data-coords')
       ?.split(',')
       .map((num: string) => parseInt(num));
   } catch (err) {
-    this.handleError(err);
+    throw new Error('Could not get coordinates from element');
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function fireCustomEvent(eventName: string, data: any): void {
+export function fireCustomEvent(eventName: string, data?: any): void {
   window.dispatchEvent(
     new CustomEvent(eventName, {
       detail: {
         ...data,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // @ts-ignore
         game_grid_instance: this,
       },
       bubbles: true,
     }),
   );
-  if (this.options.callbacks) {
-    this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)]
-      ? this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)](this)
-      : null;
-  }
 }
 
 export function mapRowColIndicesToXY(rI: number, cI: number): number[] {

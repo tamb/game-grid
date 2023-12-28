@@ -1,6 +1,9 @@
+import { IState } from './interfaces';
+
 export const gridEventsEnum = {
   RENDERED: 'gamegrid:grid:rendered',
-  STATE_UPDATED: 'gamegrid:state:updated',
+  CREATED: 'gamegrid:grid:created',
+  DESTROYED: 'gamegrid:grid:destroyed',
 
   MOVE_LEFT: 'gamegrid:move:left',
   MOVE_RIGHT: 'gamegrid:move:right',
@@ -34,4 +37,20 @@ export const cellTypeEnum = {
   OPEN: 'open',
   BARRIER: 'barrier',
   INTERACTIVE: 'interactive',
+};
+
+
+export const INITIAL_STATE: IState = {
+  active_coords: [0, 0],
+  prev_coords: [0, 0],
+  current_direction: '',
+  rendered: false,
+  moves: [[0, 0]],
+};
+
+export const DIRECTIONS = {
+  UP: 'up',
+  DOWN: 'down',
+  LEFT: 'left',
+  RIGHT: 'right',
 };

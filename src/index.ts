@@ -1,23 +1,15 @@
 import { fireCustomEvent, renderAttributes, insertStyles } from './utils';
 import { gridEventsEnum } from './enums';
-import { IState, IOptions, ICell, IRefs, IConfig } from './interfaces';
+import {
+  IState,
+  IOptions,
+  ICell,
+  IRefs,
+  IConfig,
+  IGameGrid,
+} from './interfaces';
 
-const INITIAL_STATE: IState = {
-  active_coords: [0, 0],
-  prev_coords: [0, 0],
-  current_direction: '',
-  rendered: false,
-  moves: [[0, 0]],
-};
-
-const DIRECTIONS = {
-  UP: 'up',
-  DOWN: 'down',
-  LEFT: 'left',
-  RIGHT: 'right',
-};
-
-export default class HtmlGameGrid {
+export default class GameGrid implements IGameGrid{
   private options: IOptions;
   private matrix: ICell[][];
   private refs?: IRefs;
@@ -46,9 +38,13 @@ export default class HtmlGameGrid {
     };
 
     if (container) {
+      this.renderGrid(container);
     }
+    fireCustomEvent.call(this, gridEventsEnum.CREATED);
   }
 
+
+  // API
   public renderGrid(container: HTMLElement): void {
     this.refs = {
       container: container,
@@ -59,16 +55,6 @@ export default class HtmlGameGrid {
     this.attachEventListeners();
   }
 
-  private attachEventListeners() {
-    this.containerFocus = this.containerFocus.bind(this);
-    this.containerBlur = this.containerBlur.bind(this);
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleCellClick = this.handleCellClick.bind(this);
-    this.render = this.render.bind(this);
-    this.attachHandlers = this.attachHandlers.bind(this);
-  }
-
-  // API
   public getOptions(): IOptions {
     return this.options;
   }
@@ -143,9 +129,15 @@ export default class HtmlGameGrid {
   public setStateSync(obj: IState): void {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;
-    fireCustomEvent.call(this, gridEventsEnum.STATE_UPDATED);
   }
 
+  public getActiveCell(): HTMLDivElement {
+    return this.getRefs().cells[this.state.active_coords[0]][
+      this.state.active_coords[1]
+    ];
+  }
+
+  //private methods
   private render(): void {
     if (this.refs && this.refs.container) {
       insertStyles();
@@ -180,7 +172,7 @@ export default class HtmlGameGrid {
           cell.classList.add('gamegrid__cell');
           cell.setAttribute('tabindex', this.options.clickable ? '0' : '-1');
           if (cellData.renderFunction) {
-            cell.appendChild(cellData.renderFunction());
+            cell.appendChild(cellData.renderFunction(this));
           }
           row.appendChild(cell);
           this.refs?.cells[rI].push(cell);
@@ -200,7 +192,7 @@ export default class HtmlGameGrid {
 
   private setFocusToCell(row?: number, col?: number): void {
     const cells = this.getRefs()?.cells;
-    if(!cells){
+    if (!cells) {
       throw new Error('No cells found');
     }
     if (typeof row === 'number' && typeof col === 'number') {
@@ -217,12 +209,6 @@ export default class HtmlGameGrid {
 
   private setFocusToContainer(): void {
     this.getRefs().container.focus();
-  }
-
-  public getActiveCell(): HTMLDivElement {
-    return this.getRefs().cells[this.state.active_coords[0]][
-      this.state.active_coords[1]
-    ];
   }
 
   private removeActiveClasses(): void {
@@ -458,6 +444,16 @@ export default class HtmlGameGrid {
       container.addEventListener('click', this.handleCellClick);
     }
   }
+
+  private attachEventListeners() {
+    this.containerFocus = this.containerFocus.bind(this);
+    this.containerBlur = this.containerBlur.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.handleCellClick = this.handleCellClick.bind(this);
+    this.render = this.render.bind(this);
+    this.attachHandlers = this.attachHandlers.bind(this);
+  }
+
   private dettachHandlers(): void {
     const container = this.getRefs()?.container;
     if (container) {
@@ -467,6 +463,6 @@ export default class HtmlGameGrid {
       container.removeEventListener('click', this.handleCellClick);
     }
   }
-}
+};
 
 export const gameGridEventsEnum = gridEventsEnum;
