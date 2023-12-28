@@ -31,25 +31,6 @@ export interface IOptions {
   active_class?: string;
   container_class?: string;
   row_class?: string;
-  callbacks?: ICallbacks;
-}
-
-interface ICallbacks {
-  STATE_UPDATED?: Function;
-  MOVE_LEFT?: Function;
-  MOVE_RIGHT?: Function;
-  MOVE_UP?: Function;
-  MOVE_DOWN?: Function;
-  MOVE_BLOCKED?: Function;
-  MOVE_COLLISION?: Function;
-  MOVE_DETTACH?: Function;
-  MOVE_LAND?: Function;
-  LIMIT?: Function;
-  LIMIT_X?: Function;
-  LIMIT_Y?: Function;
-  WRAP?: Function;
-  WRAP_X?: Function;
-  WRAP_Y?: Function;
 }
 
 export interface IConfig {

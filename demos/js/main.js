@@ -1,10 +1,10 @@
-import GameGrid from "./../../dist/main.js";
-import { attachListeners } from "./eventListeners.js";
+import GameGrid from './../../dist/main.js';
+import { attachListeners } from './eventListeners.js';
 
 const tileTypeEnum = {
-  OPEN: "open",
-  INTERACTIVE: "interactive",
-  BARRIER: "barrier",
+  OPEN: 'open',
+  INTERACTIVE: 'interactive',
+  BARRIER: 'barrier',
 };
 
 const matrix = [
@@ -12,15 +12,15 @@ const matrix = [
     {
       type: tileTypeEnum.OPEN,
       cellAttributes: [
-        ["data-butt", "sauce"],
-        ["class", "butt booty butty"],
+        ['data-butt', 'sauce'],
+        ['class', 'butt booty butty'],
       ],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
     {
       type: tileTypeEnum.INTERACTIVE,
-      cellAttributes: [["data-cell-type", "interactive"]],
+      cellAttributes: [['data-cell-type', 'interactive']],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
@@ -32,7 +32,7 @@ const matrix = [
     { type: tileTypeEnum.OPEN },
     {
       type: tileTypeEnum.BARRIER,
-      cellAttributes: [["data-cell-type", "barrier"]],
+      cellAttributes: [['data-cell-type', 'barrier']],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
@@ -44,7 +44,7 @@ const matrix = [
     { type: tileTypeEnum.OPEN },
     {
       type: tileTypeEnum.BARRIER,
-      cellAttributes: [["data-cell-type", "barrier"]],
+      cellAttributes: [['data-cell-type', 'barrier']],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
@@ -55,19 +55,7 @@ const matrix = [
     { type: tileTypeEnum.OPEN },
     {
       type: tileTypeEnum.BARRIER,
-      cellAttributes: [["data-cell-type", "barrier"]],
-    },
-    { type: tileTypeEnum.OPEN },
-    { type: tileTypeEnum.OPEN },
-    { type: tileTypeEnum.OPEN },
-    { type: tileTypeEnum.OPEN },
-  ],
-  [
-    { type: tileTypeEnum.OPEN },
-    { type: tileTypeEnum.OPEN },
-    {
-      type: tileTypeEnum.BARRIER,
-      cellAttributes: [["data-cell-type", "barrier"]],
+      cellAttributes: [['data-cell-type', 'barrier']],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
@@ -79,7 +67,19 @@ const matrix = [
     { type: tileTypeEnum.OPEN },
     {
       type: tileTypeEnum.BARRIER,
-      cellAttributes: [["data-cell-type", "barrier"]],
+      cellAttributes: [['data-cell-type', 'barrier']],
+    },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+  ],
+  [
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+    {
+      type: tileTypeEnum.BARRIER,
+      cellAttributes: [['data-cell-type', 'barrier']],
     },
     { type: tileTypeEnum.OPEN },
     { type: tileTypeEnum.OPEN },
@@ -89,8 +89,8 @@ const matrix = [
 ];
 
 function createGrid() {
-  console.log("building grid");
-  return new GameGrid("#grid", {
+  console.log('building grid');
+  return new GameGrid('#grid', {
     matrix,
     options: {
       infinite_y: true,
@@ -100,17 +100,17 @@ function createGrid() {
       wasd_controls: true,
       callbacks: {
         LIMIT: function (x) {
-          console.log("callback for LIMIT", x);
+          console.log('callback for LIMIT', x);
         },
         WRAP_Y: function (x) {
-          console.log("callback WRAP_Y", x);
+          console.log('callback WRAP_Y', x);
         },
       },
     },
   });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', function () {
   const grid = createGrid();
   console.log(grid);
   grid.render();
