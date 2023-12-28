@@ -1,5 +1,5 @@
 import { fireCustomEvent, renderAttributes, insertStyles } from './utils';
-import { gridEventsEnum } from './enums';
+import { DIRECTIONS, INITIAL_STATE, gridEventsEnum } from './enums';
 import {
   IState,
   IOptions,
@@ -9,7 +9,7 @@ import {
   IGameGrid,
 } from './interfaces';
 
-export default class GameGrid implements IGameGrid{
+export default class GameGrid implements IGameGrid {
   private options: IOptions;
   private matrix: ICell[][];
   private refs?: IRefs;
@@ -42,7 +42,6 @@ export default class GameGrid implements IGameGrid{
     }
     fireCustomEvent.call(this, gridEventsEnum.CREATED);
   }
-
 
   // API
   public renderGrid(container: HTMLElement): void {
@@ -325,7 +324,6 @@ export default class GameGrid implements IGameGrid{
       ) {
         fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
       }
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
     }
   }
 
@@ -336,6 +334,7 @@ export default class GameGrid implements IGameGrid{
     this.testBarrier();
     this.state.rendered ? this.setFocusToCell() : null;
     this.addToMoves();
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
   }
 
   private handleDirection(event: KeyboardEvent): void {
@@ -463,6 +462,6 @@ export default class GameGrid implements IGameGrid{
       container.removeEventListener('click', this.handleCellClick);
     }
   }
-};
+}
 
 export const gameGridEventsEnum = gridEventsEnum;
