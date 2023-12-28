@@ -1,5 +1,5 @@
 export interface ICell {
-  renderFunction?: (cell: HTMLDivElement) => HTMLElement;
+  renderFunction?: (gamegridInstance: IGameGrid) => HTMLElement;
   cellAttributes?: string[][];
   type: string | string[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,4 +43,21 @@ export interface IRefs {
   container: HTMLElement | null;
   rows: HTMLDivElement[];
   cells: HTMLDivElement[][];
+}
+
+export interface IGameGrid {
+  renderGrid: (container: HTMLElement) => void;
+  getOptions: () => IOptions;
+  setOptions: (newOptions: IOptions) => void;
+  getRefs: () => IRefs | undefined;
+  destroy: () => void;
+  getState: () => IState;
+  moveLeft: () => void;
+  moveUp: () => void;
+  moveRight: () => void;
+  moveDown: () => void;
+  setMatrix: (m: ICell[][]) => void;
+  getMatrix: () => ICell[][];
+  setStateSync: (obj: IState) => void;
+  getActiveCell: () => HTMLDivElement;
 }
