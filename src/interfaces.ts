@@ -40,7 +40,7 @@ export interface IConfig {
 }
 
 export interface IRefs {
-  container: HTMLElement;
-  rows?: HTMLDivElement[];
-  cells?: HTMLDivElement[][];
+  container: HTMLElement | null;
+  rows: HTMLDivElement[];
+  cells: HTMLDivElement[][];
 }

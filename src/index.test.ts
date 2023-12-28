@@ -29,8 +29,7 @@ describe('GameGrid class', () => {
   let defaultState: IState | null = null;
 
   beforeEach(() => {
-    workingGrid = null;
-    workingGrid = new GameGrid('#root', { matrix });
+    workingGrid = new GameGrid({ matrix }, document.getElementById('root')!);
     defaultOptions = {
       active_class: 'gamegrid__cell--active',
       arrow_controls: true,
@@ -58,12 +57,15 @@ describe('GameGrid class', () => {
 
   // instantiation tests
   test('options are set correctly', () => {
-    const fakeGrid = new GameGrid('#root', {
-      matrix,
-      options: {
-        infinite_x: false,
+    const fakeGrid = new GameGrid(
+      {
+        matrix,
+        options: {
+          infinite_x: false,
+        },
       },
-    });
+      document.getElementById('root')!,
+    );
 
     expect(fakeGrid.getOptions().infinite_x).toBe(false);
   });
@@ -91,10 +93,13 @@ describe('GameGrid class', () => {
       current_direction: 'up',
       active_coords: [1, 1],
     };
-    const newGrid = new GameGrid('#root', {
-      matrix,
-      state: newState,
-    });
+    const newGrid = new GameGrid(
+      {
+        matrix,
+        state: newState,
+      },
+      document.getElementById('root')!,
+    );
 
     expect(newGrid.getState()).toEqual({
       current_direction: 'up',
@@ -183,9 +188,12 @@ describe('GameGrid class', () => {
   test('getActiveCell returns active cell element', () => {});
 
   test('moveLeft moves left', () => {
-    const x = new GameGrid('#root', {
-      matrix,
-    });
+    const x = new GameGrid(
+      {
+        matrix,
+      },
+      document.getElementById('root')!,
+    );
     x.moveLeft();
     const state = x.getState();
     expect(state.current_direction).toMatch('left');
@@ -195,9 +203,12 @@ describe('GameGrid class', () => {
   });
 
   test('moveRight moves right', () => {
-    const x = new GameGrid('#root', {
-      matrix,
-    });
+    const x = new GameGrid(
+      {
+        matrix,
+      },
+      document.getElementById('root')!,
+    );
     x.moveRight();
     const state = x.getState();
     expect(state.current_direction).toMatch('right');
@@ -207,9 +218,12 @@ describe('GameGrid class', () => {
   });
 
   test('moveUp moves up', () => {
-    const x = new GameGrid('#root', {
-      matrix,
-    });
+    const x = new GameGrid(
+      {
+        matrix,
+      },
+      document.getElementById('root')!,
+    );
     x.moveUp();
     const state = x.getState();
     expect(state.current_direction).toMatch('up');
@@ -219,9 +233,12 @@ describe('GameGrid class', () => {
   });
 
   test('moveDown moves down', () => {
-    const x = new GameGrid('#root', {
-      matrix,
-    });
+    const x = new GameGrid(
+      {
+        matrix,
+      },
+      document.getElementById('root')!,
+    );
     x.moveDown();
     const state = x.getState();
     expect(state.current_direction).toMatch('down');
