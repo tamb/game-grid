@@ -1,4 +1,4 @@
-import { gridEventsEnum } from "./enums";
+import { gridEventsEnum } from './enums';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getKeyByValue(object: any = {}, value: string) {
@@ -7,8 +7,8 @@ export function getKeyByValue(object: any = {}, value: string) {
 
 export function renderAttributes(el: HTMLElement, tuples: [string, string][]) {
   tuples.forEach((tuple: [string, string]) => {
-    if (tuple[0] === "class") {
-      el.classList.add(...tuple[1].split(" "));
+    if (tuple[0] === 'class') {
+      el.classList.add(...tuple[1].split(' '));
     } else {
       el.setAttribute(tuple[0], tuple[1]);
     }
@@ -18,8 +18,8 @@ export function renderAttributes(el: HTMLElement, tuples: [string, string][]) {
 export function getCoordsFromElement(el: HTMLElement): number[] {
   try {
     return el
-      ?.getAttribute("data-coords")
-      ?.split(",")
+      ?.getAttribute('data-coords')
+      ?.split(',')
       .map((num: string) => parseInt(num));
   } catch (err) {
     this.handleError(err);
@@ -35,7 +35,7 @@ export function fireCustomEvent(eventName: string, data: any): void {
         game_grid_instance: this,
       },
       bubbles: true,
-    })
+    }),
   );
   if (this.options.callbacks) {
     this.options.callbacks[getKeyByValue(gridEventsEnum, eventName)]
@@ -53,7 +53,7 @@ export function mapXYToRowColIndices(x: number, y: number): number[] {
 }
 
 export function insertStyles(): void {
-  const style = document.createElement("style");
+  const style = document.createElement('style');
   style.innerHTML = `
   .gamegrid * {
     box-sizing: border-box;
