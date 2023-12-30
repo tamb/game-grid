@@ -1,14 +1,14 @@
 export interface ICell {
-    renderFunction?: (cell: HTMLDivElement) => HTMLElement;
+    renderFunction?: (gamegridInstance: IGameGrid) => HTMLElement;
     cellAttributes?: string[][];
     type: string | string[];
     [key: string]: any;
 }
 export interface IState {
-    active_coords?: number[];
-    prev_coords?: number[];
-    next_coords?: number[];
-    moves?: number[][];
+    active_coords: number[];
+    prev_coords: number[];
+    next_coords: number[];
+    moves: number[][];
     current_direction?: string;
     rendered?: boolean;
 }
@@ -18,31 +18,13 @@ export interface IOptions {
     infinite_x?: boolean;
     infinite_y?: boolean;
     clickable?: boolean;
-    rewind_limit?: number;
+    rewind_limit: number;
     block_on_type?: string[];
     collide_on_type?: string[];
     move_on_type?: string[];
-    active_class?: string;
+    active_class: string;
     container_class?: string;
     row_class?: string;
-    callbacks?: ICallbacks;
-}
-interface ICallbacks {
-    STATE_UPDATED?: Function;
-    MOVE_LEFT?: Function;
-    MOVE_RIGHT?: Function;
-    MOVE_UP?: Function;
-    MOVE_DOWN?: Function;
-    MOVE_BLOCKED?: Function;
-    MOVE_COLLISION?: Function;
-    MOVE_DETTACH?: Function;
-    MOVE_LAND?: Function;
-    LIMIT?: Function;
-    LIMIT_X?: Function;
-    LIMIT_Y?: Function;
-    WRAP?: Function;
-    WRAP_X?: Function;
-    WRAP_Y?: Function;
 }
 export interface IConfig {
     options?: IOptions;
@@ -50,8 +32,23 @@ export interface IConfig {
     state?: IState;
 }
 export interface IRefs {
-    container: HTMLElement;
-    rows?: HTMLDivElement[];
-    cells?: HTMLDivElement[][];
+    container: HTMLElement | null;
+    rows: HTMLDivElement[];
+    cells: HTMLDivElement[][];
 }
-export {};
+export interface IGameGrid {
+    refs: IRefs;
+    renderGrid: (container: HTMLElement) => void;
+    getOptions: () => IOptions;
+    setOptions: (newOptions: IOptions) => void;
+    destroy: () => void;
+    getState: () => IState;
+    moveLeft: () => void;
+    moveUp: () => void;
+    moveRight: () => void;
+    moveDown: () => void;
+    setMatrix: (m: ICell[][]) => void;
+    getMatrix: () => ICell[][];
+    setStateSync: (obj: IState) => void;
+    getActiveCell: () => HTMLDivElement;
+}

@@ -1,23 +1,40 @@
-export namespace gridEventsEnum {
-    let RENDERED: string;
-    let STATE_UPDATED: string;
-    let MOVE_LEFT: string;
-    let MOVE_RIGHT: string;
-    let MOVE_UP: string;
-    let MOVE_DOWN: string;
-    let MOVE_BLOCKED: string;
-    let MOVE_COLLISION: string;
-    let MOVE_DETTACH: string;
-    let MOVE_LAND: string;
-    let LIMIT: string;
-    let LIMIT_X: string;
-    let LIMIT_Y: string;
-    let WRAP: string;
-    let WRAP_X: string;
-    let WRAP_Y: string;
-}
-export namespace cellTypeEnum {
-    let OPEN: string;
-    let BARRIER: string;
-    let INTERACTIVE: string;
-}
+import { IState } from './interfaces';
+export declare const gridEventsEnum: {
+    RENDERED: string;
+    CREATED: string;
+    DESTROYED: string;
+    MOVE_LEFT: string;
+    MOVE_RIGHT: string;
+    MOVE_UP: string;
+    MOVE_DOWN: string;
+    MOVE_BLOCKED: string;
+    MOVE_COLLISION: string;
+    MOVE_DETTACH: string;
+    MOVE_LAND: string;
+    LIMIT: string;
+    LIMIT_X: string;
+    LIMIT_Y: string;
+    WRAP: string;
+    WRAP_X: string;
+    WRAP_Y: string;
+};
+/**
+ * Taxonomy:
+ * You get BLOCKED by Barriers
+ * You COLLIDE with Interactive cells
+ * You DETTACH from Interactive cells
+ * You LAND on an open cell
+ *
+ */
+export declare const cellTypeEnum: {
+    OPEN: string;
+    BARRIER: string;
+    INTERACTIVE: string;
+};
+export declare const INITIAL_STATE: IState;
+export declare const DIRECTIONS: {
+    UP: string;
+    DOWN: string;
+    LEFT: string;
+    RIGHT: string;
+};

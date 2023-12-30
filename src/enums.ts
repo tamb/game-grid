@@ -39,10 +39,10 @@ export const cellTypeEnum = {
   INTERACTIVE: 'interactive',
 };
 
-
 export const INITIAL_STATE: IState = {
   active_coords: [0, 0],
   prev_coords: [0, 0],
+  next_coords: [],
   current_direction: '',
   rendered: false,
   moves: [[0, 0]],

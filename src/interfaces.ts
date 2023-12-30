@@ -6,10 +6,10 @@ export interface ICell {
   [key: string]: any;
 }
 export interface IState {
-  active_coords?: number[];
-  prev_coords?: number[];
-  next_coords?: number[];
-  moves?: number[][];
+  active_coords: number[];
+  prev_coords: number[];
+  next_coords: number[];
+  moves: number[][];
   current_direction?: string;
   rendered?: boolean;
 }
@@ -19,7 +19,7 @@ export interface IOptions {
   infinite_x?: boolean;
   infinite_y?: boolean;
   clickable?: boolean;
-  rewind_limit?: number;
+  rewind_limit: number;
 
   // TODO: Utilize these options to add additional supported cell types
   block_on_type?: string[];
@@ -28,7 +28,7 @@ export interface IOptions {
 
   // TODO: Add support for this
   // render options
-  active_class?: string;
+  active_class: string;
   container_class?: string;
   row_class?: string;
 }
@@ -46,10 +46,10 @@ export interface IRefs {
 }
 
 export interface IGameGrid {
+  refs: IRefs;
   renderGrid: (container: HTMLElement) => void;
   getOptions: () => IOptions;
   setOptions: (newOptions: IOptions) => void;
-  getRefs: () => IRefs | undefined;
   destroy: () => void;
   getState: () => IState;
   moveLeft: () => void;
