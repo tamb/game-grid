@@ -52,10 +52,10 @@ describe('mapXYToRowColIndices util', () => {
 });
 
 describe('renderAttributes util', () => {
-  let testDiv: HTMLElement | null;
+  let testDiv: HTMLElement;
   beforeAll(() => {
     document.body.insertAdjacentHTML('afterbegin', `<div id="test"></div>`);
-    testDiv = document.getElementById('test');
+    testDiv = document.getElementById('test')!;
   });
 
   test('non-class attributes render', () => {
@@ -153,11 +153,11 @@ describe('fireCustomEvent util', () => {
 });
 
 describe('renderAttributes util', () => {
-  let testDiv: HTMLElement | null;
+  let testDiv: HTMLElement;
 
   beforeEach(() => {
     document.body.insertAdjacentHTML('afterbegin', `<div id="test"></div>`);
-    testDiv = document.getElementById('test');
+    testDiv = document.getElementById('test')!;
   });
 
   afterEach(() => {

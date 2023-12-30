@@ -24,7 +24,7 @@ const matrix = [
 ];
 
 describe('GameGrid class', () => {
-  let workingGrid: GameGrid | null = null;
+  let workingGrid: GameGrid;
   let defaultOptions: IOptions | null = null;
   let defaultState: IState | null = null;
 
@@ -53,7 +53,10 @@ describe('GameGrid class', () => {
   });
 
   afterEach(() => {
-    workingGrid = null;
+    workingGrid.destroy();
+    workingGrid = null!;
+    defaultOptions = null;
+    defaultState = null;
   });
 
   // instantiation tests
