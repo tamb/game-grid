@@ -12,8 +12,12 @@ import {
 export default class GameGrid implements IGameGrid {
   private options: IOptions;
   private matrix: ICell[][];
-  private refs?: IRefs;
-  private state: IState;
+  private state: IState = INITIAL_STATE;
+  public refs: IRefs = {
+    container: null,
+    rows: [],
+    cells: [],
+  };
 
   constructor(config: IConfig, container: HTMLElement | null = null) {
     this.options = {
@@ -60,12 +64,8 @@ export default class GameGrid implements IGameGrid {
   public setOptions(newOptions: IOptions): void {
     this.options = { ...this.options, ...newOptions };
   }
-  public getRefs(): IRefs | undefined {
-    return this.refs;
-  }
   public destroy(): void {
     this.state.rendered ? this.dettachHandlers() : null;
-    this.refs = undefined;
   }
   public getState(): IState {
     return this.state;
@@ -74,8 +74,8 @@ export default class GameGrid implements IGameGrid {
   public moveLeft(): void {
     this.setStateSync({
       next_coords: [
-        this.state.active_coords[0],
-        this.state.active_coords[1] - 1,
+        this.state.active_coords![0],
+        this.state.active_coords![1] - 1,
       ],
       current_direction: DIRECTIONS.LEFT,
     });
@@ -86,8 +86,8 @@ export default class GameGrid implements IGameGrid {
   public moveUp(): void {
     this.setStateSync({
       next_coords: [
-        this.state.active_coords[0] - 1,
-        this.state.active_coords[1],
+        this.state.active_coords![0] - 1,
+        this.state.active_coords![1],
       ],
       current_direction: DIRECTIONS.UP,
     });
@@ -98,8 +98,8 @@ export default class GameGrid implements IGameGrid {
   public moveRight(): void {
     this.setStateSync({
       next_coords: [
-        this.state.active_coords[0],
-        this.state.active_coords[1] + 1,
+        this.state.active_coords![0],
+        this.state.active_coords![1] + 1,
       ],
       current_direction: DIRECTIONS.RIGHT,
     });
@@ -110,8 +110,8 @@ export default class GameGrid implements IGameGrid {
   public moveDown(): void {
     this.setStateSync({
       next_coords: [
-        this.state.active_coords[0] + 1,
-        this.state.active_coords[1],
+        this.state.active_coords![0] + 1,
+        this.state.active_coords![1],
       ],
       current_direction: DIRECTIONS.DOWN,
     });
@@ -125,14 +125,14 @@ export default class GameGrid implements IGameGrid {
   public getMatrix(): ICell[][] {
     return this.matrix;
   }
-  public setStateSync(obj: IState): void {
+  public setStateSync(obj: any): void {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;
   }
 
   public getActiveCell(): HTMLDivElement {
-    return this.getRefs().cells[this.state.active_coords[0]][
-      this.state.active_coords[1]
+    return this.refs.cells[this.state.active_coords![0]][
+      this.state.active_coords![1]
     ];
   }
 
@@ -190,7 +190,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   private setFocusToCell(row?: number, col?: number): void {
-    const cells = this.getRefs()?.cells;
+    const cells = this.refs.cells;
     if (!cells) {
       throw new Error('No cells found');
     }
@@ -206,12 +206,8 @@ export default class GameGrid implements IGameGrid {
     }
   }
 
-  private setFocusToContainer(): void {
-    this.getRefs().container.focus();
-  }
-
   private removeActiveClasses(): void {
-    this.getRefs().cells.forEach((cellRow) => {
+    this.refs.cells.forEach((cellRow) => {
       cellRow.forEach((cell) => {
         cell.classList.remove('gamegrid__cell--active');
       });
@@ -229,8 +225,8 @@ export default class GameGrid implements IGameGrid {
 
   private testLimit(): void {
     // use state direction, and state active coords
-    let row: number = this.state.next_coords[0];
-    let col: number = this.state.next_coords[1];
+    let row: number = this.state.next_coords![0];
+    let col: number = this.state.next_coords![1];
     const rowFinalIndex: number = this.matrix.length - 1;
     const colFinalIndex: number =
       this.matrix[this.state.active_coords[0]].length - 1; // todo: test for variable col length
@@ -407,35 +403,42 @@ export default class GameGrid implements IGameGrid {
   }
 
   private handleCellClick(event: MouseEvent): void {
-    if (this.getOptions().clickable) {
-      if (event.target instanceof HTMLElement) {
-        const cellEl: HTMLElement = event.target.closest(
-          '[data-gamegrid-ref="cell"]',
-        );
-        if (cellEl) {
-          const coords: number[] = cellEl
-            .getAttribute('data-gamegrid-coords')
-            .split(',')
-            .map((n) => Number(n));
-          this.setFocusToCell(...coords);
-        } else {
-          this.setFocusToCell();
+    try {
+      if (this.getOptions().clickable) {
+        if (event.target instanceof HTMLElement) {
+          const cellEl: HTMLElement = event.target.closest(
+            '[data-gamegrid-ref="cell"]',
+          )!;
+          if (cellEl) {
+            const coords: number[] = cellEl
+              .getAttribute('data-gamegrid-coords')!
+              .split(',')
+              .map((n) => Number(n));
+            this.setFocusToCell(...coords);
+          } else {
+            this.setFocusToCell();
+          }
         }
       }
+    } catch (e) {
+      console.error(e);
+      throw new Error(
+        'Error handling cell click. You possibly have missing attributes',
+      );
     }
   }
 
   private containerFocus(): void {
-    this.getRefs().container.classList.add(this.options.active_class);
+    this.refs.container!.classList.add(this.options.active_class);
   }
 
   private containerBlur(): void {
-    this.getRefs().container.classList.remove(this.options.active_class);
+    this.refs.container!.classList.remove(this.options.active_class);
   }
 
   // SET UP
   private attachHandlers(): void {
-    const container = this.getRefs()?.container;
+    const container = this.refs.container;
     if (container) {
       container.addEventListener('keydown', this.handleKeyDown);
       container.addEventListener('focus', this.containerFocus);
@@ -454,7 +457,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   private dettachHandlers(): void {
-    const container = this.getRefs()?.container;
+    const container = this.refs.container;
     if (container) {
       container.removeEventListener('keydown', this.handleKeyDown);
       container.removeEventListener('focus', this.containerFocus);

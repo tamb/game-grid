@@ -1,13 +1,13 @@
-import { IState, IOptions, ICell, IRefs, IConfig } from "./interfaces";
-export default class HtmlGameGrid {
+import { IState, IOptions, ICell, IRefs, IConfig, IGameGrid } from './interfaces';
+export default class GameGrid implements IGameGrid {
     private options;
     private matrix;
-    private refs;
     private state;
-    constructor(query: string, config: IConfig);
+    refs: IRefs;
+    constructor(config: IConfig, container?: HTMLElement | null);
+    renderGrid(container: HTMLElement): void;
     getOptions(): IOptions;
     setOptions(newOptions: IOptions): void;
-    getRefs(): IRefs;
     destroy(): void;
     getState(): IState;
     moveLeft(): void;
@@ -16,11 +16,10 @@ export default class HtmlGameGrid {
     moveDown(): void;
     setMatrix(m: ICell[][]): void;
     getMatrix(): ICell[][];
-    setStateSync(obj: IState): void;
-    render(): void;
-    setFocusToCell(row?: number, col?: number): void;
-    setFocusToContainer(): void;
+    setStateSync(obj: any): void;
     getActiveCell(): HTMLDivElement;
+    private render;
+    private setFocusToCell;
     private removeActiveClasses;
     private addToMoves;
     private testLimit;
@@ -34,11 +33,13 @@ export default class HtmlGameGrid {
     private containerFocus;
     private containerBlur;
     private attachHandlers;
+    private attachEventListeners;
     private dettachHandlers;
 }
 export declare const gameGridEventsEnum: {
     RENDERED: string;
-    STATE_UPDATED: string;
+    CREATED: string;
+    DESTROYED: string;
     MOVE_LEFT: string;
     MOVE_RIGHT: string;
     MOVE_UP: string;
