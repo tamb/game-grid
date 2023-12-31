@@ -33,7 +33,6 @@ export default class GameGrid implements IGameGrid {
     private containerFocus;
     private containerBlur;
     private attachHandlers;
-    private attachEventListeners;
     private dettachHandlers;
 }
 export declare const gameGridEventsEnum: {

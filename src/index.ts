@@ -55,7 +55,7 @@ export default class GameGrid implements IGameGrid {
       cells: [],
     };
     this.render();
-    this.attachEventListeners();
+    this.attachHandlers();
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
@@ -439,13 +439,14 @@ export default class GameGrid implements IGameGrid {
   };
 
   // SET UP
-
-  private attachEventListeners() {
-    this.containerFocus = this.containerFocus.bind(this);
-    this.containerBlur = this.containerBlur.bind(this);
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleCellClick = this.handleCellClick.bind(this);
-    this.render = this.render.bind(this);
+  private attachHandlers(): void {
+    const container = this.refs.container;
+    if (container) {
+      container.addEventListener('keydown', this.handleKeyDown);
+      container.addEventListener('focus', this.containerFocus);
+      container.addEventListener('blur', this.containerBlur);
+      container.addEventListener('click', this.handleCellClick);
+    }
   }
 
   private dettachHandlers(): void {

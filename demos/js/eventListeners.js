@@ -8,12 +8,12 @@ export function attachListeners() {
       const eventSplit = event.split(':');
       const el =
         eventSplit[1] === 'move'
-          ? document.querySelector('#move-events ol')
-          : document.querySelector('#state-events ol');
+          ? document.querySelector('#move-events ul')
+          : document.querySelector('#state-events ul');
       const li = document.createElement('li');
 
       li.innerText = `${event} : ${e.timeStamp}`;
-      el.appendChild(li);
+      el.insertAdjacentElement('afterbegin', li);
     });
   });
 }

@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", function() {
     "use strict";
     var e = function() {
         return e = Object.assign || function(t) {
-            for(var e, i = 1, s = arguments.length; i < s; i++)for(var o in e = arguments[i])Object.prototype.hasOwnProperty.call(e, o) && (t[o] = e[o]);
+            for(var e, i = 1, o = arguments.length; i < o; i++)for(var s in e = arguments[i])Object.prototype.hasOwnProperty.call(e, s) && (t[s] = e[s]);
             return t;
         }, e.apply(this, arguments);
     };
@@ -694,7 +694,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }));
     }
     "function" == typeof SuppressedError && SuppressedError;
-    var s = {
+    var o = {
         RENDERED: "gamegrid:grid:rendered",
         CREATED: "gamegrid:grid:created",
         DESTROYED: "gamegrid:grid:destroyed",
@@ -712,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function() {
         WRAP: "gamegrid:move:wrap",
         WRAP_X: "gamegrid:move:wrap:x",
         WRAP_Y: "gamegrid:move:wrap:y"
-    }, o = {
+    }, s = {
         active_coords: [
             0,
             0
@@ -732,10 +732,32 @@ document.addEventListener("DOMContentLoaded", function() {
         ]
     }, r = "up", n = "down", a = "left", c = "right", l = function() {
         function t(t, r) {
-            void 0 === r && (r = null), this.state = o, this.refs = {
+            void 0 === r && (r = null);
+            var n = this;
+            this.state = s, this.refs = {
                 container: null,
                 rows: [],
                 cells: []
+            }, this.handleKeyDown = function(t) {
+                n.options.arrow_controls && ("ArrowUp" !== t.code && "ArrowRight" !== t.code && "ArrowDown" !== t.code && "ArrowLeft" !== t.code || (t.preventDefault(), n.handleDirection(t))), n.options.wasd_controls && ("KeyW" !== t.code && "KeyD" !== t.code && "KeyS" !== t.code && "KeyA" !== t.code || (t.preventDefault(), n.handleDirection(t)));
+            }, this.handleCellClick = function(t) {
+                try {
+                    if (n.getOptions().clickable && t.target instanceof HTMLElement) {
+                        var e = t.target.closest('[data-gamegrid-ref="cell"]');
+                        if (e) {
+                            var i = e.getAttribute("data-gamegrid-coords").split(",").map(function(t) {
+                                return Number(t);
+                            });
+                            n.setFocusToCell.apply(n, i);
+                        } else n.setFocusToCell();
+                    }
+                } catch (t) {
+                    throw console.error(t), new Error("Error handling cell click. You possibly have missing attributes");
+                }
+            }, this.containerFocus = function() {
+                n.options.active_class && n.refs.container.classList.add(n.options.active_class);
+            }, this.containerBlur = function() {
+                n.options.active_class && n.refs.container.classList.remove(n.options.active_class);
             }, this.options = e({
                 active_class: "gamegrid__cell--active",
                 arrow_controls: !0,
@@ -753,14 +775,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 move_on_type: [
                     "open"
                 ]
-            }, t.options), this.matrix = t.matrix, this.state = e(e({}, o), t.state), r && this.renderGrid(r), i.call(this, s.CREATED);
+            }, t.options), this.matrix = t.matrix, this.state = e(e({}, s), t.state), r && this.renderGrid(r), i.call(this, o.CREATED);
         }
         return t.prototype.renderGrid = function(t) {
             this.refs = {
                 container: t,
                 rows: [],
                 cells: []
-            }, this.render(), this.attachEventListeners();
+            }, this.render(), this.attachHandlers(), i.call(this, o.RENDERED);
         }, t.prototype.getOptions = function() {
             return this.options;
         }, t.prototype.setOptions = function(t) {
@@ -776,7 +798,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.state.active_coords[1] - 1
                 ],
                 current_direction: a
-            }), i.call(this, s.MOVE_LEFT), this.finishMove();
+            }), i.call(this, o.MOVE_LEFT), this.finishMove();
         }, t.prototype.moveUp = function() {
             this.setStateSync({
                 next_coords: [
@@ -784,7 +806,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.state.active_coords[1]
                 ],
                 current_direction: r
-            }), i.call(this, s.MOVE_UP), this.finishMove();
+            }), i.call(this, o.MOVE_UP), this.finishMove();
         }, t.prototype.moveRight = function() {
             this.setStateSync({
                 next_coords: [
@@ -792,7 +814,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.state.active_coords[1] + 1
                 ],
                 current_direction: c
-            }), i.call(this, s.MOVE_RIGHT), this.finishMove();
+            }), i.call(this, o.MOVE_RIGHT), this.finishMove();
         }, t.prototype.moveDown = function() {
             this.setStateSync({
                 next_coords: [
@@ -800,7 +822,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.state.active_coords[1]
                 ],
                 current_direction: n
-            }), i.call(this, s.MOVE_DOWN), this.finishMove();
+            }), i.call(this, o.MOVE_DOWN), this.finishMove();
         }, t.prototype.setMatrix = function(t) {
             this.matrix = t;
         }, t.prototype.getMatrix = function() {
@@ -814,10 +836,10 @@ document.addEventListener("DOMContentLoaded", function() {
             var t = this;
             if (!this.refs || !this.refs.container) throw new Error("No container found");
             (e = document.createElement("style")).innerHTML = '\n  .gamegrid * {\n    box-sizing: border-box;\n  }\n  .gamegrid__stage {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    flex-wrap: wrap;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__row {\n    display: flex;\n    flex-basis: 100%;\n    max-width: 100%;\n    box-sizing: border-box;\n  }\n  .gamegrid__cell {\n    flex: 1 0 auto;\n    height: auto;\n    overflow: hidden;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__cell--active {\n    outline: 4px solid red;\n  }\n  .gamegrid__cell::before {\n    content: "";\n    float: left;\n    padding-top: 100%;\n  }\n  ', document.head.appendChild(e), this.refs.container.classList.add("gamegrid"), this.refs.container.setAttribute("tabindex", "0"), this.refs.container.setAttribute("data-gamegrid-ref", "container");
-            var e, o = document.createDocumentFragment();
-            this.matrix.forEach(function(e, i) {
+            var e, i = document.createDocumentFragment();
+            this.matrix.forEach(function(e, o) {
                 var s, r, n = document.createElement("div");
-                t.options.row_class && n.classList.add(t.options.row_class), n.setAttribute("data-gamegrid-row-index", i.toString()), n.setAttribute("data-gamegrid-ref", "row"), n.classList.add("gamegrid__row"), null === (s = t.refs) || void 0 === s || s.cells.push([]), e.forEach(function(s, o) {
+                t.options.row_class && n.classList.add(t.options.row_class), n.setAttribute("data-gamegrid-row-index", o.toString()), n.setAttribute("data-gamegrid-ref", "row"), n.classList.add("gamegrid__row"), null === (s = t.refs) || void 0 === s || s.cells.push([]), e.forEach(function(i, s) {
                     var r, a, c, l = document.createElement("div");
                     c = l, [
                         [
@@ -826,35 +848,35 @@ document.addEventListener("DOMContentLoaded", function() {
                         ],
                         [
                             "data-gamegrid-row-index",
-                            i.toString()
-                        ],
-                        [
-                            "data-gamegrid-col-index",
                             o.toString()
                         ],
                         [
+                            "data-gamegrid-col-index",
+                            s.toString()
+                        ],
+                        [
                             "data-gamegrid-coords",
-                            "".concat(i, ",").concat(o)
+                            "".concat(o, ",").concat(s)
                         ]
                     ].forEach(function(t) {
                         var e;
                         "class" === t[0] ? (e = c.classList).add.apply(e, t[1].split(" ")) : c.setAttribute(t[0], t[1]);
-                    }), l.style.width = "".concat(100 / e.length, "%"), null === (r = s.cellAttributes) || void 0 === r || r.forEach(function(t) {
+                    }), l.style.width = "".concat(100 / e.length, "%"), null === (r = i.cellAttributes) || void 0 === r || r.forEach(function(t) {
                         l.setAttribute(t[0], t[1]);
-                    }), l.classList.add("gamegrid__cell"), l.setAttribute("tabindex", t.options.clickable ? "0" : "-1"), s.renderFunction && l.appendChild(s.renderFunction(t)), n.appendChild(l), null === (a = t.refs) || void 0 === a || a.cells[i].push(l);
-                }), null === (r = t.refs) || void 0 === r || r.rows.push(n), o.appendChild(n);
-            }), this.refs.container.appendChild(o), this.setStateSync({
+                    }), l.classList.add("gamegrid__cell"), l.setAttribute("tabindex", t.options.clickable ? "0" : "-1"), i.renderFunction && l.appendChild(i.renderFunction(t)), n.appendChild(l), null === (a = t.refs) || void 0 === a || a.cells[o].push(l);
+                }), null === (r = t.refs) || void 0 === r || r.rows.push(n), i.appendChild(n);
+            }), this.refs.container.appendChild(i), this.setStateSync({
                 rendered: !0
-            }), this.attachHandlers(), i.call(this, s.RENDERED);
+            });
         }, t.prototype.setFocusToCell = function(t, e) {
-            var i, s, o = this.refs.cells;
-            if (!o) throw new Error("No cells found");
-            "number" == typeof t && "number" == typeof e ? (o[t][e].focus(), this.removeActiveClasses(), o[t][e].classList.add("gamegrid__cell--active"), this.setStateSync({
+            var i, o, s = this.refs.cells;
+            if (!s) throw new Error("No cells found");
+            "number" == typeof t && "number" == typeof e ? (s[t][e].focus(), this.removeActiveClasses(), s[t][e].classList.add("gamegrid__cell--active"), this.setStateSync({
                 active_coords: [
                     t,
                     e
                 ]
-            })) : (null === (i = this.getActiveCell()) || void 0 === i || i.focus(), this.removeActiveClasses(), null === (s = this.getActiveCell()) || void 0 === s || s.classList.add("gamegrid__cell--active"));
+            })) : (null === (i = this.getActiveCell()) || void 0 === i || i.focus(), this.removeActiveClasses(), null === (o = this.getActiveCell()) || void 0 === o || o.classList.add("gamegrid__cell--active"));
         }, t.prototype.removeActiveClasses = function() {
             this.refs.cells.forEach(function(t) {
                 t.forEach(function(t) {
@@ -863,26 +885,26 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }, t.prototype.addToMoves = function() {
             var t = function(t, e, i) {
-                if (i || 2 === arguments.length) for(var s, o = 0, r = e.length; o < r; o++)!s && o in e || (s || (s = Array.prototype.slice.call(e, 0, o)), s[o] = e[o]);
-                return t.concat(s || Array.prototype.slice.call(e));
+                if (i || 2 === arguments.length) for(var o, s = 0, r = e.length; s < r; s++)!o && s in e || (o || (o = Array.prototype.slice.call(e, 0, s)), o[s] = e[s]);
+                return t.concat(o || Array.prototype.slice.call(e));
             }([], this.getState().moves, !0);
             t.unshift(this.state.active_coords), t.length > this.options.rewind_limit && t.shift(), this.setStateSync({
                 moves: t
             });
         }, t.prototype.testLimit = function() {
-            var t = this.state.next_coords[0], e = this.state.next_coords[1], o = this.matrix.length - 1, l = this.matrix[this.state.active_coords[0]].length - 1;
+            var t = this.state.next_coords[0], e = this.state.next_coords[1], s = this.matrix.length - 1, l = this.matrix[this.state.active_coords[0]].length - 1;
             switch(this.state.current_direction){
                 case n:
-                    this.state.next_coords[0] > o && (this.options.infinite_y ? (t = 0, i.call(this, s.WRAP_Y), i.call(this, s.WRAP)) : (t = o, i.call(this, s.LIMIT_Y), i.call(this, s.LIMIT)));
+                    this.state.next_coords[0] > s && (this.options.infinite_y ? (t = 0, i.call(this, o.WRAP_Y), i.call(this, o.WRAP)) : (t = s, i.call(this, o.LIMIT_Y), i.call(this, o.LIMIT)));
                     break;
                 case a:
-                    this.state.next_coords[1] < 0 && (this.options.infinite_x ? (e = l, i.call(this, s.WRAP_X), i.call(this, s.WRAP)) : (e = 0, i.call(this, s.LIMIT_X), i.call(this, s.LIMIT)));
+                    this.state.next_coords[1] < 0 && (this.options.infinite_x ? (e = l, i.call(this, o.WRAP_X), i.call(this, o.WRAP)) : (e = 0, i.call(this, o.LIMIT_X), i.call(this, o.LIMIT)));
                     break;
                 case c:
-                    this.state.next_coords[1] > l && (this.options.infinite_x ? (e = 0, i.call(this, s.WRAP_X), i.call(this, s.WRAP)) : (e = l, i.call(this, s.LIMIT_X), i.call(this, s.LIMIT)));
+                    this.state.next_coords[1] > l && (this.options.infinite_x ? (e = 0, i.call(this, o.WRAP_X), i.call(this, o.WRAP)) : (e = l, i.call(this, o.LIMIT_X), i.call(this, o.LIMIT)));
                     break;
                 case r:
-                    this.state.next_coords[0] < 0 && (this.options.infinite_y ? (t = o, i.call(this, s.WRAP_Y), i.call(this, s.WRAP)) : (t = 0, i.call(this, s.LIMIT_Y), i.call(this, s.LIMIT)));
+                    this.state.next_coords[0] < 0 && (this.options.infinite_y ? (t = s, i.call(this, o.WRAP_Y), i.call(this, o.WRAP)) : (t = 0, i.call(this, o.LIMIT_Y), i.call(this, o.LIMIT)));
             }
             this.setStateSync({
                 next_coords: [
@@ -897,18 +919,18 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }, t.prototype.testInteractive = function() {
             var t, e = this.state.next_coords;
-            "interactive" === (null === (t = this.matrix[e[0]][e[1]]) || void 0 === t ? void 0 : t.type) && i.call(this, s.MOVE_COLLISION);
+            "interactive" === (null === (t = this.matrix[e[0]][e[1]]) || void 0 === t ? void 0 : t.type) && i.call(this, o.MOVE_COLLISION);
         }, t.prototype.testBarrier = function() {
             var t, e = this.state.next_coords;
             "barrier" === (null === (t = this.matrix[e[0]][e[1]]) || void 0 === t ? void 0 : t.type) && (this.setStateSync({
                 active_coords: this.state.prev_coords,
                 prev_coords: this.state.active_coords
-            }), i.call(this, s.MOVE_BLOCKED));
+            }), i.call(this, o.MOVE_BLOCKED));
         }, t.prototype.testSpace = function() {
             var t, e = this.state.next_coords;
-            "open" === (null === (t = this.matrix[e[0]][e[1]]) || void 0 === t ? void 0 : t.type) && "interactive" === this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]].type && i.call(this, s.MOVE_DETTACH);
+            "open" === (null === (t = this.matrix[e[0]][e[1]]) || void 0 === t ? void 0 : t.type) && "interactive" === this.matrix[this.state.prev_coords[0]][this.state.prev_coords[1]].type && i.call(this, o.MOVE_DETTACH);
         }, t.prototype.finishMove = function() {
-            this.testLimit(), this.testSpace(), this.testInteractive(), this.testBarrier(), this.state.rendered && this.setFocusToCell(), this.addToMoves(), i.call(this, s.MOVE_LAND);
+            this.testLimit(), this.testSpace(), this.testInteractive(), this.testBarrier(), this.state.rendered && this.setFocusToCell(), this.addToMoves(), i.call(this, o.MOVE_LAND);
         }, t.prototype.handleDirection = function(t) {
             switch(t.code){
                 case "ArrowLeft":
@@ -927,36 +949,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 case "KeyS":
                     this.moveDown();
             }
-        }, t.prototype.handleKeyDown = function(t) {
-            this.options.arrow_controls && ("ArrowUp" !== t.code && "ArrowRight" !== t.code && "ArrowDown" !== t.code && "ArrowLeft" !== t.code || (t.preventDefault(), this.handleDirection(t))), this.options.wasd_controls && ("KeyW" !== t.code && "KeyD" !== t.code && "KeyS" !== t.code && "KeyA" !== t.code || (t.preventDefault(), this.handleDirection(t)));
-        }, t.prototype.handleCellClick = function(t) {
-            try {
-                if (this.getOptions().clickable && t.target instanceof HTMLElement) {
-                    var e = t.target.closest('[data-gamegrid-ref="cell"]');
-                    if (e) {
-                        var i = e.getAttribute("data-gamegrid-coords").split(",").map(function(t) {
-                            return Number(t);
-                        });
-                        this.setFocusToCell.apply(this, i);
-                    } else this.setFocusToCell();
-                }
-            } catch (t) {
-                throw console.error(t), new Error("Error handling cell click. You possibly have missing attributes");
-            }
-        }, t.prototype.containerFocus = function() {
-            this.options.active_class && this.refs.container.classList.add(this.options.active_class);
-        }, t.prototype.containerBlur = function() {
-            this.options.active_class && this.refs.container.classList.remove(this.options.active_class);
         }, t.prototype.attachHandlers = function() {
             var t = this.refs.container;
             t && (t.addEventListener("keydown", this.handleKeyDown), t.addEventListener("focus", this.containerFocus), t.addEventListener("blur", this.containerBlur), t.addEventListener("click", this.handleCellClick));
-        }, t.prototype.attachEventListeners = function() {
-            this.containerFocus = this.containerFocus.bind(this), this.containerBlur = this.containerBlur.bind(this), this.handleKeyDown = this.handleKeyDown.bind(this), this.handleCellClick = this.handleCellClick.bind(this), this.render = this.render.bind(this), this.attachHandlers = this.attachHandlers.bind(this);
         }, t.prototype.dettachHandlers = function() {
             var t = this.refs.container;
             t && (t.removeEventListener("keydown", this.handleKeyDown), t.removeEventListener("focus", this.containerFocus), t.removeEventListener("blur", this.containerBlur), t.removeEventListener("click", this.handleCellClick));
         }, t;
-    }(), d = s;
+    }(), d = o;
     t.default = l, t.gameGridEventsEnum = d, Object.defineProperty(t, "__esModule", {
         value: !0
     });
@@ -973,10 +973,10 @@ function attachListeners() {
         window.addEventListener(event, (e)=>{
             console.log("event", event, e);
             const eventSplit = event.split(":");
-            const el = eventSplit[1] === "move" ? document.querySelector("#move-events ol") : document.querySelector("#state-events ol");
+            const el = eventSplit[1] === "move" ? document.querySelector("#move-events ul") : document.querySelector("#state-events ul");
             const li = document.createElement("li");
             li.innerText = `${event} : ${e.timeStamp}`;
-            el.appendChild(li);
+            el.insertAdjacentElement("afterbegin", li);
         });
     });
 }
