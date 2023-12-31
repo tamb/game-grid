@@ -56,6 +56,7 @@ export default class GameGrid implements IGameGrid {
     };
     this.render();
     this.attachEventListeners();
+    fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
   public getOptions(): IOptions {
@@ -181,9 +182,6 @@ export default class GameGrid implements IGameGrid {
       });
       this.refs.container.appendChild(grid);
       this.setStateSync({ rendered: true });
-
-      this.attachHandlers();
-      fireCustomEvent.call(this, gridEventsEnum.RENDERED);
     } else {
       throw new Error('No container found');
     }
@@ -377,7 +375,7 @@ export default class GameGrid implements IGameGrid {
       }
     }
   }
-  private handleKeyDown(event: KeyboardEvent): void {
+  private handleKeyDown = (event: KeyboardEvent): void => {
     if (this.options.arrow_controls) {
       if (
         event.code === 'ArrowUp' ||
@@ -400,9 +398,9 @@ export default class GameGrid implements IGameGrid {
         this.handleDirection(event);
       }
     }
-  }
+  };
 
-  private handleCellClick(event: MouseEvent): void {
+  private handleCellClick = (event: MouseEvent): void => {
     try {
       if (this.getOptions().clickable) {
         if (event.target instanceof HTMLElement) {
@@ -426,30 +424,21 @@ export default class GameGrid implements IGameGrid {
         'Error handling cell click. You possibly have missing attributes',
       );
     }
-  }
+  };
 
-  private containerFocus(): void {
+  private containerFocus = (): void => {
     this.options.active_class
       ? this.refs.container!.classList.add(this.options.active_class)
       : null;
-  }
+  };
 
-  private containerBlur(): void {
+  private containerBlur = (): void => {
     this.options.active_class
       ? this.refs.container!.classList.remove(this.options.active_class)
       : null;
-  }
+  };
 
   // SET UP
-  private attachHandlers(): void {
-    const container = this.refs.container;
-    if (container) {
-      container.addEventListener('keydown', this.handleKeyDown);
-      container.addEventListener('focus', this.containerFocus);
-      container.addEventListener('blur', this.containerBlur);
-      container.addEventListener('click', this.handleCellClick);
-    }
-  }
 
   private attachEventListeners() {
     this.containerFocus = this.containerFocus.bind(this);
@@ -457,7 +446,6 @@ export default class GameGrid implements IGameGrid {
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleCellClick = this.handleCellClick.bind(this);
     this.render = this.render.bind(this);
-    this.attachHandlers = this.attachHandlers.bind(this);
   }
 
   private dettachHandlers(): void {
