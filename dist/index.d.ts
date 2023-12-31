@@ -1,6 +1,6 @@
 import { IState, IOptions, ICell, IRefs, IConfig, IGameGrid } from './interfaces';
 export default class GameGrid implements IGameGrid {
-    private options;
+    options: IOptions;
     private matrix;
     private state;
     refs: IRefs;

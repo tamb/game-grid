@@ -10,7 +10,7 @@ import {
 } from './interfaces';
 
 export default class GameGrid implements IGameGrid {
-  private options: IOptions;
+  public options: IOptions;
   private matrix: ICell[][];
   private state: IState = INITIAL_STATE;
   public refs: IRefs = {
@@ -217,7 +217,7 @@ export default class GameGrid implements IGameGrid {
   private addToMoves(): void {
     const clonedMoves = [...this.getState().moves];
     clonedMoves.unshift(this.state.active_coords);
-    if (clonedMoves.length > this.options.rewind_limit) {
+    if (clonedMoves.length > this.options.rewind_limit!) {
       clonedMoves.shift();
     }
     this.setStateSync({ moves: clonedMoves });
@@ -429,11 +429,15 @@ export default class GameGrid implements IGameGrid {
   }
 
   private containerFocus(): void {
-    this.refs.container!.classList.add(this.options.active_class);
+    this.options.active_class
+      ? this.refs.container!.classList.add(this.options.active_class)
+      : null;
   }
 
   private containerBlur(): void {
-    this.refs.container!.classList.remove(this.options.active_class);
+    this.options.active_class
+      ? this.refs.container!.classList.remove(this.options.active_class)
+      : null;
   }
 
   // SET UP

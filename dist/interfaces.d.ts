@@ -18,11 +18,11 @@ export interface IOptions {
     infinite_x?: boolean;
     infinite_y?: boolean;
     clickable?: boolean;
-    rewind_limit: number;
+    rewind_limit?: number;
     block_on_type?: string[];
     collide_on_type?: string[];
     move_on_type?: string[];
-    active_class: string;
+    active_class?: string;
     container_class?: string;
     row_class?: string;
 }

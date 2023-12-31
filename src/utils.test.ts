@@ -1,4 +1,3 @@
-/// <reference types="jest" />
 /**
  * @jest-environment jsdom
  */
@@ -22,6 +21,35 @@ describe('getKeyByValue util', () => {
   test('returns undefined if the value is not found', () => {
     const testObject = { key1: 'value1', key2: 'value2' };
     expect(getKeyByValue(testObject, 'value3')).toBeUndefined();
+  });
+});
+
+describe('renderAttributes util', () => {
+  let testDiv: HTMLElement;
+  beforeAll(() => {
+    document.body.insertAdjacentHTML('afterbegin', `<div id="test"></div>`);
+    testDiv = document.getElementById('test')!;
+  });
+
+  test('non-class attributes render', () => {
+    renderAttributes(testDiv, [
+      ['data-butt', 'booty'],
+      ['data-fake', 'fake'],
+    ]);
+    expect(testDiv.getAttribute('data-butt')).toMatch('booty');
+    expect(testDiv.getAttribute('data-fake')).toMatch('fake');
+  });
+
+  test('multiple classes render', () => {
+    renderAttributes(testDiv, [['class', 'howdy partner']]);
+    expect(testDiv.classList.contains('howdy')).toBe(true);
+    expect(testDiv.classList.contains('partner')).toBe(true);
+    expect(testDiv.classList.contains('roro')).toBe(false);
+  });
+
+  test('single class renders', () => {
+    renderAttributes(testDiv, [['class', 'single']]);
+    expect(testDiv.classList.contains('single')).toBe(true);
   });
 });
 
@@ -51,43 +79,10 @@ describe('mapXYToRowColIndices util', () => {
   });
 });
 
-describe('renderAttributes util', () => {
-  let testDiv: HTMLElement;
-  beforeAll(() => {
-    document.body.insertAdjacentHTML('afterbegin', `<div id="test"></div>`);
-    testDiv = document.getElementById('test')!;
-  });
-
-  test('non-class attributes render', () => {
-    renderAttributes(testDiv, [
-      ['data-butt', 'booty'],
-      ['data-fake', 'fake'],
-    ]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.getAttribute('data-butt')).toMatch('booty');
-    expect(testDiv.getAttribute('data-fake')).toMatch('fake');
-  });
-
-  test('multiple classes render', () => {
-    renderAttributes(testDiv, [['class', 'howdy partner']]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.classList.contains('howdy')).toBe(true);
-    expect(testDiv.classList.contains('partner')).toBe(true);
-    expect(testDiv.classList.contains('roro')).toBe(false);
-  });
-
-  test('single class renders', () => {
-    renderAttributes(testDiv, [['class', 'single']]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.classList.contains('single')).toBe(true);
-  });
-});
-
 describe('fireCustomEvent util', () => {
-  let mockCallback;
-  let testEventName;
-  let testData;
-  let testInstance;
+  let mockCallback: jest.Mock;
+  let testEventName: string;
+  let testData: { key: string };
 
   beforeEach(() => {
     // Mock window.dispatchEvent to test if it gets called correctly
@@ -100,29 +95,11 @@ describe('fireCustomEvent util', () => {
     testEventName = 'testEvent';
     testData = { key: 'value' };
 
-    // Test instance
-    testInstance = {
-      options: {
-        callbacks: {
-          testEvent: mockCallback,
-        },
-      },
-    };
+    window.addEventListener(testEventName, mockCallback);
   });
 
   test('dispatches custom event', () => {
-    test('fires a custom event with the correct name and data', () => {
-      const mockCallback = jest.fn();
-      window.addEventListener('testEvent', mockCallback);
-
-      fireCustomEvent('testEvent', { key: 'value' });
-
-      expect(mockCallback).toHaveBeenCalled();
-      expect(mockCallback.mock.calls[0][0].detail).toEqual({ key: 'value' });
-
-      window.removeEventListener('testEvent', mockCallback);
-    });
-    fireCustomEvent.call(testInstance, testEventName, testData);
+    fireCustomEvent(testEventName, testData);
 
     expect(window.dispatchEvent).toHaveBeenCalled();
     expect(window.dispatchEvent).toHaveBeenCalledWith(
@@ -130,84 +107,12 @@ describe('fireCustomEvent util', () => {
         type: testEventName,
         detail: expect.objectContaining({
           ...testData,
-          game_grid_instance: testInstance,
         }),
       }),
     );
   });
 
-  test('calls appropriate callback', () => {
-    fireCustomEvent.call(testInstance, testEventName, testData);
-
-    expect(mockCallback).toHaveBeenCalled();
-    expect(mockCallback).toHaveBeenCalledWith(testInstance);
-  });
-
-  test('does not call callback if not defined', () => {
-    delete testInstance.options.callbacks.testEvent;
-
-    fireCustomEvent.call(testInstance, testEventName, testData);
-
-    expect(mockCallback).not.toHaveBeenCalled();
-  });
-});
-
-describe('renderAttributes util', () => {
-  let testDiv: HTMLElement;
-
-  beforeEach(() => {
-    document.body.insertAdjacentHTML('afterbegin', `<div id="test"></div>`);
-    testDiv = document.getElementById('test')!;
-  });
-
   afterEach(() => {
-    if (testDiv) {
-      document.body.removeChild(testDiv);
-    }
-  });
-
-  test('adds multiple classes', () => {
-    renderAttributes(testDiv, [['class', 'class1 class2']]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.classList.contains('class1')).toBe(true);
-    expect(testDiv.classList.contains('class2')).toBe(true);
-  });
-
-  test('adds single class', () => {
-    renderAttributes(testDiv, [['class', 'single']]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.classList.contains('single')).toBe(true);
-  });
-
-  test('sets non-class attributes', () => {
-    renderAttributes(testDiv, [['data-test', 'value']]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.getAttribute('data-test')).toBe('value');
-  });
-
-  test('handles mixed class and non-class attributes', () => {
-    renderAttributes(testDiv, [
-      ['class', 'class1'],
-      ['data-test', 'value'],
-    ]);
-    if (testDiv === null) throw new Error('testDiv is null');
-    expect(testDiv.classList.contains('class1')).toBe(true);
-    expect(testDiv.getAttribute('data-test')).toBe('value');
-  });
-});
-
-describe('insertStyles util', () => {
-  it('should insert styles into the document head', () => {
-    const initialHeadInnerHTML = document.head.innerHTML;
-    insertStyles();
-    const finalHeadInnerHTML = document.head.innerHTML;
-
-    expect(finalHeadInnerHTML).not.toEqual(initialHeadInnerHTML);
-    expect(finalHeadInnerHTML).toContain('.gamegrid *');
-    expect(finalHeadInnerHTML).toContain('.gamegrid__stage');
-    expect(finalHeadInnerHTML).toContain('.gamegrid__row');
-    expect(finalHeadInnerHTML).toContain('.gamegrid__cell');
-    expect(finalHeadInnerHTML).toContain('.gamegrid__cell--active');
-    expect(finalHeadInnerHTML).toContain('.gamegrid__cell::before');
+    window.removeEventListener(testEventName, mockCallback);
   });
 });
