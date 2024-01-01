@@ -669,9 +669,9 @@ function createGrid() {
     }, document.getElementById("grid"));
 }
 document.addEventListener("DOMContentLoaded", function() {
+    (0, _eventListenersJs.attachListeners)();
     const grid = createGrid();
     console.log(grid);
-    (0, _eventListenersJs.attachListeners)();
 });
 
 },{"./../../dist/main.js":"lbDgN","./eventListeners.js":"bCsEQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lbDgN":[function(require,module,exports) {
@@ -972,8 +972,7 @@ function attachListeners() {
         const event = (0, _main.gameGridEventsEnum)[key];
         window.addEventListener(event, (e)=>{
             console.log("event", event, e);
-            const eventSplit = event.split(":");
-            const el = eventSplit[1] === "move" ? document.querySelector("#move-events ul") : document.querySelector("#state-events ul");
+            const el = document.querySelector("#move-events ul");
             const li = document.createElement("li");
             li.innerText = `${event} : ${e.timeStamp}`;
             el.insertAdjacentElement("afterbegin", li);

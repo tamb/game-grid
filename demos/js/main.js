@@ -67,7 +67,7 @@ function createGrid() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  attachListeners();
   const grid = createGrid();
   console.log(grid);
-  attachListeners();
 });
