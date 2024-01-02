@@ -15,6 +15,21 @@ const matrix = [
         ['data-butt', 'sauce'],
         ['class', 'butt booty butty'],
       ],
+      renderFunction() {
+        let clickCount = 0;
+
+        const frag = document.createDocumentFragment();
+        const count = document.createElement('span');
+        const button = document.createElement('button');
+        button.textContent = '+1';
+        button.addEventListener('click', function () {
+          clickCount++;
+          count.textContent = clickCount;
+        });
+        frag.appendChild(button);
+        frag.appendChild(count);
+        return frag;
+      },
     },
     {
       type: tileTypeEnum.INTERACTIVE,

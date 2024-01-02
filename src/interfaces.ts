@@ -20,6 +20,10 @@ export interface IOptions {
   infinite_y?: boolean;
   clickable?: boolean;
   rewind_limit?: number;
+  middlewares?: {
+    pre: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+    post: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+  };
 
   // TODO: Utilize these options to add additional supported cell types
   block_on_type?: string[];

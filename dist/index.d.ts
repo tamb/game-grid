@@ -18,6 +18,7 @@ export default class GameGrid implements IGameGrid {
     getMatrix(): ICell[][];
     setStateSync(obj: any): void;
     getActiveCell(): HTMLDivElement;
+    private updateState;
     private render;
     private setFocusToCell;
     private removeActiveClasses;

@@ -127,8 +127,18 @@ export default class GameGrid implements IGameGrid {
     return this.matrix;
   }
   public setStateSync(obj: any): void {
-    const newState: IState = { ...this.state, ...obj };
-    this.state = newState;
+   if(this.options.middlewares){
+    this.options.middlewares.pre?.forEach((fn: (gamegridInstance: IGameGrid, newState : any) => void) => {
+      fn(this, obj);
+    });
+    this.updateState(obj);
+    this.options.middlewares.post?.forEach((fn: (gamegridInstance: IGameGrid, newState : any) => void) => {
+      fn(this, obj);
+    });
+    
+   } else {
+    this.updateState(obj);
+   }
   }
 
   public getActiveCell(): HTMLDivElement {
@@ -138,6 +148,12 @@ export default class GameGrid implements IGameGrid {
   }
 
   //private methods
+  private updateState(obj: any): void {
+    const newState: IState = { ...this.state, ...obj };
+    this.state = newState;
+  }
+
+
   private render(): void {
     if (this.refs && this.refs.container) {
       insertStyles();

@@ -597,7 +597,21 @@ const matrix = [
                     "class",
                     "butt booty butty"
                 ]
-            ]
+            ],
+            renderFunction () {
+                let clickCount = 0;
+                const frag = document.createDocumentFragment();
+                const count = document.createElement("span");
+                const button = document.createElement("button");
+                button.textContent = "+1";
+                button.addEventListener("click", function() {
+                    clickCount++;
+                    count.textContent = clickCount;
+                });
+                frag.appendChild(button);
+                frag.appendChild(count);
+                return frag;
+            }
         },
         {
             type: tileTypeEnum.INTERACTIVE,
@@ -828,10 +842,17 @@ document.addEventListener("DOMContentLoaded", function() {
         }, t.prototype.getMatrix = function() {
             return this.matrix;
         }, t.prototype.setStateSync = function(t) {
-            var i = e(e({}, this.state), t);
-            this.state = i;
+            var e, i, o = this;
+            this.options.middlewares ? (null === (e = this.options.middlewares.pre) || void 0 === e || e.forEach(function(e) {
+                e(o, t);
+            }), this.updateState(t), null === (i = this.options.middlewares.post) || void 0 === i || i.forEach(function(e) {
+                e(o, t);
+            })) : this.updateState(t);
         }, t.prototype.getActiveCell = function() {
             return this.refs.cells[this.state.active_coords[0]][this.state.active_coords[1]];
+        }, t.prototype.updateState = function(t) {
+            var i = e(e({}, this.state), t);
+            this.state = i;
         }, t.prototype.render = function() {
             var t = this;
             if (!this.refs || !this.refs.container) throw new Error("No container found");
