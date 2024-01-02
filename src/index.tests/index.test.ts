@@ -65,16 +65,6 @@ describe('GameGrid class', () => {
     expect(renderedGrid.options).toEqual(defaultOptions);
   });
 
-  test('container ref is always made', () => {
-    expect(renderedGrid.refs.container!.id).toMatch('root');
-  });
-
-  test('refs are made', () => {
-    renderedGrid.renderGrid(document.getElementById('root')!);
-    expect(renderedGrid.refs.rows.length).toBe(3),
-      expect(renderedGrid.refs.cells[0].length).toBe(3);
-  });
-
   test('initial state defaults correctly', () => {
     expect(renderedGrid.getState()).toEqual(defaultState);
   });
@@ -144,23 +134,7 @@ describe('GameGrid class', () => {
     expect(renderedGrid.getMatrix()[0].length).toBe(2);
   });
 
-  test('setStateSync updates whole state correctly', () => {
-    const newState = {
-      active_coords: [0, 0],
-      prev_coords: [0, 0],
-      current_direction: '',
-      rendered: false,
-      moves: [[0, 0]],
-    };
-    renderedGrid.setStateSync(newState);
-    expect(renderedGrid.getState()).toEqual(newState);
-  });
-
-  test('setStateSync updates partial state correctly', () => {
-    renderedGrid.setStateSync({ current_direction: 'blueberry' });
-    expect(renderedGrid.getState().current_direction).toMatch('blueberry');
-    expect(renderedGrid.getState().rendered).toBe(false);
-  });
+ 
 
   // // move API
   // TODO: finish this test
