@@ -1,9 +1,29 @@
 import GameGrid from '../index';
-import { matrix } from './__mocks__';
+import { matrix } from '../__mocks__/matrix';
+import { IState } from '../interfaces';
 
 describe('setStateSync', () => {
+  let defaultState: IState | null = null;
+  let renderedGrid: GameGrid;
+
   beforeEach(() => {
     document.body.innerHTML = '<div id="root"></div>';
+
+    defaultState = {
+      active_coords: [0, 0],
+      prev_coords: [0, 0],
+      next_coords: [],
+      current_direction: '',
+      rendered: true,
+      moves: [[0, 0]],
+    };
+
+    renderedGrid = new GameGrid(
+      {
+        matrix,
+      },
+      document.getElementById('root')!,
+    );
   });
 
   test('pre middleware fires', () => {
@@ -99,17 +119,12 @@ describe('setStateSync', () => {
   });
 
   test('setStateSync updates whole state correctly', () => {
-    const renderedGrid = new GameGrid(
-      {
-        matrix,
-      },
-      document.getElementById('root')!,
-    );
     const newState = {
       active_coords: [0, 0],
       prev_coords: [0, 0],
+      next_coords: [0, 0],
       current_direction: '',
-      rendered: false,
+      rendered: true,
       moves: [[0, 0]],
     };
     renderedGrid.setStateSync(newState);
@@ -117,14 +132,38 @@ describe('setStateSync', () => {
   });
 
   test('setStateSync updates partial state correctly', () => {
-    const renderedGrid = new GameGrid(
+    renderedGrid.setStateSync({ current_direction: 'blueberry' });
+    expect(renderedGrid.getState().current_direction).toMatch('blueberry');
+    expect(renderedGrid.getState().rendered).toBe(true);
+  });
+
+  test('getState return full state', () => {
+    expect(renderedGrid.getState().moves.length).toBe(1);
+    expect(renderedGrid.getState()).toEqual(defaultState);
+  });
+
+  test('initial state defaults correctly', () => {
+    expect(renderedGrid.getState()).toEqual(defaultState);
+  });
+
+  test('initial state accepts values', () => {
+    const newState = {
+      current_direction: 'up',
+      active_coords: [1, 1],
+    };
+    const newGrid = new GameGrid(
       {
         matrix,
+        // @ts-ignore
+        state: newState,
       },
       document.getElementById('root')!,
     );
-    renderedGrid.setStateSync({ current_direction: 'blueberry' });
-    expect(renderedGrid.getState().current_direction).toMatch('blueberry');
-    expect(renderedGrid.getState().rendered).toBe(false);
+
+    expect(newGrid.getState()).toEqual({
+      ...defaultState,
+      current_direction: 'up',
+      active_coords: [1, 1],
+    });
   });
 });

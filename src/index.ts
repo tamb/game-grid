@@ -127,18 +127,21 @@ export default class GameGrid implements IGameGrid {
     return this.matrix;
   }
   public setStateSync(obj: any): void {
-   if(this.options.middlewares){
-    this.options.middlewares.pre?.forEach((fn: (gamegridInstance: IGameGrid, newState : any) => void) => {
-      fn(this, obj);
-    });
-    this.updateState(obj);
-    this.options.middlewares.post?.forEach((fn: (gamegridInstance: IGameGrid, newState : any) => void) => {
-      fn(this, obj);
-    });
-    
-   } else {
-    this.updateState(obj);
-   }
+    if (this.options.middlewares) {
+      this.options.middlewares.pre?.forEach(
+        (fn: (gamegridInstance: IGameGrid, newState: any) => void) => {
+          fn(this, obj);
+        },
+      );
+      this.updateState(obj);
+      this.options.middlewares.post?.forEach(
+        (fn: (gamegridInstance: IGameGrid, newState: any) => void) => {
+          fn(this, obj);
+        },
+      );
+    } else {
+      this.updateState(obj);
+    }
   }
 
   public getActiveCell(): HTMLDivElement {
@@ -152,7 +155,6 @@ export default class GameGrid implements IGameGrid {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;
   }
-
 
   private render(): void {
     if (this.refs && this.refs.container) {
@@ -191,9 +193,9 @@ export default class GameGrid implements IGameGrid {
             cell.appendChild(cellData.renderFunction(this));
           }
           row.appendChild(cell);
-          this.refs?.cells[rI].push(cell);
+          this.refs.cells[rI].push(cell);
         });
-        this.refs?.rows.push(row);
+        this.refs.rows.push(row);
         grid.appendChild(row);
       });
       this.refs.container.appendChild(grid);

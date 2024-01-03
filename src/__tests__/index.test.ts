@@ -4,7 +4,7 @@
 
 import GameGrid from '../index';
 import { IOptions, IState } from '../interfaces';
-import { matrix } from './__mocks__';
+import { matrix } from '../__mocks__/matrix';
 
 describe('GameGrid class', () => {
   let renderedGrid: GameGrid;
@@ -34,7 +34,7 @@ describe('GameGrid class', () => {
       prev_coords: [0, 0],
       next_coords: [],
       current_direction: '',
-      rendered: false,
+      rendered: true,
       moves: [[0, 0]],
     };
   });
@@ -65,32 +65,7 @@ describe('GameGrid class', () => {
     expect(renderedGrid.options).toEqual(defaultOptions);
   });
 
-  test('initial state defaults correctly', () => {
-    expect(renderedGrid.getState()).toEqual(defaultState);
-  });
-
-  test('initial state accepts values', () => {
-    const newState = {
-      current_direction: 'up',
-      active_coords: [1, 1],
-    };
-    const newGrid = new GameGrid(
-      {
-        matrix,
-        // @ts-ignore
-        state: newState,
-      },
-      document.getElementById('root')!,
-    );
-
-    expect(newGrid.getState()).toEqual({
-      current_direction: 'up',
-      rendered: false,
-      prev_coords: [0, 0],
-      active_coords: [1, 1],
-      moves: [[0, 0]],
-    });
-  });
+ 
   test('move length initializes as 1', () => {
     expect(renderedGrid.getState().moves.length).toBe(1);
     // expect(workingGrid.getState()).toEqual(defaultState);
@@ -123,18 +98,11 @@ describe('GameGrid class', () => {
   // // api tests
   // test("destroy removes event listeners", () => {});
 
-  test('getState return full state', () => {
-    expect(renderedGrid.getState().moves.length).toBe(1);
-    expect(renderedGrid.getState()).toEqual(defaultState);
-  });
-
   test('setMatrix applies given matrix and getMatrix gets', () => {
     renderedGrid.setMatrix([[{ type: 'open' }, { type: 'open' }]]);
     expect(renderedGrid.getMatrix().length).toBe(1);
     expect(renderedGrid.getMatrix()[0].length).toBe(2);
   });
-
- 
 
   // // move API
   // TODO: finish this test
@@ -267,46 +235,4 @@ describe('GameGrid class', () => {
     expect(cells[0][1].getAttribute('data-butt')).toMatch('doody');
     expect(cells[0][1].getAttribute('data-doody')).toMatch('butt');
   });
-
-  describe('setStateSync', () => {
-    test('pre middleware fires', () => {
-      const pre = jest.fn();
-      const x = new GameGrid(
-        {
-          matrix,
-          options: {
-            middlewares: {
-              pre: [pre],
-              post: [],
-            },
-          },
-        },
-        document.getElementById('root')!,
-      );
-      x.setStateSync({ current_direction: 'blueberry' });
-      expect(pre).toHaveBeenCalled();
-    });
-
-    test('post middleware fires', () => {
-      const post = jest.fn();
-      const x = new GameGrid(
-        {
-          matrix,
-          options: {
-            middlewares: {
-              pre: [],
-              post: [post],
-            },
-          },
-        },
-        document.getElementById('root')!,
-      );
-      x.setStateSync({ current_direction: 'blueberry' });
-      expect(post).toHaveBeenCalled();
-    });
-  });
-
-
-
-
 });

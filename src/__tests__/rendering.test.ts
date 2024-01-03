@@ -1,5 +1,5 @@
 import GameGrid from '../index';
-import { matrix } from './__mocks__';
+import { matrix } from '../__mocks__/matrix';
 
 describe('GameGrid rendering', () => {
   test('renderFunction fires', () => {

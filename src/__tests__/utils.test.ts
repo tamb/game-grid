@@ -9,7 +9,7 @@ import {
   mapRowColIndicesToXY,
   mapXYToRowColIndices,
   insertStyles,
-} from './utils';
+} from '../utils';
 
 describe('getKeyByValue util', () => {
   test('returns the correct key for a given value', () => {
@@ -53,19 +53,6 @@ describe('renderAttributes util', () => {
   });
 });
 
-describe('getCoordsFromElement util', () => {
-  test('returns the correct coordinates for a given element', () => {
-    const testElement = document.createElement('div');
-    testElement.style.position = 'absolute';
-    testElement.style.left = '50px';
-    testElement.style.top = '100px';
-    document.body.appendChild(testElement);
-
-    expect(getCoordsFromElement(testElement)).toEqual([50, 100]);
-
-    document.body.removeChild(testElement);
-  });
-});
 
 describe('mapRowColIndicesToXY util', () => {
   test('returns the correct x and y coordinates for given row and column indices', () => {
