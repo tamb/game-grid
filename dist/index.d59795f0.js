@@ -579,15 +579,12 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _mainJs = require("./../../dist/main.js");
 var _mainJsDefault = parcelHelpers.interopDefault(_mainJs);
 var _eventListenersJs = require("./eventListeners.js");
-const tileTypeEnum = {
-    OPEN: "open",
-    INTERACTIVE: "interactive",
-    BARRIER: "barrier"
-};
+var _matricesJs = require("./matrices.js");
+var _enumsJs = require("./enums.js");
 const matrix = [
     [
         {
-            type: tileTypeEnum.OPEN,
+            type: (0, _enumsJs.tileTypeEnum).OPEN,
             cellAttributes: [
                 [
                     "data-butt",
@@ -614,7 +611,7 @@ const matrix = [
             }
         },
         {
-            type: tileTypeEnum.INTERACTIVE,
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
             cellAttributes: [
                 [
                     "data-cell-type",
@@ -623,18 +620,18 @@ const matrix = [
             ]
         },
         {
-            type: tileTypeEnum.OPEN
+            type: (0, _enumsJs.tileTypeEnum).OPEN
         }
     ],
     [
         {
-            type: tileTypeEnum.OPEN
+            type: (0, _enumsJs.tileTypeEnum).OPEN
         },
         {
-            type: tileTypeEnum.OPEN
+            type: (0, _enumsJs.tileTypeEnum).OPEN
         },
         {
-            type: tileTypeEnum.BARRIER,
+            type: (0, _enumsJs.tileTypeEnum).BARRIER,
             cellAttributes: [
                 [
                     "data-cell-type",
@@ -645,7 +642,7 @@ const matrix = [
     ],
     [
         {
-            type: tileTypeEnum.BARRIER,
+            type: (0, _enumsJs.tileTypeEnum).BARRIER,
             cellAttributes: [
                 [
                     "data-cell-type",
@@ -654,10 +651,10 @@ const matrix = [
             ]
         },
         {
-            type: tileTypeEnum.OPEN
+            type: (0, _enumsJs.tileTypeEnum).OPEN
         },
         {
-            type: tileTypeEnum.OPEN
+            type: (0, _enumsJs.tileTypeEnum).OPEN
         }
     ]
 ];
@@ -680,15 +677,18 @@ function createGrid() {
                 }
             }
         }
-    }, document.getElementById("grid"));
+    }, document.getElementById("grid1"));
 }
 document.addEventListener("DOMContentLoaded", function() {
     (0, _eventListenersJs.attachListeners)();
     const grid = createGrid();
     console.log(grid);
+    new (0, _mainJsDefault.default)({
+        matrix: (0, _matricesJs.matrix2)
+    }, document.getElementById("grid2"));
 });
 
-},{"./../../dist/main.js":"lbDgN","./eventListeners.js":"bCsEQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lbDgN":[function(require,module,exports) {
+},{"./../../dist/main.js":"lbDgN","./eventListeners.js":"bCsEQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./matrices.js":"egx33","./enums.js":"69i4T"}],"lbDgN":[function(require,module,exports) {
 !function(t, e) {
     e(exports);
 }(this, function(t) {
@@ -744,7 +744,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 0
             ]
         ]
-    }, r = "up", n = "down", a = "left", c = "right", l = function() {
+    }, r = "up", n = "down", a = "left", c = "right", d = function() {
         function t(t, r) {
             void 0 === r && (r = null);
             var n = this;
@@ -859,10 +859,10 @@ document.addEventListener("DOMContentLoaded", function() {
             (e = document.createElement("style")).innerHTML = '\n  .gamegrid * {\n    box-sizing: border-box;\n  }\n  .gamegrid__stage {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    flex-wrap: wrap;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__row {\n    display: flex;\n    flex-basis: 100%;\n    max-width: 100%;\n    box-sizing: border-box;\n  }\n  .gamegrid__cell {\n    flex: 1 0 auto;\n    height: auto;\n    overflow: hidden;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__cell--active {\n    outline: 4px solid red;\n  }\n  .gamegrid__cell::before {\n    content: "";\n    float: left;\n    padding-top: 100%;\n  }\n  ', document.head.appendChild(e), this.refs.container.classList.add("gamegrid"), this.refs.container.setAttribute("tabindex", "0"), this.refs.container.setAttribute("data-gamegrid-ref", "container");
             var e, i = document.createDocumentFragment();
             this.matrix.forEach(function(e, o) {
-                var s, r, n = document.createElement("div");
-                t.options.row_class && n.classList.add(t.options.row_class), n.setAttribute("data-gamegrid-row-index", o.toString()), n.setAttribute("data-gamegrid-ref", "row"), n.classList.add("gamegrid__row"), null === (s = t.refs) || void 0 === s || s.cells.push([]), e.forEach(function(i, s) {
-                    var r, a, c, l = document.createElement("div");
-                    c = l, [
+                var s, r = document.createElement("div");
+                t.options.row_class && r.classList.add(t.options.row_class), r.setAttribute("data-gamegrid-row-index", o.toString()), r.setAttribute("data-gamegrid-ref", "row"), r.classList.add("gamegrid__row"), null === (s = t.refs) || void 0 === s || s.cells.push([]), e.forEach(function(i, s) {
+                    var n, a, c = document.createElement("div");
+                    a = c, [
                         [
                             "data-gamegrid-ref",
                             "cell"
@@ -881,11 +881,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         ]
                     ].forEach(function(t) {
                         var e;
-                        "class" === t[0] ? (e = c.classList).add.apply(e, t[1].split(" ")) : c.setAttribute(t[0], t[1]);
-                    }), l.style.width = "".concat(100 / e.length, "%"), null === (r = i.cellAttributes) || void 0 === r || r.forEach(function(t) {
-                        l.setAttribute(t[0], t[1]);
-                    }), l.classList.add("gamegrid__cell"), l.setAttribute("tabindex", t.options.clickable ? "0" : "-1"), i.renderFunction && l.appendChild(i.renderFunction(t)), n.appendChild(l), null === (a = t.refs) || void 0 === a || a.cells[o].push(l);
-                }), null === (r = t.refs) || void 0 === r || r.rows.push(n), i.appendChild(n);
+                        "class" === t[0] ? (e = a.classList).add.apply(e, t[1].split(" ")) : a.setAttribute(t[0], t[1]);
+                    }), c.style.width = "".concat(100 / e.length, "%"), null === (n = i.cellAttributes) || void 0 === n || n.forEach(function(t) {
+                        c.setAttribute(t[0], t[1]);
+                    }), c.classList.add("gamegrid__cell"), c.setAttribute("tabindex", t.options.clickable ? "0" : "-1"), i.renderFunction && c.appendChild(i.renderFunction(t)), r.appendChild(c), t.refs.cells[o].push(c);
+                }), t.refs.rows.push(r), i.appendChild(r);
             }), this.refs.container.appendChild(i), this.setStateSync({
                 rendered: !0
             });
@@ -913,16 +913,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 moves: t
             });
         }, t.prototype.testLimit = function() {
-            var t = this.state.next_coords[0], e = this.state.next_coords[1], s = this.matrix.length - 1, l = this.matrix[this.state.active_coords[0]].length - 1;
+            var t = this.state.next_coords[0], e = this.state.next_coords[1], s = this.matrix.length - 1, d = this.matrix[this.state.active_coords[0]].length - 1;
             switch(this.state.current_direction){
                 case n:
                     this.state.next_coords[0] > s && (this.options.infinite_y ? (t = 0, i.call(this, o.WRAP_Y), i.call(this, o.WRAP)) : (t = s, i.call(this, o.LIMIT_Y), i.call(this, o.LIMIT)));
                     break;
                 case a:
-                    this.state.next_coords[1] < 0 && (this.options.infinite_x ? (e = l, i.call(this, o.WRAP_X), i.call(this, o.WRAP)) : (e = 0, i.call(this, o.LIMIT_X), i.call(this, o.LIMIT)));
+                    this.state.next_coords[1] < 0 && (this.options.infinite_x ? (e = d, i.call(this, o.WRAP_X), i.call(this, o.WRAP)) : (e = 0, i.call(this, o.LIMIT_X), i.call(this, o.LIMIT)));
                     break;
                 case c:
-                    this.state.next_coords[1] > l && (this.options.infinite_x ? (e = 0, i.call(this, o.WRAP_X), i.call(this, o.WRAP)) : (e = l, i.call(this, o.LIMIT_X), i.call(this, o.LIMIT)));
+                    this.state.next_coords[1] > d && (this.options.infinite_x ? (e = 0, i.call(this, o.WRAP_X), i.call(this, o.WRAP)) : (e = d, i.call(this, o.LIMIT_X), i.call(this, o.LIMIT)));
                     break;
                 case r:
                     this.state.next_coords[0] < 0 && (this.options.infinite_y ? (t = s, i.call(this, o.WRAP_Y), i.call(this, o.WRAP)) : (t = 0, i.call(this, o.LIMIT_Y), i.call(this, o.LIMIT)));
@@ -977,8 +977,8 @@ document.addEventListener("DOMContentLoaded", function() {
             var t = this.refs.container;
             t && (t.removeEventListener("keydown", this.handleKeyDown), t.removeEventListener("focus", this.containerFocus), t.removeEventListener("blur", this.containerBlur), t.removeEventListener("click", this.handleCellClick));
         }, t;
-    }(), d = o;
-    t.default = l, t.gameGridEventsEnum = d, Object.defineProperty(t, "__esModule", {
+    }(), l = o;
+    t.default = d, t.gameGridEventsEnum = l, Object.defineProperty(t, "__esModule", {
         value: !0
     });
 });
@@ -1031,6 +1031,210 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}]},["lzrsO","a2QOe"], "a2QOe", "parcelRequiredb3a")
+},{}],"egx33":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "matrix2", ()=>matrix2);
+var _enumsJs = require("./enums.js");
+const matrix2 = [
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
+            cellAttributes: [
+                [
+                    "data-cell-type",
+                    "interactive"
+                ]
+            ]
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
+            cellAttributes: [
+                [
+                    "data-cell-type",
+                    "interactive"
+                ]
+            ]
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        }
+    ]
+];
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./enums.js":"69i4T"}],"69i4T":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "tileTypeEnum", ()=>tileTypeEnum);
+const tileTypeEnum = {
+    OPEN: "open",
+    INTERACTIVE: "interactive",
+    BARRIER: "barrier"
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lzrsO","a2QOe"], "a2QOe", "parcelRequiredb3a")
 
 //# sourceMappingURL=index.d59795f0.js.map

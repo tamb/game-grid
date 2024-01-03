@@ -1,11 +1,8 @@
 import GameGrid from './../../dist/main.js';
 import { attachListeners } from './eventListeners.js';
+import { matrix2 } from './matrices.js';
+import { tileTypeEnum } from './enums.js';
 
-const tileTypeEnum = {
-  OPEN: 'open',
-  INTERACTIVE: 'interactive',
-  BARRIER: 'barrier',
-};
 
 const matrix = [
   [
@@ -58,6 +55,7 @@ const matrix = [
 
 function createGrid() {
   console.log('building grid');
+
   return new GameGrid(
     {
       matrix,
@@ -77,7 +75,7 @@ function createGrid() {
         },
       },
     },
-    document.getElementById('grid'),
+    document.getElementById('grid1'),
   );
 }
 
@@ -85,4 +83,10 @@ document.addEventListener('DOMContentLoaded', function () {
   attachListeners();
   const grid = createGrid();
   console.log(grid);
+  new GameGrid(
+    {
+      matrix: matrix2,
+    },
+    document.getElementById('grid2'),
+  );
 });
