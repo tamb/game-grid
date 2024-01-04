@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "jest",
+    "test.watch": "jest --watch",
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"npm run start\"",
     "start": "parcel demos/js/index.html",

@@ -9,7 +9,8 @@
     "jsx": "react",
     "allowJs": true,
     "declaration": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node", "jest"]
   },
   "exclude": ["node_modules/**/*"],
   "include": ["src/index.ts"],

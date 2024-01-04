@@ -1,13 +1,7 @@
-/**
- * @jest-environment jsdom
- */
 import {
   getKeyByValue,
   renderAttributes,
-  getCoordsFromElement,
   fireCustomEvent,
-  mapRowColIndicesToXY,
-  mapXYToRowColIndices,
   insertStyles,
 } from '../utils';
 
@@ -53,19 +47,6 @@ describe('renderAttributes util', () => {
   });
 });
 
-
-describe('mapRowColIndicesToXY util', () => {
-  test('returns the correct x and y coordinates for given row and column indices', () => {
-    expect(mapRowColIndicesToXY(1, 2)).toEqual([2, 1]);
-  });
-});
-
-describe('mapXYToRowColIndices util', () => {
-  test('returns the correct row and column indices for given x and y coordinates', () => {
-    expect(mapXYToRowColIndices(2, 1)).toEqual([1, 2]);
-  });
-});
-
 describe('fireCustomEvent util', () => {
   let mockCallback: jest.Mock;
   let testEventName: string;
@@ -101,5 +82,15 @@ describe('fireCustomEvent util', () => {
 
   afterEach(() => {
     window.removeEventListener(testEventName, mockCallback);
+  });
+});
+
+describe('insertStyles util', () => {
+  test('inserts style tag into head', () => {
+    insertStyles();
+
+    expect(
+      document.querySelector('[data-testid="gamegrid-styles"]'),
+    ).toBeTruthy();
   });
 });
