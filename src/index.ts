@@ -10,7 +10,7 @@ import {
 } from './interfaces';
 
 export default class GameGrid implements IGameGrid {
-  private options: IOptions;
+  public options: IOptions;
   private matrix: ICell[][];
   private state: IState = INITIAL_STATE;
   public refs: IRefs = {
@@ -55,7 +55,8 @@ export default class GameGrid implements IGameGrid {
       cells: [],
     };
     this.render();
-    this.attachEventListeners();
+    this.attachHandlers();
+    fireCustomEvent.call(this, gridEventsEnum.RENDERED);
   }
 
   public getOptions(): IOptions {
@@ -126,8 +127,21 @@ export default class GameGrid implements IGameGrid {
     return this.matrix;
   }
   public setStateSync(obj: any): void {
-    const newState: IState = { ...this.state, ...obj };
-    this.state = newState;
+    if (this.options.middlewares) {
+      this.options.middlewares.pre?.forEach(
+        (fn: (gamegridInstance: IGameGrid, newState: any) => void) => {
+          fn(this, obj);
+        },
+      );
+      this.updateState(obj);
+      this.options.middlewares.post?.forEach(
+        (fn: (gamegridInstance: IGameGrid, newState: any) => void) => {
+          fn(this, obj);
+        },
+      );
+    } else {
+      this.updateState(obj);
+    }
   }
 
   public getActiveCell(): HTMLDivElement {
@@ -137,6 +151,11 @@ export default class GameGrid implements IGameGrid {
   }
 
   //private methods
+  private updateState(obj: any): void {
+    const newState: IState = { ...this.state, ...obj };
+    this.state = newState;
+  }
+
   private render(): void {
     if (this.refs && this.refs.container) {
       insertStyles();
@@ -174,16 +193,13 @@ export default class GameGrid implements IGameGrid {
             cell.appendChild(cellData.renderFunction(this));
           }
           row.appendChild(cell);
-          this.refs?.cells[rI].push(cell);
+          this.refs.cells[rI].push(cell);
         });
-        this.refs?.rows.push(row);
+        this.refs.rows.push(row);
         grid.appendChild(row);
       });
       this.refs.container.appendChild(grid);
       this.setStateSync({ rendered: true });
-
-      this.attachHandlers();
-      fireCustomEvent.call(this, gridEventsEnum.RENDERED);
     } else {
       throw new Error('No container found');
     }
@@ -217,7 +233,7 @@ export default class GameGrid implements IGameGrid {
   private addToMoves(): void {
     const clonedMoves = [...this.getState().moves];
     clonedMoves.unshift(this.state.active_coords);
-    if (clonedMoves.length > this.options.rewind_limit) {
+    if (clonedMoves.length > this.options.rewind_limit!) {
       clonedMoves.shift();
     }
     this.setStateSync({ moves: clonedMoves });
@@ -377,7 +393,7 @@ export default class GameGrid implements IGameGrid {
       }
     }
   }
-  private handleKeyDown(event: KeyboardEvent): void {
+  private handleKeyDown = (event: KeyboardEvent): void => {
     if (this.options.arrow_controls) {
       if (
         event.code === 'ArrowUp' ||
@@ -400,9 +416,9 @@ export default class GameGrid implements IGameGrid {
         this.handleDirection(event);
       }
     }
-  }
+  };
 
-  private handleCellClick(event: MouseEvent): void {
+  private handleCellClick = (event: MouseEvent): void => {
     try {
       if (this.getOptions().clickable) {
         if (event.target instanceof HTMLElement) {
@@ -426,15 +442,19 @@ export default class GameGrid implements IGameGrid {
         'Error handling cell click. You possibly have missing attributes',
       );
     }
-  }
+  };
 
-  private containerFocus(): void {
-    this.refs.container!.classList.add(this.options.active_class);
-  }
+  private containerFocus = (): void => {
+    this.options.active_class
+      ? this.refs.container!.classList.add(this.options.active_class)
+      : null;
+  };
 
-  private containerBlur(): void {
-    this.refs.container!.classList.remove(this.options.active_class);
-  }
+  private containerBlur = (): void => {
+    this.options.active_class
+      ? this.refs.container!.classList.remove(this.options.active_class)
+      : null;
+  };
 
   // SET UP
   private attachHandlers(): void {
@@ -445,15 +465,6 @@ export default class GameGrid implements IGameGrid {
       container.addEventListener('blur', this.containerBlur);
       container.addEventListener('click', this.handleCellClick);
     }
-  }
-
-  private attachEventListeners() {
-    this.containerFocus = this.containerFocus.bind(this);
-    this.containerBlur = this.containerBlur.bind(this);
-    this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleCellClick = this.handleCellClick.bind(this);
-    this.render = this.render.bind(this);
-    this.attachHandlers = this.attachHandlers.bind(this);
   }
 
   private dettachHandlers(): void {

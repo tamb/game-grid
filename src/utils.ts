@@ -41,16 +41,9 @@ export function fireCustomEvent(eventName: string, data?: any): void {
   );
 }
 
-export function mapRowColIndicesToXY(rI: number, cI: number): number[] {
-  return [rI, cI].reverse().map((num) => ++num);
-}
-
-export function mapXYToRowColIndices(x: number, y: number): number[] {
-  return [x, y].reverse().map((num) => --num);
-}
-
 export function insertStyles(): void {
   const style = document.createElement('style');
+  style.setAttribute('data-testid', 'gamegrid-styles');
   style.innerHTML = `
   .gamegrid * {
     box-sizing: border-box;

@@ -1,6 +1,6 @@
 import { IState, IOptions, ICell, IRefs, IConfig, IGameGrid } from './interfaces';
 export default class GameGrid implements IGameGrid {
-    private options;
+    options: IOptions;
     private matrix;
     private state;
     refs: IRefs;
@@ -18,6 +18,7 @@ export default class GameGrid implements IGameGrid {
     getMatrix(): ICell[][];
     setStateSync(obj: any): void;
     getActiveCell(): HTMLDivElement;
+    private updateState;
     private render;
     private setFocusToCell;
     private removeActiveClasses;
@@ -33,7 +34,6 @@ export default class GameGrid implements IGameGrid {
     private containerFocus;
     private containerBlur;
     private attachHandlers;
-    private attachEventListeners;
     private dettachHandlers;
 }
 export declare const gameGridEventsEnum: {

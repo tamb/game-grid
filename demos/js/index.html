@@ -9,9 +9,6 @@
     />
     <title>Bootstrap 5 Boilerplate</title>
     <style>
-      #grid {
-        width: 500px;
-      }
       [data-cell-type='barrier'] {
         background-color: black;
       }
@@ -19,13 +16,8 @@
         background-color: blue;
       }
 
-      #state-events {
-        height: 300px;
-        overflow-y: scroll;
-      }
-
       #move-events {
-        height: 300px;
+        height: 200px;
         overflow-y: scroll;
       }
     </style>
@@ -36,19 +28,16 @@
         <div class="col-12">
           <h1>Game Grid vanilla demo</h1>
         </div>
-        <div class="col-sm-6">
-          <div id="grid"></div>
+        <div class="col-sm-4">
+          <div id="grid1"></div>
+          <hr/>
+          <div id="grid2"></div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-8">
           <div>
-            <h2>State Events</h2>
-            <div id="state-events">
-              <ol></ol>
-            </div>
-
-            <h2>Move Events</h2>
+            <h2>Events</h2>
             <div id="move-events">
-              <ol></ol>
+              <ul></ul>
             </div>
           </div>
         </div>
