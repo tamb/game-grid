@@ -1,7 +1,7 @@
 export interface ICell {
     renderFunction?: (gamegridInstance: IGameGrid) => HTMLElement;
     cellAttributes?: string[][];
-    type: string | string[];
+    type: string;
     [key: string]: any;
 }
 export interface IState {

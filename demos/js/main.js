@@ -2,7 +2,7 @@ import GameGrid from './../../dist/main.js';
 import { attachListeners } from './eventListeners.js';
 import { matrix2 } from './matrices.js';
 import { tileTypeEnum } from './enums.js';
-
+import { renderMaze } from './maze.js';
 
 const matrix = [
   [
@@ -89,4 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     document.getElementById('grid2'),
   );
+
+  renderMaze('#maze', 50);
+  renderMaze('#maze2', 10);
 });

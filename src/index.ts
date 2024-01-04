@@ -180,6 +180,7 @@ export default class GameGrid implements IGameGrid {
             ['data-gamegrid-row-index', rI.toString()],
             ['data-gamegrid-col-index', cI.toString()],
             ['data-gamegrid-coords', `${rI},${cI}`],
+            ['data-gamegrid-cell-type', cellData.type || 'open'],
           ]);
 
           cell.style.width = `${100 / rowData.length}%`;

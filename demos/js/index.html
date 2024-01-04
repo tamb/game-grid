@@ -9,11 +9,15 @@
     />
     <title>Bootstrap 5 Boilerplate</title>
     <style>
-      [data-cell-type='barrier'] {
+      [data-gamegrid-cell-type='barrier'] {
         background-color: black;
       }
-      [data-cell-type='interactive'] {
+      [data-gamegrid-cell-type='interactive'] {
         background-color: blue;
+      }
+
+      #maze [data-gamegrid-cell-type='interactive'] {
+        background-color: transparent;
       }
 
       #move-events {
@@ -30,7 +34,7 @@
         </div>
         <div class="col-sm-4">
           <div id="grid1"></div>
-          <hr/>
+          <hr />
           <div id="grid2"></div>
         </div>
         <div class="col-sm-8">
@@ -40,6 +44,16 @@
               <ul></ul>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="mt-5 col-12">
+          <div id="maze"></div>
+        </div>
+
+        <div class="mt-5 col-12">
+          <div id="maze2"></div>
         </div>
       </div>
     </div>

@@ -581,6 +581,7 @@ var _mainJsDefault = parcelHelpers.interopDefault(_mainJs);
 var _eventListenersJs = require("./eventListeners.js");
 var _matricesJs = require("./matrices.js");
 var _enumsJs = require("./enums.js");
+var _mazeJs = require("./maze.js");
 const matrix = [
     [
         {
@@ -686,9 +687,11 @@ document.addEventListener("DOMContentLoaded", function() {
     new (0, _mainJsDefault.default)({
         matrix: (0, _matricesJs.matrix2)
     }, document.getElementById("grid2"));
+    (0, _mazeJs.renderMaze)("#maze", 50);
+    (0, _mazeJs.renderMaze)("#maze2", 10);
 });
 
-},{"./../../dist/main.js":"lbDgN","./eventListeners.js":"bCsEQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./matrices.js":"egx33","./enums.js":"69i4T"}],"lbDgN":[function(require,module,exports) {
+},{"./../../dist/main.js":"lbDgN","./eventListeners.js":"bCsEQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./matrices.js":"egx33","./enums.js":"69i4T","./maze.js":"bJQBv"}],"lbDgN":[function(require,module,exports) {
 !function(t, e) {
     e(exports);
 }(this, function(t) {
@@ -856,7 +859,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }, t.prototype.render = function() {
             var t = this;
             if (!this.refs || !this.refs.container) throw new Error("No container found");
-            (e = document.createElement("style")).innerHTML = '\n  .gamegrid * {\n    box-sizing: border-box;\n  }\n  .gamegrid__stage {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    flex-wrap: wrap;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__row {\n    display: flex;\n    flex-basis: 100%;\n    max-width: 100%;\n    box-sizing: border-box;\n  }\n  .gamegrid__cell {\n    flex: 1 0 auto;\n    height: auto;\n    overflow: hidden;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__cell--active {\n    outline: 4px solid red;\n  }\n  .gamegrid__cell::before {\n    content: "";\n    float: left;\n    padding-top: 100%;\n  }\n  ', document.head.appendChild(e), this.refs.container.classList.add("gamegrid"), this.refs.container.setAttribute("tabindex", "0"), this.refs.container.setAttribute("data-gamegrid-ref", "container");
+            (e = document.createElement("style")).setAttribute("data-testid", "gamegrid-styles"), e.innerHTML = '\n  .gamegrid * {\n    box-sizing: border-box;\n  }\n  .gamegrid__stage {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    flex-wrap: wrap;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__row {\n    display: flex;\n    flex-basis: 100%;\n    max-width: 100%;\n    box-sizing: border-box;\n  }\n  .gamegrid__cell {\n    flex: 1 0 auto;\n    height: auto;\n    overflow: hidden;\n    box-sizing: border-box;\n    border: 1px solid;\n  }\n  .gamegrid__cell--active {\n    outline: 4px solid red;\n  }\n  .gamegrid__cell::before {\n    content: "";\n    float: left;\n    padding-top: 100%;\n  }\n  ', document.head.appendChild(e), this.refs.container.classList.add("gamegrid"), this.refs.container.setAttribute("tabindex", "0"), this.refs.container.setAttribute("data-gamegrid-ref", "container");
             var e, i = document.createDocumentFragment();
             this.matrix.forEach(function(e, o) {
                 var s, r = document.createElement("div");
@@ -878,6 +881,10 @@ document.addEventListener("DOMContentLoaded", function() {
                         [
                             "data-gamegrid-coords",
                             "".concat(o, ",").concat(s)
+                        ],
+                        [
+                            "data-gamegrid-cell-type",
+                            i.type || "open"
                         ]
                     ].forEach(function(t) {
                         var e;
@@ -1235,6 +1242,43 @@ const tileTypeEnum = {
     BARRIER: "barrier"
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lzrsO","a2QOe"], "a2QOe", "parcelRequiredb3a")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bJQBv":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "renderMaze", ()=>renderMaze);
+var _main = require("./../../dist/main");
+var _mainDefault = parcelHelpers.interopDefault(_main);
+// Function to generate a random type ('open', 'interactive', or 'barrier')
+function getRandomType() {
+    const types = [
+        "open",
+        "interactive",
+        "barrier"
+    ];
+    const randomIndex = Math.floor(Math.random() * types.length);
+    return types[randomIndex];
+}
+// Function to generate a 2D maze
+function generateMaze(rows, columns) {
+    const maze = [];
+    for(let i = 0; i < rows; i++){
+        const row = [];
+        for(let j = 0; j < columns; j++){
+            const cell = {
+                type: getRandomType()
+            };
+            row.push(cell);
+        }
+        maze.push(row);
+    }
+    return maze;
+}
+function renderMaze(selector, mazeSize) {
+    return new (0, _mainDefault.default)({
+        matrix: generateMaze(mazeSize, mazeSize)
+    }, document.querySelector(selector));
+}
+
+},{"./../../dist/main":"lbDgN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lzrsO","a2QOe"], "a2QOe", "parcelRequiredb3a")
 
 //# sourceMappingURL=index.d59795f0.js.map
