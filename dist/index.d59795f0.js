@@ -575,123 +575,35 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 }
 
 },{}],"a2QOe":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-var _mainJs = require("./../../dist/main.js");
-var _mainJsDefault = parcelHelpers.interopDefault(_mainJs);
 var _eventListenersJs = require("./eventListeners.js");
-var _matricesJs = require("./matrices.js");
-var _enumsJs = require("./enums.js");
 var _mazeJs = require("./maze.js");
-const matrix = [
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN,
-            cellAttributes: [
-                [
-                    "data-butt",
-                    "sauce"
-                ],
-                [
-                    "class",
-                    "butt booty butty"
-                ]
-            ],
-            renderFunction () {
-                let clickCount = 0;
-                const frag = document.createDocumentFragment();
-                const count = document.createElement("span");
-                const button = document.createElement("button");
-                button.textContent = "+1";
-                button.addEventListener("click", function() {
-                    clickCount++;
-                    count.textContent = clickCount;
-                });
-                frag.appendChild(button);
-                frag.appendChild(count);
-                return frag;
-            }
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
-            cellAttributes: [
-                [
-                    "data-cell-type",
-                    "interactive"
-                ]
-            ]
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER,
-            cellAttributes: [
-                [
-                    "data-cell-type",
-                    "barrier"
-                ]
-            ]
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER,
-            cellAttributes: [
-                [
-                    "data-cell-type",
-                    "barrier"
-                ]
-            ]
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        }
-    ]
-];
-function createGrid() {
-    console.log("building grid");
-    return new (0, _mainJsDefault.default)({
-        matrix,
-        options: {
-            infinite_y: true,
-            infinite_x: true,
-            clickable: true,
-            arrow_controls: true,
-            wasd_controls: true,
-            callbacks: {
-                LIMIT: function(x) {
-                    console.log("callback for LIMIT", x);
-                },
-                WRAP_Y: function(x) {
-                    console.log("callback WRAP_Y", x);
-                }
-            }
-        }
-    }, document.getElementById("grid1"));
-}
+var _grid1Js = require("./grid1.js");
 document.addEventListener("DOMContentLoaded", function() {
     (0, _eventListenersJs.attachListeners)();
-    const grid = createGrid();
-    console.log(grid);
-    new (0, _mainJsDefault.default)({
-        matrix: (0, _matricesJs.matrix2)
-    }, document.getElementById("grid2"));
+    (0, _grid1Js.createGrid)();
     (0, _mazeJs.renderMaze)("#maze", 50);
     (0, _mazeJs.renderMaze)("#maze2", 10);
 });
 
-},{"./../../dist/main.js":"lbDgN","./eventListeners.js":"bCsEQ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./matrices.js":"egx33","./enums.js":"69i4T","./maze.js":"bJQBv"}],"lbDgN":[function(require,module,exports) {
+},{"./eventListeners.js":"bCsEQ","./maze.js":"bJQBv","./grid1.js":"xr0xp"}],"bCsEQ":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "attachListeners", ()=>attachListeners);
+var _main = require("./../../dist/main");
+function attachListeners() {
+    Object.keys((0, _main.gameGridEventsEnum)).forEach((key)=>{
+        const event = (0, _main.gameGridEventsEnum)[key];
+        window.addEventListener(event, (e)=>{
+            console.log("event", event, e);
+            const el = document.querySelector("#move-events ul");
+            const li = document.createElement("li");
+            li.innerText = `${event} : ${e.timeStamp}`;
+            el.insertAdjacentElement("afterbegin", li);
+        });
+    });
+}
+
+},{"./../../dist/main":"lbDgN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lbDgN":[function(require,module,exports) {
 !function(t, e) {
     e(exports);
 }(this, function(t) {
@@ -990,25 +902,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-},{}],"bCsEQ":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "attachListeners", ()=>attachListeners);
-var _main = require("./../../dist/main");
-function attachListeners() {
-    Object.keys((0, _main.gameGridEventsEnum)).forEach((key)=>{
-        const event = (0, _main.gameGridEventsEnum)[key];
-        window.addEventListener(event, (e)=>{
-            console.log("event", event, e);
-            const el = document.querySelector("#move-events ul");
-            const li = document.createElement("li");
-            li.innerText = `${event} : ${e.timeStamp}`;
-            el.insertAdjacentElement("afterbegin", li);
-        });
-    });
-}
-
-},{"./../../dist/main":"lbDgN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+},{}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -1038,211 +932,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"egx33":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "matrix2", ()=>matrix2);
-var _enumsJs = require("./enums.js");
-const matrix2 = [
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
-            cellAttributes: [
-                [
-                    "data-cell-type",
-                    "interactive"
-                ]
-            ]
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
-            cellAttributes: [
-                [
-                    "data-cell-type",
-                    "interactive"
-                ]
-            ]
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        }
-    ],
-    [
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).BARRIER
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        },
-        {
-            type: (0, _enumsJs.tileTypeEnum).OPEN
-        }
-    ]
-];
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./enums.js":"69i4T"}],"69i4T":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "tileTypeEnum", ()=>tileTypeEnum);
-const tileTypeEnum = {
-    OPEN: "open",
-    INTERACTIVE: "interactive",
-    BARRIER: "barrier"
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bJQBv":[function(require,module,exports) {
+},{}],"bJQBv":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "renderMaze", ()=>renderMaze);
@@ -1279,6 +969,122 @@ function renderMaze(selector, mazeSize) {
     }, document.querySelector(selector));
 }
 
-},{"./../../dist/main":"lbDgN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lzrsO","a2QOe"], "a2QOe", "parcelRequiredb3a")
+},{"./../../dist/main":"lbDgN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"xr0xp":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "createGrid", ()=>createGrid);
+var _mainJs = require("./../../dist/main.js");
+var _mainJsDefault = parcelHelpers.interopDefault(_mainJs);
+var _enumsJs = require("./enums.js");
+const matrix = [
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN,
+            cellAttributes: [
+                [
+                    "data-butt",
+                    "sauce"
+                ],
+                [
+                    "class",
+                    "butt booty butty"
+                ]
+            ],
+            renderFunction () {
+                let clickCount = 0;
+                const frag = document.createDocumentFragment();
+                const count = document.createElement("span");
+                const button = document.createElement("button");
+                button.textContent = "+1";
+                button.addEventListener("click", function() {
+                    clickCount++;
+                    count.textContent = clickCount;
+                });
+                frag.appendChild(button);
+                frag.appendChild(count);
+                return frag;
+            }
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).INTERACTIVE,
+            cellAttributes: [
+                [
+                    "data-cell-type",
+                    "interactive"
+                ]
+            ]
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER,
+            cellAttributes: [
+                [
+                    "data-cell-type",
+                    "barrier"
+                ]
+            ]
+        }
+    ],
+    [
+        {
+            type: (0, _enumsJs.tileTypeEnum).BARRIER,
+            cellAttributes: [
+                [
+                    "data-cell-type",
+                    "barrier"
+                ]
+            ]
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        },
+        {
+            type: (0, _enumsJs.tileTypeEnum).OPEN
+        }
+    ]
+];
+function createGrid() {
+    console.log("building grid");
+    return new (0, _mainJsDefault.default)({
+        matrix,
+        options: {
+            infinite_y: true,
+            infinite_x: true,
+            clickable: true,
+            arrow_controls: true,
+            wasd_controls: true,
+            callbacks: {
+                LIMIT: function(x) {
+                    console.log("callback for LIMIT", x);
+                },
+                WRAP_Y: function(x) {
+                    console.log("callback WRAP_Y", x);
+                }
+            }
+        }
+    }, document.getElementById("grid1"));
+}
+
+},{"./../../dist/main.js":"lbDgN","./enums.js":"69i4T","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"69i4T":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "tileTypeEnum", ()=>tileTypeEnum);
+const tileTypeEnum = {
+    OPEN: "open",
+    INTERACTIVE: "interactive",
+    BARRIER: "barrier"
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lzrsO","a2QOe"], "a2QOe", "parcelRequiredb3a")
 
 //# sourceMappingURL=index.d59795f0.js.map
