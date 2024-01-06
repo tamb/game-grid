@@ -10,10 +10,10 @@ describe('setStateSync', () => {
     document.body.innerHTML = '<div id="root"></div>';
 
     defaultState = {
-      active_coords: [0, 0],
-      prev_coords: [0, 0],
-      next_coords: [],
-      current_direction: '',
+      activeCoords: [0, 0],
+      prevCoords: [0, 0],
+      nextCoords: [],
+      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -133,7 +133,7 @@ describe('setStateSync', () => {
 
   test('setStateSync updates partial state correctly', () => {
     renderedGrid.setStateSync({ current_direction: 'blueberry' });
-    expect(renderedGrid.getState().current_direction).toMatch('blueberry');
+    expect(renderedGrid.getState().currentDirection).toMatch('blueberry');
     expect(renderedGrid.getState().rendered).toBe(true);
   });
 

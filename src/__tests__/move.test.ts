@@ -14,22 +14,22 @@ describe('Move methods', () => {
   beforeEach(() => {
     renderedGrid = new GameGrid({ matrix }, document.getElementById('root')!);
     defaultOptions = {
-      active_class: 'gamegrid__cell--active',
-      arrow_controls: true,
+      activeClass: 'gamegrid__cell--active',
+      arrowControls: true,
       clickable: true,
-      wasd_controls: true,
-      infinite_x: true,
-      infinite_y: true,
-      rewind_limit: 20,
-      block_on_type: ['barrier'],
-      collide_on_type: ['interactive'],
-      move_on_type: ['open'],
+      wasdControls: true,
+      infiniteX: true,
+      infiniteY: true,
+      rewindLimit: 20,
+      blockOnType: ['barrier'],
+      collideOnType: ['interactive'],
+      moveOnType: ['open'],
     };
     defaultState = {
-      active_coords: [0, 0],
-      prev_coords: [0, 0],
-      next_coords: [],
-      current_direction: '',
+      activeCoords: [0, 0],
+      prevCoords: [0, 0],
+      nextCoords: [],
+      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -57,7 +57,7 @@ describe('Move methods', () => {
     const x = new GameGrid(
       {
         matrix,
-        options: { rewind_limit: 2 },
+        options: { rewindLimit: 2 },
       },
       document.getElementById('root')!,
     );
@@ -75,10 +75,10 @@ describe('Move methods', () => {
     );
     x.moveLeft();
     const state = x.getState();
-    expect(state.current_direction).toMatch('left');
-    expect(state.prev_coords).toEqual([0, 0]);
-    expect(state.active_coords).toEqual([0, x.getMatrix()[0].length - 1]);
-    expect(state.next_coords).toEqual([0, x.getMatrix()[0].length - 1]);
+    expect(state.currentDirection).toMatch('left');
+    expect(state.prevCoords).toEqual([0, 0]);
+    expect(state.activeCoords).toEqual([0, x.getMatrix()[0].length - 1]);
+    expect(state.nextCoords).toEqual([0, x.getMatrix()[0].length - 1]);
   });
 
   test('moveRight moves right', () => {
@@ -90,10 +90,10 @@ describe('Move methods', () => {
     );
     x.moveRight();
     const state = x.getState();
-    expect(state.current_direction).toMatch('right');
-    expect(state.prev_coords).toEqual([0, 0]);
-    expect(state.active_coords).toEqual([0, 1]);
-    expect(state.next_coords).toEqual([0, 1]);
+    expect(state.currentDirection).toMatch('right');
+    expect(state.prevCoords).toEqual([0, 0]);
+    expect(state.activeCoords).toEqual([0, 1]);
+    expect(state.nextCoords).toEqual([0, 1]);
   });
 
   test('moveUp moves up', () => {
@@ -105,10 +105,10 @@ describe('Move methods', () => {
     );
     x.moveUp();
     const state = x.getState();
-    expect(state.current_direction).toMatch('up');
-    expect(state.prev_coords).toEqual([0, 0]);
-    expect(state.active_coords).toEqual([x.getMatrix().length - 1, 0]);
-    expect(state.next_coords).toEqual([x.getMatrix().length - 1, 0]);
+    expect(state.currentDirection).toMatch('up');
+    expect(state.prevCoords).toEqual([0, 0]);
+    expect(state.activeCoords).toEqual([x.getMatrix().length - 1, 0]);
+    expect(state.nextCoords).toEqual([x.getMatrix().length - 1, 0]);
   });
 
   test('moveDown moves down', () => {
@@ -120,10 +120,10 @@ describe('Move methods', () => {
     );
     x.moveDown();
     const state = x.getState();
-    expect(state.current_direction).toMatch('down');
-    expect(state.prev_coords).toEqual([0, 0]);
-    expect(state.active_coords).toEqual([1, 0]);
-    expect(state.next_coords).toEqual([1, 0]);
+    expect(state.currentDirection).toMatch('down');
+    expect(state.prevCoords).toEqual([0, 0]);
+    expect(state.activeCoords).toEqual([1, 0]);
+    expect(state.nextCoords).toEqual([1, 0]);
   });
 
   // test("hitting limit fires events", () => {});

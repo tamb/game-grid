@@ -1,34 +1,35 @@
 export interface ICell {
     renderFunction?: (gamegridInstance: IGameGrid) => HTMLElement;
     cellAttributes?: string[][];
-    type: string | string[];
+    type: string;
     [key: string]: any;
 }
 export interface IState {
-    active_coords: number[];
-    prev_coords: number[];
-    next_coords: number[];
+    activeCoords: number[];
+    prevCoords: number[];
+    nextCoords: number[];
     moves: number[][];
-    current_direction?: string;
+    currentDirection?: string;
     rendered?: boolean;
 }
 export interface IOptions {
-    arrow_controls?: boolean;
-    wasd_controls?: boolean;
-    infinite_x?: boolean;
-    infinite_y?: boolean;
+    id?: string;
+    arrowControls?: boolean;
+    wasdControls?: boolean;
+    infiniteX?: boolean;
+    infiniteY?: boolean;
     clickable?: boolean;
-    rewind_limit?: number;
+    rewindLimit?: number;
     middlewares?: {
         pre: ((gamegridInstance: IGameGrid, newState: any) => void)[];
         post: ((gamegridInstance: IGameGrid, newState: any) => void)[];
     };
-    block_on_type?: string[];
-    collide_on_type?: string[];
-    move_on_type?: string[];
-    active_class?: string;
-    container_class?: string;
-    row_class?: string;
+    blockOnType?: string[];
+    collideOnType?: string[];
+    moveOnType?: string[];
+    activeClass?: string;
+    containerClass?: string;
+    rowClass?: string;
 }
 export interface IConfig {
     options?: IOptions;

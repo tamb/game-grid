@@ -1,0 +1,16 @@
+[data-gamegrid-cell-type='barrier'] {
+  background-color: black;
+}
+[data-gamegrid-cell-type='interactive'] {
+  background-color: blue;
+}
+
+#maze [data-gamegrid-cell-type='interactive'],
+#maze3 [data-gamegrid-cell-type='interactive'] {
+  background-color: transparent;
+}
+
+#move-events {
+  height: 200px;
+  overflow-y: scroll;
+}
