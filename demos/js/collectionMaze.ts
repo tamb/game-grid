@@ -1,4 +1,4 @@
-import GameGrid from './../../dist/main';
+import GameGrid from '../../dist/main';
 import { generateMaze } from './maze';
 
 class GameCoin extends HTMLElement {
@@ -50,10 +50,8 @@ export function createCoinGrid() {
 
   window.addEventListener('gamegrid:move:collide', function (e) {
     if (e.detail.gameGridInstance.options.id === 'coinGrid') {
-      console.log('got coin', e.detail.gameGridInstance.state);
       const state = e.detail.gameGridInstance.state;
       const activeCell = state.active_coords;
-      console.log('activeCell', activeCell);
       const cell = coinGrid.refs.cells[activeCell[0]][activeCell[1]];
       cell.querySelector('game-coin')?.remove();
     }

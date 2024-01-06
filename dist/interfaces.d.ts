@@ -5,31 +5,31 @@ export interface ICell {
     [key: string]: any;
 }
 export interface IState {
-    active_coords: number[];
-    prev_coords: number[];
-    next_coords: number[];
+    activeCoords: number[];
+    prevCoords: number[];
+    nextCoords: number[];
     moves: number[][];
-    current_direction?: string;
+    currentDirection?: string;
     rendered?: boolean;
 }
 export interface IOptions {
     id?: string;
-    arrow_controls?: boolean;
-    wasd_controls?: boolean;
-    infinite_x?: boolean;
-    infinite_y?: boolean;
+    arrowControls?: boolean;
+    wasdControls?: boolean;
+    infiniteX?: boolean;
+    infiniteY?: boolean;
     clickable?: boolean;
-    rewind_limit?: number;
+    rewindLimit?: number;
     middlewares?: {
         pre: ((gamegridInstance: IGameGrid, newState: any) => void)[];
         post: ((gamegridInstance: IGameGrid, newState: any) => void)[];
     };
-    block_on_type?: string[];
-    collide_on_type?: string[];
-    move_on_type?: string[];
+    blockOnType?: string[];
+    collideOnType?: string[];
+    moveOnType?: string[];
     activeClass?: string;
-    container_class?: string;
-    row_class?: string;
+    containerClass?: string;
+    rowClass?: string;
 }
 export interface IConfig {
     options?: IOptions;

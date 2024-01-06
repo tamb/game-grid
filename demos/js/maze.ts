@@ -1,4 +1,4 @@
-import GameGrid from './../../dist/main';
+import GameGrid from '../../dist/main';
 // Function to generate a random type ('open', 'interactive', or 'barrier')
 function getRandomType() {
   const types = ['open', 'interactive', 'barrier'];
