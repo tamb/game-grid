@@ -16,9 +16,12 @@
         background-color: blue;
       }
 
-      #maze [data-gamegrid-cell-type='interactive'] {
+      #maze [data-gamegrid-cell-type='interactive'],
+      #maze3 [data-gamegrid-cell-type='interactive'] {
         background-color: transparent;
       }
+
+
 
       #move-events {
         height: 200px;
@@ -55,6 +58,9 @@
         <div class="mt-5 col-6">
           <div id="maze2"></div>
         </div>
+
+        <div class="mt-5 col-6">
+          <div id="maze3"></div>
       </div>
     </div>
     <script type="module" src="./main.js"></script>

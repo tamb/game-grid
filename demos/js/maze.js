@@ -7,7 +7,7 @@ function getRandomType() {
 }
 
 // Function to generate a 2D maze
-function generateMaze(rows, columns) {
+export function generateMaze(rows, columns) {
   const maze = [];
 
   for (let i = 0; i < rows; i++) {

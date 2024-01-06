@@ -34,7 +34,7 @@ export function fireCustomEvent(eventName: string, data?: any): void {
         ...data,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // @ts-ignore
-        game_grid_instance: this,
+        gameGridInstance: this,
       },
       bubbles: true,
     }),

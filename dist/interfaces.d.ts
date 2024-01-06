@@ -13,6 +13,7 @@ export interface IState {
     rendered?: boolean;
 }
 export interface IOptions {
+    id?: string;
     arrow_controls?: boolean;
     wasd_controls?: boolean;
     infinite_x?: boolean;
@@ -26,7 +27,7 @@ export interface IOptions {
     block_on_type?: string[];
     collide_on_type?: string[];
     move_on_type?: string[];
-    active_class?: string;
+    activeClass?: string;
     container_class?: string;
     row_class?: string;
 }

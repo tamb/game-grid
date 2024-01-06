@@ -4,7 +4,6 @@ export function attachListeners() {
   Object.keys(gameGridEventsEnum).forEach((key) => {
     const event = gameGridEventsEnum[key];
     window.addEventListener(event, (e) => {
-      console.log('event', event, e);
       const el = document.querySelector('#move-events ul');
       const li = document.createElement('li');
 
