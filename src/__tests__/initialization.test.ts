@@ -14,22 +14,22 @@ describe('GameGrid class constructor', () => {
   beforeEach(() => {
     renderedGrid = new GameGrid({ matrix }, document.getElementById('root')!);
     defaultOptions = {
-      active_class: 'gamegrid__cell--active',
-      arrow_controls: true,
+      activeClass: 'gamegrid__cell--active',
+      arrowControls: true,
       clickable: true,
-      wasd_controls: true,
-      infinite_x: true,
-      infinite_y: true,
-      rewind_limit: 20,
-      block_on_type: ['barrier'],
-      collide_on_type: ['interactive'],
-      move_on_type: ['open'],
+      wasdControls: true,
+      infiniteX: true,
+      infiniteY: true,
+      rewindLimit: 20,
+      blockOnType: ['barrier'],
+      collideOnType: ['interactive'],
+      moveOnType: ['open'],
     };
     defaultState = {
-      active_coords: [0, 0],
-      prev_coords: [0, 0],
-      next_coords: [],
-      current_direction: '',
+      activeCoords: [0, 0],
+      prevCoords: [0, 0],
+      nextCoords: [],
+      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -48,13 +48,13 @@ describe('GameGrid class constructor', () => {
       {
         matrix,
         options: {
-          infinite_x: false,
+          infiniteX: false,
         },
       },
       document.getElementById('root')!,
     );
 
-    expect(fakeGrid.getOptions().infinite_x).toBe(false);
+    expect(fakeGrid.getOptions().infiniteX).toBe(false);
   });
 
   test('default options exist', () => {
