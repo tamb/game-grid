@@ -213,7 +213,7 @@ export default class GameGrid implements IGameGrid {
       cells[row][col].focus();
       this.removeActiveClasses();
       cells[row][col].classList.add('gamegrid__cell--active');
-      this.setStateSync({ active_coords: [row, col] });
+      this.setStateSync({ activeCoords: [row, col] });
     } else {
       this.getActiveCell()?.focus();
       this.removeActiveClasses();
@@ -303,8 +303,8 @@ export default class GameGrid implements IGameGrid {
 
     this.setStateSync({
       nextCoords: [row, col],
-      active_coords: [row, col],
-      prev_coords: this.state.activeCoords,
+      activeCoords: [row, col],
+      prevCoords: this.state.activeCoords,
     });
   }
 
@@ -319,8 +319,8 @@ export default class GameGrid implements IGameGrid {
     const coords = this.state.nextCoords;
     if (this.matrix[coords[0]][coords[1]]?.type === 'barrier') {
       this.setStateSync({
-        active_coords: this.state.prevCoords,
-        prev_coords: this.state.activeCoords,
+        activeCoords: this.state.prevCoords,
+        prevCoords: this.state.activeCoords,
       });
       fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
     }

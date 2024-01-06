@@ -814,7 +814,7 @@ function attachListeners() {
             var i, o, s = this.refs.cells;
             if (!s) throw new Error("No cells found");
             "number" == typeof t && "number" == typeof e ? (s[t][e].focus(), this.removeActiveClasses(), s[t][e].classList.add("gamegrid__cell--active"), this.setStateSync({
-                active_coords: [
+                activeCoords: [
                     t,
                     e
                 ]
@@ -853,11 +853,11 @@ function attachListeners() {
                     t,
                     e
                 ],
-                active_coords: [
+                activeCoords: [
                     t,
                     e
                 ],
-                prev_coords: this.state.activeCoords
+                prevCoords: this.state.activeCoords
             });
         }, t.prototype.testInteractive = function() {
             var t, e = this.state.nextCoords;
@@ -865,8 +865,8 @@ function attachListeners() {
         }, t.prototype.testBarrier = function() {
             var t, e = this.state.nextCoords;
             "barrier" === (null === (t = this.matrix[e[0]][e[1]]) || void 0 === t ? void 0 : t.type) && (this.setStateSync({
-                active_coords: this.state.prevCoords,
-                prev_coords: this.state.activeCoords
+                activeCoords: this.state.prevCoords,
+                prevCoords: this.state.activeCoords
             }), i.call(this, o.MOVE_BLOCKED));
         }, t.prototype.testSpace = function() {
             var t, e = this.state.nextCoords;
@@ -1115,6 +1115,10 @@ class GameCoin extends HTMLElement {
 }
 // Define the custom element tag
 customElements.define("game-coin", GameCoin);
+function updateMoveCount() {
+    const moveCount = document.querySelector("#moveCount");
+    moveCount.innerHTML = `${parseInt(moveCount.innerHTML) + 1}`;
+}
 function createCoinGrid() {
     const coinMaze = (0, _maze.generateMaze)(10, 10);
     const coinGrid = new (0, _mainDefault.default)({
@@ -1131,7 +1135,7 @@ function createCoinGrid() {
     window.addEventListener("gamegrid:move:collide", function(e) {
         if (e.detail.gameGridInstance.options.id === "coinGrid") {
             const state = e.detail.gameGridInstance.state;
-            const activeCell = state.active_coords;
+            const activeCell = state.activeCoords;
             const cell = coinGrid.refs.cells[activeCell[0]][activeCell[1]];
             cell.querySelector("game-coin")?.remove();
         }

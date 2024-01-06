@@ -31,9 +31,14 @@ class GameCoin extends HTMLElement {
 // Define the custom element tag
 customElements.define('game-coin', GameCoin);
 
+function updateMoveCount() {
+  const moveCount = document.querySelector('#moveCount');
+  moveCount!.innerHTML = `${parseInt(moveCount!.innerHTML) + 1}`;
+}
+
 export function createCoinGrid() {
   const coinMaze = generateMaze(10, 10);
-  const coinGrid = new GameGrid(
+  const coinGrid: GameGrid = new GameGrid(
     {
       matrix: coinMaze,
       options: {
@@ -52,12 +57,15 @@ export function createCoinGrid() {
     });
   });
 
-  window.addEventListener('gamegrid:move:collide', function (e) {
-    if (e.detail.gameGridInstance.options.id === 'coinGrid') {
-      const state = e.detail.gameGridInstance.state;
-      const activeCell = state.active_coords;
-      const cell = coinGrid.refs.cells[activeCell[0]][activeCell[1]];
-      cell.querySelector('game-coin')?.remove();
-    }
-  });
+  window.addEventListener(
+    'gamegrid:move:collide',
+    function (e: CustomEventInit) {
+      if (e.detail.gameGridInstance.options.id === 'coinGrid') {
+        const state = e.detail.gameGridInstance.state;
+        const activeCell = state.activeCoords;
+        const cell = coinGrid.refs.cells[activeCell[0]][activeCell[1]];
+        cell.querySelector('game-coin')?.remove();
+      }
+    },
+  );
 }
