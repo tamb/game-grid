@@ -74,11 +74,11 @@ export default class GameGrid implements IGameGrid {
 
   public moveLeft(): void {
     this.setStateSync({
-      next_coords: [
+      nextCoords: [
         this.state.activeCoords![0],
         this.state.activeCoords![1] - 1,
       ],
-      current_direction: DIRECTIONS.LEFT,
+      currentDirection: DIRECTIONS.LEFT,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
     this.finishMove();
@@ -86,11 +86,11 @@ export default class GameGrid implements IGameGrid {
 
   public moveUp(): void {
     this.setStateSync({
-      next_coords: [
+      nextCoords: [
         this.state.activeCoords![0] - 1,
         this.state.activeCoords![1],
       ],
-      current_direction: DIRECTIONS.UP,
+      currentDirection: DIRECTIONS.UP,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
     this.finishMove();
@@ -98,11 +98,11 @@ export default class GameGrid implements IGameGrid {
 
   public moveRight(): void {
     this.setStateSync({
-      next_coords: [
+      nextCoords: [
         this.state.activeCoords![0],
         this.state.activeCoords![1] + 1,
       ],
-      current_direction: DIRECTIONS.RIGHT,
+      currentDirection: DIRECTIONS.RIGHT,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
     this.finishMove();
@@ -110,11 +110,11 @@ export default class GameGrid implements IGameGrid {
 
   public moveDown(): void {
     this.setStateSync({
-      next_coords: [
+      nextCoords: [
         this.state.activeCoords![0] + 1,
         this.state.activeCoords![1],
       ],
-      current_direction: DIRECTIONS.DOWN,
+      currentDirection: DIRECTIONS.DOWN,
     });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
     this.finishMove();
@@ -302,7 +302,7 @@ export default class GameGrid implements IGameGrid {
     }
 
     this.setStateSync({
-      next_coords: [row, col],
+      nextCoords: [row, col],
       active_coords: [row, col],
       prev_coords: this.state.activeCoords,
     });
