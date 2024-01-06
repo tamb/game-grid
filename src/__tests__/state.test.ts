@@ -120,10 +120,10 @@ describe('setStateSync', () => {
 
   test('setStateSync updates whole state correctly', () => {
     const newState = {
-      active_coords: [0, 0],
-      prev_coords: [0, 0],
-      next_coords: [0, 0],
-      current_direction: '',
+      activeCoords: [0, 0],
+      prevCoords: [0, 0],
+      nextCoords: [0, 0],
+      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -132,7 +132,7 @@ describe('setStateSync', () => {
   });
 
   test('setStateSync updates partial state correctly', () => {
-    renderedGrid.setStateSync({ current_direction: 'blueberry' });
+    renderedGrid.setStateSync({ currentDirection: 'blueberry' });
     expect(renderedGrid.getState().currentDirection).toMatch('blueberry');
     expect(renderedGrid.getState().rendered).toBe(true);
   });
@@ -148,8 +148,8 @@ describe('setStateSync', () => {
 
   test('initial state accepts values', () => {
     const newState = {
-      current_direction: 'up',
-      active_coords: [1, 1],
+      currentDirection: 'up',
+      activeCoords: [1, 1],
     };
     const newGrid = new GameGrid(
       {
@@ -162,8 +162,8 @@ describe('setStateSync', () => {
 
     expect(newGrid.getState()).toEqual({
       ...defaultState,
-      current_direction: 'up',
-      active_coords: [1, 1],
+      currentDirection: 'up',
+      activeCoords: [1, 1],
     });
   });
 });
