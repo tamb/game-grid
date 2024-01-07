@@ -42,3 +42,19 @@ export declare enum elementsEnum {
     ROW = "div",
     CELL = "div"
 }
+export declare enum classesEnum {
+    GRID = "gamegrid",
+    ROW = "gamegrid__row",
+    CELL = "gamegrid__cell",
+    ACTIVE_CELL = "gamegrid__cell--active"
+}
+export declare enum keycodeEnum {
+    KeyDown = "KeyS",
+    KeyUp = "KeyW",
+    KeyLeft = "KeyA",
+    KeyRight = "KeyD",
+    ArrowDown = "ArrowDown",
+    ArrowUp = "ArrowUp",
+    ArrowLeft = "ArrowLeft",
+    ArrowRight = "ArrowRight"
+}

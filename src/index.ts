@@ -5,6 +5,8 @@ import {
   cellTypeEnum,
   gridEventsEnum,
   elementsEnum,
+  classesEnum,
+  keycodeEnum,
 } from './enums';
 import {
   IState,
@@ -27,7 +29,7 @@ export default class GameGrid implements IGameGrid {
 
   constructor(config: IConfig, container: HTMLElement | null = null) {
     this.options = {
-      activeClass: 'gamegrid__cell--active',
+      activeClass: classesEnum.ACTIVE_CELL,
       arrowControls: true,
       wasdControls: true,
       infiniteX: true,
@@ -123,7 +125,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   private renderContainer(): void {
-    this.refs.container!.classList.add('gamegrid');
+    this.refs.container!.classList.add(classesEnum.GRID);
     this.refs.container!.setAttribute('tabindex', '0');
     this.refs.container!.setAttribute('data-gamegrid-ref', 'container');
   }
@@ -133,7 +135,7 @@ export default class GameGrid implements IGameGrid {
     this.options.rowClass ? row.classList.add(this.options.rowClass) : null;
     row.setAttribute('data-gamegrid-row-index', rI.toString());
     row.setAttribute('data-gamegrid-ref', 'row');
-    row.classList.add('gamegrid__row');
+    row.classList.add(classesEnum.ROW);
     return row;
   }
 
@@ -157,7 +159,7 @@ export default class GameGrid implements IGameGrid {
       cell.setAttribute(attr[0], attr[1]);
     });
 
-    cell.classList.add('gamegrid__cell');
+    cell.classList.add(classesEnum.CELL);
     cell.setAttribute('tabindex', this.options.clickable ? '0' : '-1');
     if (cellData.renderFunction) {
       cell.appendChild(cellData.renderFunction(this));
@@ -173,19 +175,19 @@ export default class GameGrid implements IGameGrid {
     if (typeof row === 'number' && typeof col === 'number') {
       cells[row][col].focus();
       this.removeActiveClasses();
-      cells[row][col].classList.add('gamegrid__cell--active');
+      cells[row][col].classList.add(classesEnum.ACTIVE_CELL);
       this.setStateSync({ activeCoords: [row, col] });
     } else {
       this.getActiveCell()?.focus();
       this.removeActiveClasses();
-      this.getActiveCell()?.classList.add('gamegrid__cell--active');
+      this.getActiveCell()?.classList.add(classesEnum.ACTIVE_CELL);
     }
   }
 
   private removeActiveClasses(): void {
     this.refs.cells.forEach((cellRow) => {
       cellRow.forEach((cell) => {
-        cell.classList.remove('gamegrid__cell--active');
+        cell.classList.remove(classesEnum.ACTIVE_CELL);
       });
     });
   }
@@ -379,42 +381,42 @@ export default class GameGrid implements IGameGrid {
   // EVENT HANDLERS
   private handleDirection(event: KeyboardEvent): void {
     switch (event.code) {
-      case 'ArrowLeft': {
+      case keycodeEnum.ArrowLeft: {
         //left
         this.moveLeft();
         break;
       }
-      case 'KeyA': {
+      case keycodeEnum.KeyLeft: {
         //left
         this.moveLeft();
         break;
       }
-      case 'ArrowUp': {
+      case keycodeEnum.ArrowUp: {
         //up
         this.moveUp();
         break;
       }
-      case 'KeyW': {
+      case keycodeEnum.KeyUp: {
         //up
         this.moveUp();
         break;
       }
-      case 'ArrowRight': {
+      case keycodeEnum.ArrowRight: {
         //right
         this.moveRight();
         break;
       }
-      case 'KeyD': {
+      case keycodeEnum.KeyRight: {
         //right
         this.moveRight();
         break;
       }
-      case 'ArrowDown': {
+      case keycodeEnum.ArrowDown: {
         //down
         this.moveDown();
         break;
       }
-      case 'KeyS': {
+      case keycodeEnum.KeyDown: {
         //down
         this.moveDown();
         break;
@@ -425,10 +427,10 @@ export default class GameGrid implements IGameGrid {
   private handleKeyDown = (event: KeyboardEvent): void => {
     if (this.options.arrowControls) {
       if (
-        event.code === 'ArrowUp' ||
-        event.code === 'ArrowRight' ||
-        event.code === 'ArrowDown' ||
-        event.code === 'ArrowLeft'
+        event.code === keycodeEnum.ArrowUp ||
+        event.code === keycodeEnum.ArrowRight ||
+        event.code === keycodeEnum.ArrowDown ||
+        event.code === keycodeEnum.ArrowLeft
       ) {
         event.preventDefault();
         this.handleDirection(event);
@@ -436,10 +438,10 @@ export default class GameGrid implements IGameGrid {
     }
     if (this.options.wasdControls) {
       if (
-        event.code === 'KeyW' ||
-        event.code === 'KeyD' ||
-        event.code === 'KeyS' ||
-        event.code === 'KeyA'
+        event.code === keycodeEnum.KeyUp ||
+        event.code === keycodeEnum.KeyRight ||
+        event.code === keycodeEnum.KeyDown ||
+        event.code === keycodeEnum.KeyLeft
       ) {
         event.preventDefault();
         this.handleDirection(event);
