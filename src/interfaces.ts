@@ -1,7 +1,11 @@
 export interface ICell {
+  type: string;
   renderFunction?: (gamegridInstance: IGameGrid) => HTMLElement;
   cellAttributes?: string[][];
-  type: string;
+  eventTypes?: {
+    onEnter: string;
+    onExit: string;
+  };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }

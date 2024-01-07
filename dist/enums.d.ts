@@ -32,9 +32,13 @@ export declare const cellTypeEnum: {
     INTERACTIVE: string;
 };
 export declare const INITIAL_STATE: IState;
-export declare const DIRECTIONS: {
+export declare const directionsEnum: {
     UP: string;
     DOWN: string;
     LEFT: string;
     RIGHT: string;
 };
+export declare enum elementsEnum {
+    ROW = "div",
+    CELL = "div"
+}
