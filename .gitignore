@@ -4,3 +4,4 @@ demos/ts/node_modules
 *.tgz
 .parcel-cache
 demo/dist
+dist
