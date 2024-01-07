@@ -2,3 +2,5 @@ node_modules
 demos/js/node_modules
 demos/ts/node_modules
 *.tgz
+.parcel-cache
+demo/dist
