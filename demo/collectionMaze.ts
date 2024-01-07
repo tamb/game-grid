@@ -31,12 +31,7 @@ class GameCoin extends HTMLElement {
 // Define the custom element tag
 customElements.define('game-coin', GameCoin);
 
-function updateMoveCount() {
-  const moveCount = document.querySelector('#moveCount');
-  moveCount!.innerHTML = `${parseInt(moveCount!.innerHTML) + 1}`;
-}
-
-export function createCoinGrid() {
+function createCoinGrid() {
   const coinMaze = generateMaze(10, 10);
   const coinGrid: GameGrid = new GameGrid(
     {
@@ -68,4 +63,14 @@ export function createCoinGrid() {
       }
     },
   );
+}
+
+export function setupCoinGrid() {
+  createCoinGrid();
+  document
+    .querySelector('#regenerate-maze')
+    ?.addEventListener('click', function () {
+      document.getElementById('maze3')!.innerHTML = '';
+      createCoinGrid();
+    });
 }
