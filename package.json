@@ -9,7 +9,7 @@
     "test.watch": "jest --watch",
     "build": "rollup -c",
     "dev": "concurrently \"rollup -c -w\" \"npm run start\"",
-    "start": "cd demo && npm install && parcel index.html --dist-dir dist",
+    "start": "cd demo && npm install && npx parcel index.html --dist-dir dist",
     "lint": "eslint src --ext .js,.ts",
     "format": "prettier --write ."
   },
