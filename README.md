@@ -1,6 +1,6 @@
 # GameGrid
 
-__A 2D HTML Grid for Creating Web Games__
+**A 2D HTML Grid for Creating Web Games**
 <br/>
 <small>or other things that could use a 2D Matrix</small>
 
@@ -24,16 +24,40 @@ const grid : GameGrid = new GameGrid(config: IConfig, element: HTMLElement);
 
 ## `config : IConfig`
 
-The `config` argument has the follow fields:
-
-- `options : IOptions`
-- `matrix : IMatrix`
-- `state : IState`
+```ts
+export interface IConfig {
+  options?: IOptions;
+  matrix: ICell[][];
+  state?: IState;
+}
+```
 
 ### `options : IOptions`
-```ts
-interface IOptions {
 
+```ts
+export interface IOptions {
+  id?: string;
+  arrowControls?: boolean;
+  wasdControls?: boolean;
+  infiniteX?: boolean;
+  infiniteY?: boolean;
+  clickable?: boolean;
+  rewindLimit?: number;
+  middlewares?: {
+    pre: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+    post: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+  };
+
+  // TODO: Utilize these options to add additional supported cell types
+  blockOnType?: string[];
+  collideOnType?: string[];
+  moveOnType?: string[];
+
+  // TODO: Add support for this
+  // render options
+  activeClass?: string;
+  containerClass?: string;
+  rowClass?: string;
 }
 ```
 
@@ -45,50 +69,73 @@ The Matrix is a great movie. It's also a 2D representation of the game grid you'
 
 #### `cell : ICell`
 
-Cells have the following properties
-
-- `renderFunction : Function` returns the HTML that will be rendered in that particular cell.
-- `cellAttributes: string[][]` - An Array of Tuples for attributes to render on the cells HTML. ie: `[["data-foo", "bar"]]`
-- `type : string ("interactive", "open", "barrier")` - this determines the type of cell to render, which in turns determines how the active cell will react.
-- `[key : string] : any` - you can add any additional data to the cell you will be able to access it through the matrix and helper methods.
+The Cell is a really inferior movie.\* It's also an object representing a single point in the grid.
 
 ### `state : IState`
 
-The `state` contains the following fields
+The State is a really funny TV show. It's also an object representing the current state of the grid.
 
-- `active_coords`
-- `prev_coords`
-- `next_coords`
-- `moves`
-- `current_direction`
-- `rendered`
+```ts
+export interface IState {
+  activeCoords: number[];
+  prevCoords: number[];
+  nextCoords: number[];
+  moves: number[][];
+  currentDirection?: string;
+  rendered?: boolean;
+}
+```
+
+State has to have preceeding attributes to be valid. But when you `setStateSync` you can add whatever else you want. You can also do a partial state update and it will work.
+
+#### State Middleware
+
+## pre
+
+The `pre` middleware is called everytime before the state is updated. It receives the `gamegridInstance` and the `newState` as arguments. You can modify the `newState` object and it will be used to update the state. You can also access the `gamegridInstance` to get the current state.
+These functions execute in the order in which they are registered.
+
+## post
+
+The `post` middleware is called everytime after the state is updated. It receives the `gamegridInstance` and the `newState` as arguments. These functions execute in the order in which they are registered.
 
 ## Refs
 
-The GameGrid instance has a `refs` object that contains references to the HTML elements of the grid
+Refs are... I'm not gonna continue with the bit.
+<br/>
+The GameGrid instance has a `refs` object that contains references to the optional HTML elements of the grid
 
-- `container`
-- `rows`
-- `cells`
+```ts
+export interface IRefs {
+  container: HTMLElement | null;
+  rows: HTMLDivElement[];
+  cells: HTMLDivElement[][];
+}
+```
 
-## Methods
+## GameGrid Instance
 
-The GameGrid instance has many methods that can be used to update the state of the grid
+```
+export interface IGameGrid {
+  refs: IRefs;
+  options: IOptions;
+  root?: HTMLElement;
 
-- `getOptions() : options`
-- `setOptions(newOptions : options) : void`
-- `getRefs() : refs`
-- `destroy() : void`
-- `getState() : state`
-- `moveLeft() : void`
-- `moveRight() : void`
-- `moveUp() : void`
-- `moveDown() : void`
-- `setMatrix(cell[][]) : void`
-- `getMatrix() : matrix`
-- `setStateSync(state) : void`
-- `render() : void`
-- `getActiveCell() : cell`
+  renderGrid(container: HTMLElement): void;
+  getOptions(): IOptions;
+  setOptions(newOptions: IOptions): void;
+  destroy(): void;
+  getState(): IState;
+  moveLeft(): void;
+  moveUp(): void;
+  moveRight(): void;
+  moveDown(): void;
+  setMatrix(m: ICell[][]): void;
+  getMatrix(): ICell[][];
+  setStateSync(obj: IState): void;
+  getActiveCell(): HTMLDivElement;
+}
+```
 
 ## Events
 
@@ -96,7 +143,6 @@ GameGrid emits the following custom events. Each one corresponds with the `callb
 Each event has a `detail` object with the `game_grid_instance` containing all of the above.
 
 - `gamegrid:grid:rendered`
-- `gamegrid:state:updated`
 - `gamegrid:move:left`
 - `gamegrid:move:right`
 - `gamegrid:move:up`
