@@ -56,17 +56,20 @@ export interface IRefs {
 
 export interface IGameGrid {
   refs: IRefs;
-  renderGrid: (container: HTMLElement) => void;
-  getOptions: () => IOptions;
-  setOptions: (newOptions: IOptions) => void;
-  destroy: () => void;
-  getState: () => IState;
-  moveLeft: () => void;
-  moveUp: () => void;
-  moveRight: () => void;
-  moveDown: () => void;
-  setMatrix: (m: ICell[][]) => void;
-  getMatrix: () => ICell[][];
-  setStateSync: (obj: IState) => void;
-  getActiveCell: () => HTMLDivElement;
+  options: IOptions;
+  root?: HTMLElement;
+
+  renderGrid(container: HTMLElement): void;
+  getOptions(): IOptions;
+  setOptions(newOptions: IOptions): void;
+  destroy(): void;
+  getState(): IState;
+  moveLeft(): void;
+  moveUp(): void;
+  moveRight(): void;
+  moveDown(): void;
+  setMatrix(m: ICell[][]): void;
+  getMatrix(): ICell[][];
+  setStateSync(obj: IState): void;
+  getActiveCell(): HTMLDivElement;
 }

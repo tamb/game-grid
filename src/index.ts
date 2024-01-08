@@ -26,8 +26,10 @@ export default class GameGrid implements IGameGrid {
     rows: [],
     cells: [],
   };
+  public root?: HTMLElement;
 
-  constructor(config: IConfig, container: HTMLElement | null = null) {
+  constructor(config: IConfig, container?: HTMLElement) {
+    this.root = container;
     this.options = {
       activeClass: classesEnum.ACTIVE_CELL,
       arrowControls: true,
