@@ -1,24 +1,26 @@
-# gamegrid
+# GameGrid
 
-** A 2D HTML Grid for creating web games **
+__A 2D HTML Grid for Creating Web Games__
+<br/>
+<small>or other things that could use a 2D Matrix</small>
 
 ## Goals of this project
 
 - Create a 2D grid in memory capable of handling coordinates and interactions
 - Define a set of interactions that are baked in and allow for augmentation
 - Optional rendering for the physical grid.
-- Optional TypeScript support
+- TypeScript support
+- Have fun with it!
 
 ## The GameGrid class
 
 `GameGrid` is a class that you instantiate to create a 2D grid in memory, with optional rendering of the grid.
 
-```js
-const grid = new GameGrid(query: string, config: IConfig): GameGridInstance;
-```
+```ts
+// All code examples are written in Typescript
 
-- `query` {string} - the DOMString used to select the grid container.
-- `config` {object} - configuration for GameGrid
+const grid : GameGrid = new GameGrid(config: IConfig, element: HTMLElement);
+```
 
 ## `config : IConfig`
 
@@ -29,41 +31,11 @@ The `config` argument has the follow fields:
 - `state : IState`
 
 ### `options : IOptions`
+```ts
+interface IOptions {
 
-- `arrow_controls=true : boolean`
-- `wasd_controls=false : boolean`
-- `infinite_x=true : boolean`
-- `infinite_y=true : boolean`
-- `clickable=true : boolean`
-- `rewind_limit=20 : number`
-- `callbacks={} : ICallbacks`
-- `block_on_type` - coming soon
-- `collide_on_type` - coming soon
-- `move_on_type` - coming soon
-- `active_class` - coming soon
-- `container_class` - coming soon
-- `row_class` - coming soon
-
-#### `callbacks : ICallbacks`
-
-These are callbacks you can define to fire at certain parts of the `gamegrid` lifecycle. Think of them as hooks.
-Assign your functions to following keys...
-
-- `STATE_UPDATED`
-- `MOVE_LEFT`
-- `MOVE_RIGHT`
-- `MOVE_UP`
-- `MOVE_DOWN`
-- `MOVE_BLOCKED`
-- `MOVE_COLLISION`
-- `MOVE_DETTACH`
-- `MOVE_LAND`
-- `LIMIT`
-- `LIMIT_X`
-- `LIMIT_Y`
-- `WRAP`
-- `WRAP_X`
-- `WRAP_Y`
+}
+```
 
 ### `matrix : ICell[][]`
 
