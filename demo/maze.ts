@@ -7,11 +7,11 @@ function getRandomType() {
 }
 
 // Function to generate a 2D maze
-export function generateMaze(rows, columns) {
-  const maze = [];
+export function generateMaze(rows: number, columns: number) {
+  const maze: { type: string }[][] = [];
 
   for (let i = 0; i < rows; i++) {
-    const row = [];
+    const row: { type: string }[] = [];
     for (let j = 0; j < columns; j++) {
       const cell = { type: getRandomType() };
       row.push(cell);

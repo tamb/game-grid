@@ -1,4 +1,6 @@
-export const matrix = [
+import { ICell } from "../interfaces";
+
+export const matrix : ICell[][] = [
   [
     { type: 'open', cellAttributes: [['data-test', 'yankee']] },
     {
@@ -7,7 +9,7 @@ export const matrix = [
         ['data-butt', 'doody'],
         ['data-doody', 'butt'],
       ],
-      renderFunction() {
+      render() {
         return document.createElement('input');
       },
     },

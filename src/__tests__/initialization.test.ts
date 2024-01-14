@@ -74,5 +74,12 @@ describe('GameGrid class constructor', () => {
 
   // // move API
   // TODO: finish this test
-  test('getActiveCell returns active cell element', () => {});
+  test('getActiveCell returns active cell element', () => {
+    const activeCell = renderedGrid.getActiveCell();
+
+    expect(activeCell.current).toBeTruthy();
+    expect(
+      activeCell.current?.classList.contains('gamegrid__cell--active'),
+    ).toBe(true);
+  });
 });

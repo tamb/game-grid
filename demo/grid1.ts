@@ -8,7 +8,7 @@ const matrix = [
         ['data-butt', 'sauce'],
         ['class', 'butt booty butty'],
       ],
-      renderFunction() {
+      render() {
         let clickCount = 0;
 
         const frag = document.createDocumentFragment();
@@ -52,7 +52,7 @@ const matrix = [
 export function createGrid() {
   console.log('building grid');
 
-  return new GameGrid(
+  const grid = new GameGrid(
     {
       matrix,
       options: {
@@ -65,4 +65,5 @@ export function createGrid() {
     },
     document.getElementById('grid1'),
   );
+  console.log('Grid with Clicker: ', grid);
 }

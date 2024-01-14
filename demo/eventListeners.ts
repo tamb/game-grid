@@ -8,7 +8,7 @@ export function attachListeners() {
       const li = document.createElement('li');
 
       li.innerText = `${event} : ${e.timeStamp}`;
-      el.insertAdjacentElement('afterbegin', li);
+      el!.insertAdjacentElement('afterbegin', li);
     });
   });
 }
