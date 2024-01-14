@@ -41,13 +41,13 @@ export interface IRef {
   current?: HTMLDivElement | null;
 }
 
-interface ICellContext{
+interface ICellContext {
   coords: number[];
   cell: ICell;
   gamegrid: IGameGrid;
 }
 
-export interface ICell extends IRef{
+export interface ICell extends IRef {
   type: string;
   render?: (context: ICellContext) => HTMLElement;
   cellAttributes?: string[][];
@@ -55,24 +55,24 @@ export interface ICell extends IRef{
     onEnter: string;
     onExit: string;
   };
+  coords: number[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
-export interface IRow extends IRef{
-  cells?: ICell[];
+export interface IRow extends IRef {
+  index: number;
+  cells: ICell[];
 }
 
-export interface IRefs {
+export interface IRefsObject {
   container: HTMLElement | null;
   rows: IRow[];
   cells: ICell[][];
 }
 
-
-
 export interface IGameGrid {
-  refs: IRefs;
+  refs: IRefsObject;
   options: IOptions;
   root?: HTMLElement;
 
@@ -86,7 +86,6 @@ export interface IGameGrid {
   getMatrix(): ICell[][];
   setMatrix(matrix: ICell[][]): void;
   getCell(coords: number[]): ICell;
-  setCell(coords: number[], cell?: ICell): ICell;
   setOptions(newOptions: IOptions): void;
   getState(): IState;
   setStateSync(obj: IState): void;

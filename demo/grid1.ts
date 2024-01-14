@@ -61,6 +61,7 @@ export function createGrid() {
         clickable: true,
         arrowControls: true,
         wasdControls: true,
+        id: 'grid1',
       },
     },
     document.getElementById('grid1'),

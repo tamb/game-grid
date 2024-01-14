@@ -1,3 +1,4 @@
+import { gameGridEventsEnum } from './../src/index';
 import { ICell } from '../dist/interfaces';
 import GameGrid from './../dist/main';
 import { generateMaze } from './maze';
@@ -9,6 +10,7 @@ function createCoinGrid() {
   const coinMaze = generateMaze(10, 10);
 
   coinMaze.forEach((row, rowIndex) => {
+    //@ts-ignore
     row.forEach((cell: ICell) => {
       if (cell.type === 'interactive') {
         cell.render = () => document.createElement('game-coin');
@@ -16,7 +18,7 @@ function createCoinGrid() {
     });
   });
 
-  const coinGrid: GameGrid = new GameGrid(
+  const coinGrid = new GameGrid(
     {
       matrix: coinMaze,
       options: {
@@ -32,10 +34,8 @@ function createCoinGrid() {
     'gamegrid:move:collide',
     function (e: CustomEventInit) {
       if (e.detail.gameGridInstance.options.id === 'coinGrid') {
-        const state = e.detail.gameGridInstance.state;
-        const activeCell = state.activeCoords;
-        const cell = coinGrid.refs.cells[activeCell[0]][activeCell[1]];
-        cell.querySelector('game-coin')?.remove();
+        const cell = e.detail.gameGridInstance.getActiveCell();
+        cell.current.querySelector('game-coin')?.remove();
       }
     },
   );
