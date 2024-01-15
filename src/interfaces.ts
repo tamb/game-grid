@@ -1,14 +1,3 @@
-export interface ICell {
-  type: string;
-  renderFunction?: (gamegridInstance: IGameGrid) => HTMLElement;
-  cellAttributes?: string[][];
-  eventTypes?: {
-    onEnter: string;
-    onExit: string;
-  };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any;
-}
 export interface IState {
   activeCoords: number[];
   prevCoords: number[];
@@ -48,28 +37,60 @@ export interface IConfig {
   state?: IState;
 }
 
-export interface IRefs {
+export interface IRef {
+  current?: HTMLDivElement | null;
+}
+
+interface ICellContext {
+  coords: number[];
+  cell: ICell;
+  gamegrid: IGameGrid;
+}
+
+export interface ICell extends IRef {
+  type: string;
+  render?: (context: ICellContext) => HTMLElement;
+  cellAttributes?: string[][];
+  eventTypes?: {
+    onEnter: string;
+    onExit: string;
+  };
+  coords: number[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}
+
+export interface IRow extends IRef {
+  index: number;
+  cells: ICell[];
+}
+
+export interface IRefsObject {
   container: HTMLElement | null;
-  rows: HTMLDivElement[];
-  cells: HTMLDivElement[][];
+  rows: IRow[];
+  cells: ICell[][];
 }
 
 export interface IGameGrid {
-  refs: IRefs;
+  refs: IRefsObject;
   options: IOptions;
   root?: HTMLElement;
 
-  renderGrid(container: HTMLElement): void;
-  getOptions(): IOptions;
-  setOptions(newOptions: IOptions): void;
+  render(container: HTMLElement): void;
+  refresh(): void; //TODO: Add support for this
   destroy(): void;
+  getOptions(): IOptions;
+  getPreviousCell(): ICell;
+  getActiveCell(): ICell;
+  getAllCellsByType(type: string): ICell[];
+  getMatrix(): ICell[][];
+  setMatrix(matrix: ICell[][]): void;
+  getCell(coords: number[]): ICell;
+  setOptions(newOptions: IOptions): void;
   getState(): IState;
-  moveLeft(): void;
+  setStateSync(obj: IState): void;
   moveUp(): void;
   moveRight(): void;
   moveDown(): void;
-  setMatrix(m: ICell[][]): void;
-  getMatrix(): ICell[][];
-  setStateSync(obj: IState): void;
-  getActiveCell(): HTMLDivElement;
+  moveLeft(): void;
 }

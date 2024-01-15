@@ -12,7 +12,7 @@ import {
   IState,
   IOptions,
   ICell,
-  IRefs,
+  IRefsObject,
   IConfig,
   IGameGrid,
 } from './interfaces';
@@ -21,11 +21,7 @@ export default class GameGrid implements IGameGrid {
   public options: IOptions;
   private matrix: ICell[][];
   private state: IState = INITIAL_STATE;
-  public refs: IRefs = {
-    container: null,
-    rows: [],
-    cells: [],
-  };
+  public refs: IRefsObject;
   public root?: HTMLElement;
 
   constructor(config: IConfig, container?: HTMLElement) {
@@ -45,6 +41,8 @@ export default class GameGrid implements IGameGrid {
       ...config.options,
     };
 
+    this.refs = this.setEmptyRefs();
+
     this.matrix = config.matrix;
     this.state = {
       ...INITIAL_STATE,
@@ -52,7 +50,11 @@ export default class GameGrid implements IGameGrid {
     };
 
     if (container) {
-      this.renderGrid(container);
+      this.render(container);
+      this.setFocusToCell(
+        this.state.activeCoords![0],
+        this.state.activeCoords![1],
+      );
     }
     fireCustomEvent.call(this, gridEventsEnum.CREATED);
   }
@@ -84,52 +86,66 @@ export default class GameGrid implements IGameGrid {
   }
 
   // DOM MANIPULATION
-  public renderGrid(container: HTMLElement): void {
-    this.refs = {
-      container: container,
+
+  private setEmptyRefs(): IRefsObject {
+    return {
+      container: null,
       rows: [],
       cells: [],
     };
-    this.render();
-    this.attachHandlers();
+  }
+
+  public refresh() {
+    throw new Error('Method not implemented.');
+  }
+
+  public render(container: HTMLElement): void {
+    const grid = this.renderGrid();
+    this.refs.container = container;
+    container.appendChild(grid);
+    this.setStateSync({ rendered: true });
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
+    this.attachHandlers();
   }
 
-  private render(): void {
-    if (this.refs && this.refs.container) {
-      insertStyles();
-      const grid: DocumentFragment = document.createDocumentFragment();
+  private renderGrid(): HTMLDivElement {
+    insertStyles();
 
-      this.renderContainer();
+    const grid = this.renderContainer();
 
-      this.matrix.forEach((rowData: ICell[], rI: number) => {
-        const row: HTMLDivElement = this.renderRow(rI);
-        this.refs?.cells.push([]);
+    this.matrix.forEach((rowData: ICell[], rI: number) => {
+      const row: HTMLDivElement = this.renderRow(rI);
+      this.refs.cells.push([]);
 
-        rowData.forEach((cellData: ICell, cI: number) => {
-          const cell: HTMLDivElement = this.renderCell(
-            rI,
-            cI,
-            cellData,
-            rowData,
-          );
-          row.appendChild(cell);
-          this.refs.cells[rI].push(cell);
+      rowData.forEach((cellData: ICell, cI: number) => {
+        const cell: HTMLDivElement = this.renderCell(rI, cI, cellData);
+        row.appendChild(cell);
+        this.refs.cells[rI].push({
+          ...cellData,
+          current: cell,
+          coords: [rI, cI],
         });
-        this.refs.rows.push(row);
-        grid.appendChild(row);
       });
-      this.refs.container.appendChild(grid);
-      this.setStateSync({ rendered: true });
-    } else {
-      throw new Error('No container found');
-    }
+      this.refs.rows.push({
+        index: rI,
+        ...rowData,
+        current: row,
+        cells: this.refs.cells[rI],
+      });
+      grid.appendChild(row);
+    });
+
+    return grid;
   }
 
-  private renderContainer(): void {
-    this.refs.container!.classList.add(classesEnum.GRID);
-    this.refs.container!.setAttribute('tabindex', '0');
-    this.refs.container!.setAttribute('data-gamegrid-ref', 'container');
+  private renderContainer(): HTMLDivElement {
+    const container = document.createElement(elementsEnum.CONTAINER);
+
+    container.classList.add(classesEnum.GRID);
+    container.setAttribute('tabindex', '0');
+    container.setAttribute('data-gamegrid-ref', 'container');
+
+    return container;
   }
 
   private renderRow(rI: number): HTMLDivElement {
@@ -141,12 +157,7 @@ export default class GameGrid implements IGameGrid {
     return row;
   }
 
-  private renderCell(
-    rI: number,
-    cI: number,
-    cellData: ICell,
-    rowData: ICell[],
-  ): HTMLDivElement {
+  private renderCell(rI: number, cI: number, cellData: ICell): HTMLDivElement {
     const cell: HTMLDivElement = document.createElement(elementsEnum.CELL);
     renderAttributes(cell, [
       ['data-gamegrid-ref', 'cell'],
@@ -156,40 +167,50 @@ export default class GameGrid implements IGameGrid {
       ['data-gamegrid-cell-type', cellData.type || cellTypeEnum.OPEN],
     ]);
 
-    cell.style.width = `${100 / rowData.length}%`;
+    cell.style.width = `${100 / this.matrix[rI].length}%`;
     cellData.cellAttributes?.forEach((attr: string[]) => {
       cell.setAttribute(attr[0], attr[1]);
     });
 
     cell.classList.add(classesEnum.CELL);
-    cell.setAttribute('tabindex', this.options.clickable ? '0' : '-1');
-    if (cellData.renderFunction) {
-      cell.appendChild(cellData.renderFunction(this));
+    if (this.options.clickable && cellData.type !== cellTypeEnum.BARRIER) {
+      cell.setAttribute('tabindex', '0');
+    } else {
+      cell.setAttribute('tabindex', '-1');
+    }
+    if (cellData.render) {
+      cell.appendChild(
+        cellData.render({
+          coords: [rI, cI],
+          cell: cellData,
+          gamegrid: this,
+        }),
+      );
     }
     return cell;
   }
 
-  private setFocusToCell(row?: number, col?: number): void {
+  private setFocusToCell(row: number, col: number): void {
     const cells = this.refs.cells;
     if (!cells) {
       throw new Error('No cells found');
     }
     if (typeof row === 'number' && typeof col === 'number') {
-      cells[row][col].focus();
+      cells[row][col].current?.focus();
       this.removeActiveClasses();
-      cells[row][col].classList.add(classesEnum.ACTIVE_CELL);
+      cells[row][col].current?.classList.add(classesEnum.ACTIVE_CELL);
       this.setStateSync({ activeCoords: [row, col] });
     } else {
-      this.getActiveCell()?.focus();
+      this.getActiveCell()?.current?.focus();
       this.removeActiveClasses();
-      this.getActiveCell()?.classList.add(classesEnum.ACTIVE_CELL);
+      this.getActiveCell()?.current?.classList.add(classesEnum.ACTIVE_CELL);
     }
   }
 
   private removeActiveClasses(): void {
     this.refs.cells.forEach((cellRow) => {
-      cellRow.forEach((cell) => {
-        cell.classList.remove(classesEnum.ACTIVE_CELL);
+      cellRow.forEach((cell: ICell) => {
+        cell.current?.classList.remove(classesEnum.ACTIVE_CELL);
       });
     });
   }
@@ -206,14 +227,37 @@ export default class GameGrid implements IGameGrid {
       : null;
   };
 
-  public getActiveCell(): HTMLDivElement {
+  public getActiveCell(): ICell {
     return this.refs.cells[this.state.activeCoords![0]][
       this.state.activeCoords![1]
     ];
   }
 
+  public getPreviousCell(): ICell {
+    return {
+      ...this.matrix[this.state.prevCoords![0]][this.state.prevCoords![1]],
+    };
+  }
+
+  public getCell(coords: number[]): ICell {
+    return this.matrix[coords[0]][coords[1]];
+  }
+
+  public getAllCellsByType(type: string): ICell[] {
+    const cells: ICell[] = [];
+    this.matrix.forEach((row: ICell[], rI: number) => {
+      row.forEach((cell: ICell, cI: number) => {
+        if (cell.type === type) {
+          cells.push(this.getCell([rI, cI]));
+        }
+      });
+    });
+    return cells;
+  }
+
   // MOVEMENT
   public moveLeft(): void {
+    console.log('move left');
     this.setStateSync({
       nextCoords: [
         this.state.activeCoords![0],
@@ -371,11 +415,17 @@ export default class GameGrid implements IGameGrid {
   }
 
   private finishMove(): void {
+    console.log('finish move');
     this.testLimit();
     this.testSpace();
     this.testInteractive();
     this.testBarrier();
-    this.state.rendered ? this.setFocusToCell() : null;
+    this.state.rendered
+      ? this.setFocusToCell(
+          this.state.activeCoords[0],
+          this.state.activeCoords[1],
+        )
+      : null;
     this.addToMoves();
     fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
   }
@@ -463,9 +513,16 @@ export default class GameGrid implements IGameGrid {
               .getAttribute('data-gamegrid-coords')!
               .split(',')
               .map((n) => Number(n));
-            this.setFocusToCell(...coords);
+            this.setStateSync({
+              nextCoords: coords,
+            });
+
+            this.setFocusToCell(
+              this.state.nextCoords![0],
+              this.state.nextCoords![1],
+            );
           } else {
-            this.setFocusToCell();
+            throw new Error('No cell found');
           }
         }
       }

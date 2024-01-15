@@ -69,8 +69,8 @@ export function insertStyles(): void {
     box-sizing: border-box;
     border: 1px solid;
   }
-  .gamegrid__cell--active {
-    outline: 4px solid red;
+  .gamegrid__cell:hover {
+    cursor: pointer;
   }
   .gamegrid__cell::before {
     content: "";
