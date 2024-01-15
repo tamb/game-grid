@@ -10,7 +10,7 @@
     "build": "rollup -c",
     "build.safe": "npm run test && npm run build",
     "dev": "concurrently \"rollup -c -w\" \"npm run start\"",
-    "start": "cd demo && npm install && npx parcel index.html --no-cache --dist-dir dist",
+    "start": "cd demo && node prerun.js && npm install && npx parcel index.html --no-cache --dist-dir dist",
     "lint": "eslint src --ext .js,.ts",
     "format": "prettier --write ."
   },
