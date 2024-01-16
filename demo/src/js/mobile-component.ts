@@ -20,8 +20,6 @@ export function setupMobileComponent() {
       const state = grid.getState();
       const prev = state.prevCoords;
       const curr = state.currentCoords;
-
     }
-      
   });
 }
