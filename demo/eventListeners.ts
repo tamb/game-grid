@@ -1,4 +1,4 @@
-import { gameGridEventsEnum } from '../dist/main';
+import { gameGridEventsEnum } from "gamegrid";
 
 export function attachListeners() {
   Object.keys(gameGridEventsEnum).forEach((key) => {

@@ -1,16 +1,16 @@
+import GameGrid from 'gamegrid';
 import { generateMaze } from './maze';
-import GameGrid from '../dist/main';
 
 export function setupMobileComponent() {
   const maze = generateMaze(10, 10);
-  const gameGrid = new GameGrid(
+  new GameGrid(
     {
       matrix: maze,
       options: {
         id: 'mobile-component-grid',
       },
     },
-    document.querySelector('#mobile-component-grid'),
+    document.querySelector('#mobile-component-grid') as HTMLElement,
   );
 
   window.addEventListener('gamegrid:move:land', (event: CustomEventInit) => {
@@ -20,6 +20,7 @@ export function setupMobileComponent() {
       const state = grid.getState();
       const prev = state.prevCoords;
       const curr = state.currentCoords;
+
     }
       
   });

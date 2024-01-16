@@ -22,6 +22,15 @@ module.exports = [
       name: 'GameGrid',
       sourcemap: true,
     },
-    plugins: [resolve(), commonjs(), typescript(), terser()],
+    plugins: [
+      resolve(),
+      commonjs(),
+      typescript({
+        declaration: true,
+        rootDir: 'src/',
+        exclude: ['**/*.spec.ts'],
+      }),
+      terser(),
+    ],
   },
 ];

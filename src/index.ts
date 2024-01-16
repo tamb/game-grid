@@ -327,12 +327,14 @@ export default class GameGrid implements IGameGrid {
         if (this.state.nextCoords[0] > rowFinalIndex) {
           if (!this.options.infiniteY) {
             row = rowFinalIndex;
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT_Y);
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+            this.options.callbacks?.onBoundary?.(this, this.getState());
           } else {
             row = 0;
             fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
             fireCustomEvent.call(this, gridEventsEnum.WRAP);
+            this.options.callbacks?.onWrap?.(this, this.getState());
           }
         }
         break;
@@ -342,10 +344,12 @@ export default class GameGrid implements IGameGrid {
             col = colFinalIndex;
             fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
             fireCustomEvent.call(this, gridEventsEnum.WRAP);
+            this.options.callbacks?.onWrap?.(this, this.getState());
           } else {
             col = 0;
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT_X);
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+            this.options.callbacks?.onBoundary?.(this, this.getState());
           }
         }
         break;
@@ -353,12 +357,14 @@ export default class GameGrid implements IGameGrid {
         if (this.state.nextCoords[1] > colFinalIndex) {
           if (!this.options.infiniteX) {
             col = colFinalIndex;
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT_X);
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+            this.options.callbacks?.onBoundary?.(this, this.getState());
           } else {
             col = 0;
             fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
             fireCustomEvent.call(this, gridEventsEnum.WRAP);
+            this.options.callbacks?.onWrap?.(this, this.getState());
           }
         }
         break;
@@ -368,10 +374,12 @@ export default class GameGrid implements IGameGrid {
             row = rowFinalIndex;
             fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
             fireCustomEvent.call(this, gridEventsEnum.WRAP);
+            this.options.callbacks?.onWrap?.(this, this.getState());
           } else {
             row = 0;
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT_Y);
-            fireCustomEvent.call(this, gridEventsEnum.LIMIT);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+            this.options.callbacks?.onBoundary?.(this, this.getState());
           }
         }
         break;
@@ -388,6 +396,7 @@ export default class GameGrid implements IGameGrid {
     const coords = this.state.nextCoords;
     if (this.matrix[coords[0]][coords[1]]?.type === cellTypeEnum.INTERACTIVE) {
       fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
+      this.options.callbacks?.onCollide?.(this, this.getState());
     }
   }
 
@@ -399,6 +408,7 @@ export default class GameGrid implements IGameGrid {
         prevCoords: this.state.activeCoords,
       });
       fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
+      this.options.callbacks?.onBlock?.(this, this.getState());
     }
   }
 
@@ -410,12 +420,12 @@ export default class GameGrid implements IGameGrid {
         cellTypeEnum.INTERACTIVE
       ) {
         fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
+        this.options.callbacks?.onDettach?.(this, this.getState());
       }
     }
   }
 
   private finishMove(): void {
-    console.log('finish move');
     this.testLimit();
     this.testSpace();
     this.testInteractive();
@@ -428,10 +438,12 @@ export default class GameGrid implements IGameGrid {
       : null;
     this.addToMoves();
     fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
+    this.options.callbacks?.onLand?.(this, this.getState());
   }
 
   // EVENT HANDLERS
   private handleDirection(event: KeyboardEvent): void {
+    this.options.callbacks?.onMove?.(this, this.getState());
     switch (event.code) {
       case keycodeEnum.ArrowLeft: {
         //left
