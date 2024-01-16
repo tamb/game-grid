@@ -15,9 +15,9 @@ export const gridEventsEnum = {
   MOVE_DETTACH: 'gamegrid:move:dettach', // leaves overlapping an entity
   MOVE_LAND: 'gamegrid:move:land', // move finished
 
-  LIMIT: 'gamegrid:move:limit',
-  LIMIT_X: 'gamegrid:move:limit:x',
-  LIMIT_Y: 'gamegrid:move:limit:y',
+  BOUNDARY: 'gamegrid:move:boundary',
+  BOUNDARY_X: 'gamegrid:move:boundary:x',
+  BOUNDARY_Y: 'gamegrid:move:boundary:y',
 
   WRAP: 'gamegrid:move:wrap',
   WRAP_X: 'gamegrid:move:wrap:x',

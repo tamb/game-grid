@@ -1,4 +1,4 @@
-import GameGrid from '../dist/main';
+import GameGrid from 'gamegrid';
 import { tileTypeEnum } from './enums';
 const matrix = [
   [

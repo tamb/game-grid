@@ -1,6 +1,4 @@
-import { gameGridEventsEnum } from './../src/index';
-import { ICell } from '../dist/interfaces';
-import GameGrid from './../dist/main';
+import GameGrid from 'gamegrid';
 import { generateMaze } from './maze';
 import Coin from './coin';
 
@@ -23,9 +21,34 @@ function createCoinGrid() {
       matrix: coinMaze,
       options: {
         id: 'coinGrid',
+        infiniteY: false,
+        infiniteX: false,
+        callbacks: {
+          onMove: function () {
+            console.log('onMove');
+          },
+          onCollide: function () {
+            console.log('onCollide');
+          },
+          onDettach: function () {
+            console.log('onDettach');
+          },
+          onBlock: function () {
+            console.log('onBlock');
+          },
+          onWrap: function () {
+            console.log('onWrap');
+          },
+          onLand: function () {
+            console.log('onLand');
+          },
+          onBoundary: function () {
+            console.log('onBoundary');
+          },
+        },
       },
     },
-    document.querySelector('#maze3'),
+    document.querySelector<HTMLElement>('#maze3')!,
   );
 
   console.log('Coin Grid: ', coinGrid);
