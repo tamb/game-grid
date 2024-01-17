@@ -122,7 +122,7 @@ export default class GameGrid implements IGameGrid {
         this.refs.cells[rI].push({
           ...cellData,
           current: cell,
-          coords: [rI, cI],
+          coords: [cI, rI],
         });
       });
       this.refs.rows.push({
@@ -159,7 +159,7 @@ export default class GameGrid implements IGameGrid {
       ['data-gamegrid-ref', 'cell'],
       ['data-gamegrid-row-index', rI.toString()],
       ['data-gamegrid-col-index', cI.toString()],
-      ['data-gamegrid-coords', `${rI},${cI}`],
+      ['data-gamegrid-coords', `${cI},${rI}`],
       ['data-gamegrid-cell-type', cellData.type || cellTypeEnum.OPEN],
     ]);
 
@@ -186,16 +186,16 @@ export default class GameGrid implements IGameGrid {
     return cell;
   }
 
-  private setFocusToCell(row: number, col: number): void {
+  private setFocusToCell(col: number, row: number): void {
     const cells = this.refs.cells;
     if (!cells) {
       throw new Error('No cells found');
     }
     if (typeof row === 'number' && typeof col === 'number') {
-      cells[row][col].current?.focus();
+      cells[col][row].current?.focus();
       this.removeActiveClasses();
-      cells[row][col].current?.classList.add(classesEnum.ACTIVE_CELL);
-      this.setStateSync({ activeCoords: [row, col] });
+      cells[col][row].current?.classList.add(classesEnum.ACTIVE_CELL);
+      this.setStateSync({ activeCoords: [col, row] });
     } else {
       this.getActiveCell()?.current?.focus();
       this.removeActiveClasses();
@@ -244,7 +244,7 @@ export default class GameGrid implements IGameGrid {
     this.matrix.forEach((row: ICell[], rI: number) => {
       row.forEach((cell: ICell, cI: number) => {
         if (cell.type === type) {
-          cells.push(this.getCell([rI, cI]));
+          cells.push(this.getCell([cI, rI]));
         }
       });
     });
@@ -256,8 +256,8 @@ export default class GameGrid implements IGameGrid {
     console.log('move left');
     this.setStateSync({
       nextCoords: [
-        this.state.activeCoords![0],
-        this.state.activeCoords![1] - 1,
+        this.state.activeCoords![0] - 1,
+        this.state.activeCoords![1],
       ],
       currentDirection: directionsEnum.LEFT,
     });
@@ -268,8 +268,8 @@ export default class GameGrid implements IGameGrid {
   public moveUp(): void {
     this.setStateSync({
       nextCoords: [
-        this.state.activeCoords![0] - 1,
-        this.state.activeCoords![1],
+        this.state.activeCoords![0],
+        this.state.activeCoords![1] - 1,
       ],
       currentDirection: directionsEnum.UP,
     });
@@ -280,8 +280,8 @@ export default class GameGrid implements IGameGrid {
   public moveRight(): void {
     this.setStateSync({
       nextCoords: [
-        this.state.activeCoords![0],
-        this.state.activeCoords![1] + 1,
+        this.state.activeCoords![0] + 1,
+        this.state.activeCoords![1],
       ],
       currentDirection: directionsEnum.RIGHT,
     });
@@ -292,8 +292,8 @@ export default class GameGrid implements IGameGrid {
   public moveDown(): void {
     this.setStateSync({
       nextCoords: [
-        this.state.activeCoords![0] + 1,
-        this.state.activeCoords![1],
+        this.state.activeCoords![0],
+        this.state.activeCoords![1] + 1,
       ],
       currentDirection: directionsEnum.DOWN,
     });
@@ -312,15 +312,15 @@ export default class GameGrid implements IGameGrid {
 
   private testLimit(): void {
     // use state direction, and state active coords
-    let row: number = this.state.nextCoords![0];
-    let col: number = this.state.nextCoords![1];
+    let col: number = this.state.nextCoords![0];
+    let row: number = this.state.nextCoords![1];
     const rowFinalIndex: number = this.matrix.length - 1;
     const colFinalIndex: number =
       this.matrix[this.state.activeCoords[0]].length - 1; // todo: test for variable col length
 
     switch (this.state.currentDirection) {
       case directionsEnum.DOWN:
-        if (this.state.nextCoords[0] > rowFinalIndex) {
+        if (this.state.nextCoords[1] > rowFinalIndex) {
           if (!this.options.infiniteY) {
             row = rowFinalIndex;
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
@@ -335,7 +335,7 @@ export default class GameGrid implements IGameGrid {
         }
         break;
       case directionsEnum.LEFT:
-        if (this.state.nextCoords[1] < 0) {
+        if (this.state.nextCoords[0] < 0) {
           if (this.options.infiniteX) {
             col = colFinalIndex;
             fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
@@ -382,8 +382,8 @@ export default class GameGrid implements IGameGrid {
     }
 
     this.setStateSync({
-      nextCoords: [row, col],
-      activeCoords: [row, col],
+      nextCoords: [col, row],
+      activeCoords: [col, row],
       prevCoords: this.state.activeCoords,
     });
   }

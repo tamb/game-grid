@@ -36,7 +36,6 @@ describe('GameGrid rendering', () => {
 
   // // render tests
   test('container classes are applied', () => {
-    console.log('CLASSES', renderedGrid.refs.container?.classList);
     expect(renderedGrid.refs.container?.classList.contains('gamegrid')).toBe(
       true,
     );
@@ -86,7 +85,7 @@ describe('GameGrid rendering', () => {
     expect(
       cells[0][0].current?.getAttribute('data-gamegrid-row-index'),
     ).toMatch('0');
-    ``;
+
     expect(
       cells[1][0].current?.getAttribute('data-gamegrid-row-index'),
     ).toMatch('1');
@@ -94,7 +93,7 @@ describe('GameGrid rendering', () => {
       cells[1][1].current?.getAttribute('data-gamegrid-col-index'),
     ).toMatch('1');
     expect(cells[1][0].current?.getAttribute('data-gamegrid-coords')).toMatch(
-      '1,0',
+      '0,1',
     );
   });
 

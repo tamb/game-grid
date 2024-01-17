@@ -35,7 +35,7 @@ describe('Callbacks', () => {
   });
 
   test('onMove callback is called', () => {
-    renderedGrid.moveRight();
+    renderedGrid.moveLeft();
     expect(callbacks.onMove).toHaveBeenCalled();
   });
 

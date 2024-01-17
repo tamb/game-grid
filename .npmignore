@@ -1,3 +1,2 @@
-dist/demo
-dist/src
 demos/
+node_modules

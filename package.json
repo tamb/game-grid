@@ -1,15 +1,18 @@
 {
   "name": "gamegrid",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "",
   "main": "dist/main.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "test": "jest",
     "test.watch": "jest --watch",
     "build": "rollup -c",
     "build.safe": "npm run test && npm run build",
-    "dev": "concurrently \"rollup -c -w\" \"npm run start\"",
+    "dev": "rollup -c -w",
     "demo": "npm run build.safe && npm pack && npm start",
     "start": "cd demo && npm start",
     "lint": "eslint src --ext .js,.ts",
@@ -26,7 +29,6 @@
     "@types/jest": "^29.5.11",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
-    "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.2",

@@ -1,6 +1,6 @@
-import { ICell } from "../interfaces";
+import { ICell } from '../interfaces';
 
-export const matrix : ICell[][] = [
+export const matrix: ICell[][] = [
   [
     { type: 'open', cellAttributes: [['data-test', 'yankee']] },
     {
@@ -13,8 +13,8 @@ export const matrix : ICell[][] = [
         return document.createElement('input');
       },
     },
-    { type: 'open' },
+    { type: 'barrier' },
   ],
-  [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
+  [{ type: 'open' }, { type: 'interactive' }, { type: 'open' }],
   [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
 ];
