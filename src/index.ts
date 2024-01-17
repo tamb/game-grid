@@ -100,18 +100,17 @@ export default class GameGrid implements IGameGrid {
   }
 
   public render(container: HTMLElement): void {
-    const grid = this.renderGrid();
-    this.refs.container = container;
-    container.appendChild(grid);
+    insertStyles();
+    const fragment = this.renderGrid();
+    container.appendChild(fragment);
     this.setStateSync({ rendered: true });
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
     this.attachHandlers();
   }
 
-  private renderGrid(): HTMLDivElement {
-    insertStyles();
-
-    const grid = this.renderContainer();
+  private renderGrid(): DocumentFragment {
+    this.augmentContainer(this.root!);
+    const fragment = document.createDocumentFragment();
 
     this.matrix.forEach((rowData: ICell[], rI: number) => {
       const row: HTMLDivElement = this.renderRow(rI);
@@ -132,20 +131,17 @@ export default class GameGrid implements IGameGrid {
         current: row,
         cells: this.refs.cells[rI],
       });
-      grid.appendChild(row);
+      fragment.appendChild(row);
     });
 
-    return grid;
+    return fragment;
   }
 
-  private renderContainer(): HTMLDivElement {
-    const container = document.createElement(elementsEnum.CONTAINER);
-
+  private augmentContainer(container: HTMLElement): void {
+    this.refs.container = container;
     container.classList.add(classesEnum.GRID);
     container.setAttribute('tabindex', '0');
     container.setAttribute('data-gamegrid-ref', 'container');
-
-    return container;
   }
 
   private renderRow(rI: number): HTMLDivElement {

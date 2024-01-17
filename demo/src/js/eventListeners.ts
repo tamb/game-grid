@@ -1,4 +1,4 @@
-import { gameGridEventsEnum } from "gamegrid";
+import { gameGridEventsEnum } from 'gamegrid';
 
 export function attachListeners() {
   Object.keys(gameGridEventsEnum).forEach((key) => {
@@ -8,7 +8,7 @@ export function attachListeners() {
         const el = document.querySelector('#move-events ul');
         const li = document.createElement('li');
 
-        li.innerText = `${event} : ${e.timeStamp}`;
+        li.innerText = `${event} : ${new Date(e.timeStamp).toTimeString()}`;
         el!.insertAdjacentElement('afterbegin', li);
       }
     });

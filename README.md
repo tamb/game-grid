@@ -251,8 +251,3 @@ export const gridEventsEnum = {
   WRAP_Y: 'gamegrid:move:wrap:y',
 };
 ```
-
-## TODO
-- Make Cell its own class with move methods and options
-- Make Row its own class with move methods and options
-- Refs should contain Cell and Row class instances
