@@ -7,9 +7,24 @@ module.exports = function compile() {
     path.resolve(__dirname, './../src/index.html'),
     'utf8',
   );
+  registerAllPartials();
   const template = Handlebars.compile(source);
-  const data = { title: 'My Title' };
-  const html = template(data);
+  const html = template();
 
   fs.writeFileSync(path.resolve(__dirname, './../src/output.html'), html);
 };
+
+function registerAllPartials() {
+  const partialsDir = path.resolve(__dirname, './../src/partials');
+  const filenames = fs.readdirSync(partialsDir);
+
+  filenames.forEach(function (filename) {
+    const matches = /^([^.]+).hbs$/.exec(filename);
+    if (!matches) {
+      return;
+    }
+    const name = matches[1];
+    const template = fs.readFileSync(partialsDir + '/' + filename, 'utf8');
+    Handlebars.registerPartial(name, template);
+  });
+}

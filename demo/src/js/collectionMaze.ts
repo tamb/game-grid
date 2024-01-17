@@ -21,8 +21,6 @@ function createCoinGrid() {
       matrix: coinMaze,
       options: {
         id: 'coinGrid',
-        infiniteY: false,
-        infiniteX: false,
         callbacks: {
           onMove: function () {
             console.log('onMove');
