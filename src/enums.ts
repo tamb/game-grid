@@ -56,7 +56,6 @@ export const directionsEnum = {
 };
 
 export enum elementsEnum {
-  CONTAINER = 'div',
   ROW = 'div',
   CELL = 'div',
 }

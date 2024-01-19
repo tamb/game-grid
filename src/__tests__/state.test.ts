@@ -138,7 +138,7 @@ describe('setStateSync', () => {
   });
 
   test('getState return full state', () => {
-    expect(renderedGrid.getState().moves.length).toBe(1);
+    expect(renderedGrid.getState().moves?.length).toBe(1);
     expect(renderedGrid.getState()).toEqual(defaultState);
   });
 

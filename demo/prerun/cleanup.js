@@ -1,7 +1,11 @@
 const rimraf = require('rimraf');
 
-module.exports = function cleanup() {
+function cleanup() {
   rimraf.sync('dist');
   rimraf.sync('.parcel-cache');
   rimraf.sync('src/output.html');
-};
+  rimraf.sync('node_modules');
+  rimraf.sync('package-lock.json');
+}
+
+cleanup();

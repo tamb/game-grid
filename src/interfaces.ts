@@ -6,6 +6,15 @@ export interface IState {
   currentDirection?: string;
   rendered?: boolean;
 }
+
+export interface IDefaultState {
+  activeCoords?: number[];
+  prevCoords?: number[];
+  nextCoords?: number[];
+  moves?: number[][];
+  currentDirection?: string;
+  rendered?: boolean;
+}
 export interface IOptions {
   id?: string;
   arrowControls?: boolean;
@@ -43,7 +52,7 @@ export interface IOptions {
 export interface IConfig {
   options?: IOptions;
   matrix: ICell[][];
-  state?: IState;
+  state?: IDefaultState | IState;
 }
 
 export interface IRef {
@@ -83,7 +92,7 @@ export interface IRefsObject {
 export interface IGameGrid {
   refs: IRefsObject;
   options: IOptions;
-  
+
   render(container: HTMLElement): void;
   refresh(): void; //TODO: Add support for this
   destroy(): void;

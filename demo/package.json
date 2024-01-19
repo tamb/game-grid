@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node prerun/prerun.js && npm install && npx parcel src/output.html --no-cache --dist-dir dist --open"
+    "start": "node prerun/cleanup && npm install && node prerun/compile && npx parcel src/output.html --no-cache --dist-dir dist --open"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "gamegrid": "./../gamegrid-1.0.0-beta.2.tgz"
+    "gamegrid": "./../gamegrid-1.0.0-beta.3.tgz"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.11.0",

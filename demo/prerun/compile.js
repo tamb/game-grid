@@ -2,7 +2,7 @@ const Handlebars = require('handlebars');
 const fs = require('fs');
 const path = require('path');
 
-module.exports = function compile() {
+function compile() {
   const source = fs.readFileSync(
     path.resolve(__dirname, './../src/index.html'),
     'utf8',
@@ -28,3 +28,5 @@ function registerAllPartials() {
     Handlebars.registerPartial(name, template);
   });
 }
+
+compile();
