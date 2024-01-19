@@ -78,9 +78,7 @@ describe('Callbacks', () => {
       },
       document.getElementById('root')!,
     );
-    grid.moveRight();
-    grid.moveRight();
-    grid.moveRight();
+    grid.moveUp();
     expect(callbacks.onBoundary).toHaveBeenCalled();
   });
 

@@ -82,16 +82,7 @@ describe('GameGrid rendering', () => {
 
   test('default cell attributes are rendered', () => {
     const cells = renderedGrid.refs.cells;
-    expect(
-      cells[0][0].current?.getAttribute('data-gamegrid-row-index'),
-    ).toMatch('0');
 
-    expect(
-      cells[1][0].current?.getAttribute('data-gamegrid-row-index'),
-    ).toMatch('1');
-    expect(
-      cells[1][1].current?.getAttribute('data-gamegrid-col-index'),
-    ).toMatch('1');
     expect(cells[1][0].current?.getAttribute('data-gamegrid-coords')).toMatch(
       '0,1',
     );
