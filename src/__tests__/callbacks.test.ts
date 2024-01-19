@@ -73,7 +73,7 @@ describe('Callbacks', () => {
   });
 
   test('onWrap callback is called', () => {
-    memoryGrid.moveRight();
+    memoryGrid.moveLeft();
     expect(callbacks.onWrap).toHaveBeenCalled();
   });
 });
