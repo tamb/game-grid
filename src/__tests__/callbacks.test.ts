@@ -46,21 +46,41 @@ describe('Callbacks', () => {
 
   test('onBlock callback is called', () => {
     renderedGrid.moveRight();
+    renderedGrid.moveRight();
+
     expect(callbacks.onBlock).toHaveBeenCalled();
   });
 
   test('onCollide callback is called', () => {
     renderedGrid.moveRight();
+    renderedGrid.moveDown();
     expect(callbacks.onCollide).toHaveBeenCalled();
   });
 
   test('onDettach callback is called', () => {
     renderedGrid.moveRight();
+    renderedGrid.moveDown();
+    renderedGrid.moveDown();
     expect(callbacks.onDettach).toHaveBeenCalled();
   });
 
   test('onBoundary callback is called', () => {
-    renderedGrid.moveRight();
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: {
+          infiniteX: false,
+          infiniteY: false,
+          callbacks: {
+            onBoundary: callbacks.onBoundary,
+          },
+        },
+      },
+      document.getElementById('root')!,
+    );
+    grid.moveRight();
+    grid.moveRight();
+    grid.moveRight();
     expect(callbacks.onBoundary).toHaveBeenCalled();
   });
 

@@ -13,7 +13,8 @@
     "build": "rollup -c",
     "build.safe": "npm run test && npm run build",
     "dev": "rollup -c -w",
-    "demo": "npm run build.safe && npm pack && npm start",
+    "demo": "node clean && npm run build && npm pack && npm start",
+    "demo.safe": "node clean && npm run build.safe && npm pack && npm start",
     "start": "cd demo && npm start",
     "lint": "eslint src --ext .js,.ts",
     "format": "prettier --write ."
@@ -35,6 +36,7 @@
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
     "sass": "^1.69.5",
     "ts-jest": "^29.1.1",

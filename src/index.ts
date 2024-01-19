@@ -51,10 +51,13 @@ export default class GameGrid implements IGameGrid {
 
     if (container) {
       this.render(container);
-      this.setFocusToCell(
+      this.setActiveCell(
         this.state.activeCoords![0],
         this.state.activeCoords![1],
       );
+    } else {
+      this.refs.cells = this.matrix;
+      this.setStateSync({ rendered: false });
     }
     fireCustomEvent.call(this, gridEventsEnum.CREATED);
   }
@@ -157,8 +160,6 @@ export default class GameGrid implements IGameGrid {
     const cell: HTMLDivElement = document.createElement(elementsEnum.CELL);
     renderAttributes(cell, [
       ['data-gamegrid-ref', 'cell'],
-      ['data-gamegrid-row-index', rI.toString()],
-      ['data-gamegrid-col-index', cI.toString()],
       ['data-gamegrid-coords', `${cI},${rI}`],
       ['data-gamegrid-cell-type', cellData.type || cellTypeEnum.OPEN],
     ]);
@@ -169,11 +170,7 @@ export default class GameGrid implements IGameGrid {
     });
 
     cell.classList.add(classesEnum.CELL);
-    if (this.options.clickable && cellData.type !== cellTypeEnum.BARRIER) {
-      cell.setAttribute('tabindex', '0');
-    } else {
-      cell.setAttribute('tabindex', '-1');
-    }
+
     if (cellData.render) {
       cell.appendChild(
         cellData.render({
@@ -186,21 +183,14 @@ export default class GameGrid implements IGameGrid {
     return cell;
   }
 
-  private setFocusToCell(col: number, row: number): void {
+  public setActiveCell(col: number, row: number): void {
     const cells = this.refs.cells;
     if (!cells) {
       throw new Error('No cells found');
     }
-    if (typeof row === 'number' && typeof col === 'number') {
-      cells[col][row].current?.focus();
-      this.removeActiveClasses();
-      cells[col][row].current?.classList.add(classesEnum.ACTIVE_CELL);
-      this.setStateSync({ activeCoords: [col, row] });
-    } else {
-      this.getActiveCell()?.current?.focus();
-      this.removeActiveClasses();
-      this.getActiveCell()?.current?.classList.add(classesEnum.ACTIVE_CELL);
-    }
+    this.removeActiveClasses();
+    cells[row][col].current?.classList.add(classesEnum.ACTIVE_CELL);
+    this.setStateSync({ activeCoords: [col, row] });
   }
 
   private removeActiveClasses(): void {
@@ -210,12 +200,6 @@ export default class GameGrid implements IGameGrid {
       });
     });
   }
-
-  private containerFocus = (): void => {
-    this.options.activeClass
-      ? this.refs.container!.classList.add(this.options.activeClass)
-      : null;
-  };
 
   private containerBlur = (): void => {
     this.options.activeClass
@@ -253,7 +237,7 @@ export default class GameGrid implements IGameGrid {
 
   // MOVEMENT
   public moveLeft(): void {
-    console.log('move left');
+    this.options.callbacks?.onMove?.(this, this.getState());
     this.setStateSync({
       nextCoords: [
         this.state.activeCoords![0] - 1,
@@ -266,6 +250,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   public moveUp(): void {
+    this.options.callbacks?.onMove?.(this, this.getState());
     this.setStateSync({
       nextCoords: [
         this.state.activeCoords![0],
@@ -278,6 +263,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   public moveRight(): void {
+    this.options.callbacks?.onMove?.(this, this.getState());
     this.setStateSync({
       nextCoords: [
         this.state.activeCoords![0] + 1,
@@ -290,6 +276,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   public moveDown(): void {
+    this.options.callbacks?.onMove?.(this, this.getState());
     this.setStateSync({
       nextCoords: [
         this.state.activeCoords![0],
@@ -320,7 +307,7 @@ export default class GameGrid implements IGameGrid {
 
     switch (this.state.currentDirection) {
       case directionsEnum.DOWN:
-        if (this.state.nextCoords[1] > rowFinalIndex) {
+        if (this.state.nextCoords[0] > rowFinalIndex) {
           if (!this.options.infiniteY) {
             row = rowFinalIndex;
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
@@ -335,7 +322,7 @@ export default class GameGrid implements IGameGrid {
         }
         break;
       case directionsEnum.LEFT:
-        if (this.state.nextCoords[0] < 0) {
+        if (this.state.nextCoords[1] < 0) {
           if (this.options.infiniteX) {
             col = colFinalIndex;
             fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
@@ -382,8 +369,8 @@ export default class GameGrid implements IGameGrid {
     }
 
     this.setStateSync({
-      nextCoords: [col, row],
-      activeCoords: [col, row],
+      nextCoords: [row, col],
+      activeCoords: [row, col],
       prevCoords: this.state.activeCoords,
     });
   }
@@ -427,7 +414,7 @@ export default class GameGrid implements IGameGrid {
     this.testInteractive();
     this.testBarrier();
     this.state.rendered
-      ? this.setFocusToCell(
+      ? this.setActiveCell(
           this.state.activeCoords[0],
           this.state.activeCoords[1],
         )
@@ -439,7 +426,6 @@ export default class GameGrid implements IGameGrid {
 
   // EVENT HANDLERS
   private handleDirection(event: KeyboardEvent): void {
-    this.options.callbacks?.onMove?.(this, this.getState());
     switch (event.code) {
       case keycodeEnum.ArrowLeft: {
         //left
@@ -525,7 +511,7 @@ export default class GameGrid implements IGameGrid {
               nextCoords: coords,
             });
 
-            this.setFocusToCell(
+            this.setActiveCell(
               this.state.nextCoords![0],
               this.state.nextCoords![1],
             );
@@ -565,7 +551,6 @@ export default class GameGrid implements IGameGrid {
     const container = this.refs.container;
     if (container) {
       container.addEventListener('keydown', this.handleKeyDown);
-      container.addEventListener('focus', this.containerFocus);
       container.addEventListener('blur', this.containerBlur);
       container.addEventListener('click', this.handleCellClick);
     }
@@ -575,7 +560,6 @@ export default class GameGrid implements IGameGrid {
     const container = this.refs.container;
     if (container) {
       container.removeEventListener('keydown', this.handleKeyDown);
-      container.removeEventListener('focus', this.containerFocus);
       container.removeEventListener('blur', this.containerBlur);
       container.removeEventListener('click', this.handleCellClick);
     }

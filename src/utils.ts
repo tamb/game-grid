@@ -72,6 +72,9 @@ export function insertStyles(): void {
   .gamegrid__cell:hover {
     cursor: pointer;
   }
+  .gamegrid__cell--active {
+    box-shadow:inset 0px 0px 0px 10px #f00;
+  }
   .gamegrid__cell::before {
     content: "";
     float: left;

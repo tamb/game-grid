@@ -18,3 +18,4 @@ export const matrix: ICell[][] = [
   [{ type: 'open' }, { type: 'interactive' }, { type: 'open' }],
   [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
 ];
+
