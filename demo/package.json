@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "gamegrid": "./../gamegrid-1.0.0-beta.3.tgz"
+    "gamegrid": "./../tamb-gamegrid-1.0.0-beta.5.tgz"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.11.0",

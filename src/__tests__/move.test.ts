@@ -83,6 +83,13 @@ describe('Move methods', () => {
     expect(state.activeCoords).toEqual([1, 2]);
   });
 
+  test('Moving on right side edge works', () => {
+    expect(renderedGrid.getState().activeCoords).toEqual([1, 1]);
+    renderedGrid.moveRight();
+    renderedGrid.moveDown();
+    expect(renderedGrid.getState().activeCoords).toEqual([2, 2]);
+  });
+
   // test("hitting limit fires events", () => {});
   // test("hitting interactive fires interactive", () => {});
   // test("hitting barrier fires barrier", () => {});

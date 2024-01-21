@@ -400,8 +400,9 @@ export default class GameGrid implements IGameGrid {
   private testSpace(): void {
     const coords = this.state.nextCoords;
     if (this.matrix[coords[1]][coords[0]]?.type === cellTypeEnum.OPEN) {
+      const prevCoords = this.state.prevCoords;
       if (
-        this.matrix[this.state.prevCoords[0]][this.state.prevCoords[1]].type ===
+        this.matrix[prevCoords[1]][prevCoords[0]].type ===
         cellTypeEnum.INTERACTIVE
       ) {
         fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);

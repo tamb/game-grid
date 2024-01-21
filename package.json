@@ -1,6 +1,6 @@
 {
-  "name": "gamegrid",
-  "version": "1.0.0-beta.3",
+  "name": "@tamb/gamegrid",
+  "version": "1.0.0-beta.5",
   "description": "",
   "main": "dist/main.js",
   "types": "dist/index.d.ts",

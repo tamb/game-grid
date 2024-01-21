@@ -35,8 +35,23 @@ const matrix = [
     { type: tileTypeEnum.OPEN },
 
     {
-      type: tileTypeEnum.BARRIER,
-      cellAttributes: [['data-cell-type', 'barrier']],
+      type: tileTypeEnum.OPEN,
+    },
+  ],
+  [
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+
+    {
+      type: tileTypeEnum.OPEN,
+    },
+  ],
+  [
+    { type: tileTypeEnum.OPEN },
+    { type: tileTypeEnum.OPEN },
+
+    {
+      type: tileTypeEnum.OPEN,
     },
   ],
   [
@@ -56,11 +71,9 @@ export function createGrid() {
     {
       matrix,
       options: {
-        infiniteY: true,
+        infiniteY: false,
         infiniteX: true,
-        clickable: true,
-        arrowControls: true,
-        wasdControls: true,
+        clickable: false,
         id: 'grid1',
       },
     },
