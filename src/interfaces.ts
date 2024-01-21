@@ -5,6 +5,7 @@ export interface IState {
   moves: number[][];
   currentDirection?: string;
   rendered?: boolean;
+  [key: string]: any;
 }
 
 export interface IDefaultState {
