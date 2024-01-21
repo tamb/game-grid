@@ -1,6 +1,6 @@
 {
   "name": "@tamb/gamegrid",
-  "version": "1.0.0-beta.6",
+  "version": "1.0.0-beta.7",
   "description": "",
   "main": "dist/main.js",
   "types": "dist/index.d.ts",
@@ -12,7 +12,7 @@
     "test.watch": "jest --watch",
     "build": "rollup -c",
     "build.safe": "npm run test && npm run build",
-    "publish.safe": "npm run build.safe && npm publish",
+    "safe.publish": "npm run build.safe && npm publish",
     "dev": "rollup -c -w",
     "demo": "node clean && npm run build && npm pack && npm start",
     "demo.safe": "node clean && npm run build.safe && npm pack && npm start",
