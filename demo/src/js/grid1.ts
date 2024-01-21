@@ -1,3 +1,4 @@
+import { IGameGrid } from './../../../src/interfaces';
 import GameGrid from 'gamegrid';
 import { tileTypeEnum } from './enums';
 const matrix = [
@@ -67,7 +68,7 @@ const matrix = [
 export function createGrid() {
   console.log('building grid');
 
-  const grid = new GameGrid(
+  const grid : IGameGrid = new GameGrid(
     {
       matrix,
       options: {
@@ -80,4 +81,8 @@ export function createGrid() {
     document.getElementById('grid1'),
   );
   console.log('Grid with Clicker: ', grid);
+
+  grid.setStateSync({
+    whatever: 'you want',
+  })
 }

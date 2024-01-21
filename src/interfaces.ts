@@ -106,7 +106,7 @@ export interface IGameGrid {
   getCell(coords: number[]): ICell;
   setOptions(newOptions: IOptions): void;
   getState(): IState;
-  setStateSync(obj: IState): void;
+  setStateSync(obj: IState | any): void;
   moveUp(): void;
   moveRight(): void;
   moveDown(): void;
