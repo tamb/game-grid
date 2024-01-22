@@ -51,10 +51,6 @@ export default class GameGrid implements IGameGrid {
 
     if (container) {
       this.render(container);
-      this.setActiveCell(
-        this.state.activeCoords![0],
-        this.state.activeCoords![1],
-      );
     } else {
       this.refs.cells = this.matrix;
       this.setStateSync({ rendered: false });
@@ -109,6 +105,10 @@ export default class GameGrid implements IGameGrid {
     this.setStateSync({ rendered: true });
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
     this.attachHandlers();
+    this.setActiveCell(
+      this.state.activeCoords![0],
+      this.state.activeCoords![1],
+    );
   }
 
   private renderGrid(): DocumentFragment {

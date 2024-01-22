@@ -82,4 +82,9 @@ describe('GameGrid class constructor', () => {
       activeCell.current?.classList.contains('gamegrid__cell--active'),
     ).toBe(true);
   });
+
+  test("setActiveCell sets the active cell properly", () => {
+    renderedGrid.setActiveCell(1,1);
+    expect(renderedGrid.getActiveCell().current?.classList.contains('gamegrid__cell--active')).toBe(true);
+  });
 });

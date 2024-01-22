@@ -100,6 +100,7 @@ export interface IGameGrid {
   getOptions(): IOptions;
   getPreviousCell(): ICell;
   getActiveCell(): ICell;
+  setActiveCell(x: number, y: number): void;
   getAllCellsByType(type: string): ICell[];
   getMatrix(): ICell[][];
   setMatrix(matrix: ICell[][]): void;
