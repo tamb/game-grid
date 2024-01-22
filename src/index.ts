@@ -299,7 +299,7 @@ export default class GameGrid implements IGameGrid {
     this.setStateSync({ moves: clonedMoves });
   }
 
-  private testLimit(): void {
+  private testLimit(): boolean {
     // use state direction, and state active coords
     let nextX: number = this.state.nextCoords![0];
     let nextY: number = this.state.nextCoords![1];
@@ -307,6 +307,7 @@ export default class GameGrid implements IGameGrid {
     const yLimit: number = this.matrix.length - 1;
     const xLimit: number = this.matrix[this.state.activeCoords[1]].length - 1;
 
+    let hitBoundary: boolean = false;
     switch (this.state.currentDirection) {
       case directionsEnum.UP:
         if (nextY < 0) {
@@ -316,6 +317,7 @@ export default class GameGrid implements IGameGrid {
             fireCustomEvent.call(this, gridEventsEnum.WRAP);
             this.options.callbacks?.onWrap?.(this, this.getState());
           } else {
+            hitBoundary = true;
             nextY = 0;
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
@@ -326,6 +328,7 @@ export default class GameGrid implements IGameGrid {
       case directionsEnum.RIGHT:
         if (nextX > xLimit) {
           if (!this.options.infiniteX) {
+            hitBoundary = true;
             nextX = xLimit;
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
@@ -341,6 +344,7 @@ export default class GameGrid implements IGameGrid {
       case directionsEnum.DOWN:
         if (nextY > yLimit) {
           if (!this.options.infiniteY) {
+            hitBoundary = true;
             nextY = yLimit;
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
@@ -361,6 +365,7 @@ export default class GameGrid implements IGameGrid {
             fireCustomEvent.call(this, gridEventsEnum.WRAP);
             this.options.callbacks?.onWrap?.(this, this.getState());
           } else {
+            hitBoundary = true;
             nextX = 0;
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
             fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
@@ -375,6 +380,8 @@ export default class GameGrid implements IGameGrid {
       activeCoords: [nextX, nextY],
       prevCoords: this.state.activeCoords,
     });
+
+    return hitBoundary;
   }
 
   private testInteractive(): void {
@@ -385,7 +392,7 @@ export default class GameGrid implements IGameGrid {
     }
   }
 
-  private testBarrier(): void {
+  private testBarrier(): boolean {
     const coords = this.state.nextCoords;
     if (this.matrix[coords[1]][coords[0]]?.type === cellTypeEnum.BARRIER) {
       this.setStateSync({
@@ -394,7 +401,9 @@ export default class GameGrid implements IGameGrid {
       });
       fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
       this.options.callbacks?.onBlock?.(this, this.getState());
+      return true;
     }
+    return false;
   }
 
   private testSpace(): void {
@@ -412,10 +421,10 @@ export default class GameGrid implements IGameGrid {
   }
 
   private finishMove(): void {
-    this.testLimit();
+    const hitBoundary = this.testLimit();
     this.testSpace();
     this.testInteractive();
-    this.testBarrier();
+    const isBlocked = this.testBarrier();
     this.state.rendered
       ? this.setActiveCell(
           this.state.activeCoords[0],
@@ -423,8 +432,10 @@ export default class GameGrid implements IGameGrid {
         )
       : null;
     this.addToMoves();
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
-    this.options.callbacks?.onLand?.(this, this.getState());
+    if (!isBlocked && !hitBoundary) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
+      this.options.callbacks?.onLand?.(this, this.getState());
+    }
   }
 
   // EVENT HANDLERS
