@@ -14,7 +14,6 @@ describe('GameGrid class constructor', () => {
   beforeEach(() => {
     renderedGrid = new GameGrid({ matrix }, document.getElementById('root')!);
     defaultOptions = {
-      activeClass: 'gamegrid__cell--active',
       arrowControls: true,
       clickable: true,
       wasdControls: true,
@@ -83,8 +82,12 @@ describe('GameGrid class constructor', () => {
     ).toBe(true);
   });
 
-  test("setActiveCell sets the active cell properly", () => {
-    renderedGrid.setActiveCell(1,1);
-    expect(renderedGrid.getActiveCell().current?.classList.contains('gamegrid__cell--active')).toBe(true);
+  test('setActiveCell sets the active cell properly', () => {
+    renderedGrid.setActiveCell(1, 1);
+    expect(
+      renderedGrid
+        .getActiveCell()
+        .current?.classList.contains('gamegrid__cell--active'),
+    ).toBe(true);
   });
 });

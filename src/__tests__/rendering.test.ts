@@ -3,13 +3,30 @@ import { matrix } from '../__mocks__/matrix';
 
 describe('GameGrid rendering', () => {
   let renderedGrid: GameGrid;
+  let withClasses: GameGrid;
 
   beforeAll(() => {
     document.body.insertAdjacentHTML('afterbegin', '<div id="root"></div>');
+    document.body.insertAdjacentHTML('afterbegin', '<div id="root2"></div>');
   });
 
   beforeEach(() => {
     renderedGrid = new GameGrid({ matrix }, document.getElementById('root')!);
+    withClasses = new GameGrid(
+      {
+        matrix,
+        options: {
+          cellClasses: ['foo', 'foo-2'],
+          rowClasses: ['bar', 'bar-2'],
+          containerClasses: ['buzz', 'buzz-2'],
+          activeClasses: ['baz', 'baz-2'],
+        },
+        state: {
+          activeCoords: [0, 0],
+        },
+      },
+      document.getElementById('root2')!,
+    );
   });
 
   afterEach(() => {
@@ -41,11 +58,36 @@ describe('GameGrid rendering', () => {
     );
   });
 
+  test('custom container classes are applied', () => {
+    expect(withClasses.refs.container?.classList.contains('buzz')).toBe(true);
+    expect(withClasses.refs.container?.classList.contains('buzz-2')).toBe(true);
+  });
+
   test('row classes are applied', () => {
     const rows = renderedGrid.refs.rows;
     expect(rows[0].current?.classList.contains('gamegrid__row')).toBe(true);
     expect(rows[1].current?.classList.contains('gamegrid__row')).toBe(true);
     expect(rows[2].current?.classList.contains('gamegrid__row')).toBe(true);
+  });
+  test('custom row classes are applied', () => {
+    expect(withClasses.refs.rows[0].current?.classList.contains('bar')).toBe(
+      true,
+    );
+    expect(withClasses.refs.rows[1].current?.classList.contains('bar')).toBe(
+      true,
+    );
+    expect(withClasses.refs.rows[2].current?.classList.contains('bar')).toBe(
+      true,
+    );
+    expect(withClasses.refs.rows[0].current?.classList.contains('bar-2')).toBe(
+      true,
+    );
+    expect(withClasses.refs.rows[1].current?.classList.contains('bar-2')).toBe(
+      true,
+    );
+    expect(withClasses.refs.rows[2].current?.classList.contains('bar-2')).toBe(
+      true,
+    );
   });
 
   test('cell classes are applied', () => {
@@ -59,6 +101,30 @@ describe('GameGrid rendering', () => {
     expect(cells[2][2].current?.classList.contains('gamegrid__cell')).toBe(
       true,
     );
+  });
+
+  test('custom classes are applied to cells', () => {
+    expect(
+      withClasses.refs.cells[0][0].current?.classList.contains('foo'),
+    ).toBe(true);
+    expect(
+      withClasses.refs.cells[1][1].current?.classList.contains('foo'),
+    ).toBe(true);
+    expect(
+      withClasses.refs.cells[0][0].current?.classList.contains('foo-2'),
+    ).toBe(true);
+    expect(
+      withClasses.refs.cells[1][1].current?.classList.contains('foo-2'),
+    ).toBe(true);
+  });
+
+  test('Custom active cell classes are applied', () => {
+    expect(
+      withClasses.refs.cells[0][0].current?.classList.contains('baz'),
+    ).toBe(true);
+    expect(
+      withClasses.refs.cells[0][0].current?.classList.contains('baz-2'),
+    ).toBe(true);
   });
 
   test('cell width is correct', () => {
