@@ -27,7 +27,6 @@ export default class GameGrid implements IGameGrid {
   constructor(config: IConfig, container?: HTMLElement) {
     this.root = container;
     this.options = {
-      activeClass: classesEnum.ACTIVE_CELL,
       arrowControls: true,
       wasdControls: true,
       infiniteX: true,
@@ -143,13 +142,22 @@ export default class GameGrid implements IGameGrid {
   private augmentContainer(container: HTMLElement): void {
     this.refs.container = container;
     container.classList.add(classesEnum.GRID);
+    if (this.options.containerClasses) {
+      this.options.containerClasses.forEach((containerClass: string) =>
+        container.classList.add(containerClass),
+      );
+    }
     container.setAttribute('tabindex', '0');
     container.setAttribute('data-gamegrid-ref', 'container');
   }
 
   private renderRow(rI: number): HTMLDivElement {
     const row: HTMLDivElement = document.createElement(elementsEnum.ROW);
-    this.options.rowClass ? row.classList.add(this.options.rowClass) : null;
+    if (this.options.rowClasses) {
+      this.options.rowClasses.forEach((rowClass: string) =>
+        row.classList.add(rowClass),
+      );
+    }
     row.setAttribute('data-gamegrid-row-index', rI.toString());
     row.setAttribute('data-gamegrid-ref', 'row');
     row.classList.add(classesEnum.ROW);
@@ -170,6 +178,11 @@ export default class GameGrid implements IGameGrid {
     });
 
     cell.classList.add(classesEnum.CELL);
+    if (this.options.cellClasses) {
+      this.options.cellClasses.forEach((cellClass: string) => {
+        cell.classList.add(cellClass);
+      });
+    }
 
     if (cellData.render) {
       cell.appendChild(
@@ -190,6 +203,11 @@ export default class GameGrid implements IGameGrid {
     }
     this.removeActiveClasses();
     cells[row][col].current?.classList.add(classesEnum.ACTIVE_CELL);
+    if (this.options.activeClasses) {
+      this.options.activeClasses.forEach((activeClass: string) => {
+        cells[row][col].current?.classList.add(activeClass);
+      });
+    }
     this.setStateSync({ activeCoords: [col, row] });
   }
 
@@ -202,9 +220,11 @@ export default class GameGrid implements IGameGrid {
   }
 
   private containerBlur = (): void => {
-    this.options.activeClass
-      ? this.refs.container!.classList.remove(this.options.activeClass)
-      : null;
+    if (this.options.containerClasses) {
+      this.options.containerClasses.forEach((containerClass: string) => {
+        this.refs.container?.classList.remove(containerClass);
+      });
+    }
   };
 
   public getActiveCell(): ICell {

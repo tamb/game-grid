@@ -45,9 +45,10 @@ export interface IOptions {
 
   // TODO: Add support for this
   // render options
-  activeClass?: string;
-  containerClass?: string;
-  rowClass?: string;
+  activeClasses?: string[];
+  cellClasses?: string[];
+  containerClasses?: string[];
+  rowClasses?: string[];
 }
 
 export interface IConfig {
