@@ -262,7 +262,7 @@ export default class GameGrid implements IGameGrid {
 
   public getPreviousCell(): ICell {
     return {
-      ...this.matrix[this.state.prevCoords![0]][this.state.prevCoords![1]],
+      ...this.refs.cells[this.state.prevCoords![0]][this.state.prevCoords![1]],
     };
   }
 

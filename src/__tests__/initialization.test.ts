@@ -16,9 +16,9 @@ describe('GameGrid class constructor', () => {
     defaultOptions = {
       arrowControls: true,
       clickable: true,
-      wasdControls: true,
-      infiniteX: true,
-      infiniteY: true,
+      wasdControls: false,
+      infiniteX: false,
+      infiniteY: false,
       rewindLimit: 20,
       blockOnType: ['barrier'],
       collideOnType: ['interactive'],
@@ -27,7 +27,6 @@ describe('GameGrid class constructor', () => {
     defaultState = {
       activeCoords: [0, 0],
       prevCoords: [0, 0],
-      nextCoords: [],
       currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
@@ -95,8 +94,6 @@ describe('GameGrid class constructor', () => {
     const prevCell = renderedGrid.getPreviousCell();
 
     expect(prevCell.current).toBeTruthy();
-    expect(
-      prevCell.current?.classList.contains('gamegrid__cell'),
-    ).toBe(true);
+    expect(prevCell.current?.classList.contains('gamegrid__cell')).toBe(true);
   });
 });

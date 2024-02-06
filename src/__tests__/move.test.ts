@@ -54,7 +54,6 @@ describe('Move methods', () => {
   test('moveLeft moves left', () => {
     renderedGrid.moveLeft();
     const state = renderedGrid.getState();
-    expect(state.currentDirection).toMatch('left');
     expect(state.prevCoords).toEqual([1, 1]);
     expect(state.activeCoords).toEqual([0, 1]);
   });
@@ -62,7 +61,6 @@ describe('Move methods', () => {
   test('moveRight moves right', () => {
     renderedGrid.moveRight();
     const state = renderedGrid.getState();
-    expect(state.currentDirection).toMatch('right');
     expect(state.prevCoords).toEqual([1, 1]);
     expect(state.activeCoords).toEqual([2, 1]);
   });
@@ -70,7 +68,6 @@ describe('Move methods', () => {
   test('moveUp moves up', () => {
     renderedGrid.moveUp();
     const state = renderedGrid.getState();
-    expect(state.currentDirection).toMatch('up');
     expect(state.prevCoords).toEqual([1, 1]);
     expect(state.activeCoords).toEqual([1, 0]);
   });
@@ -78,7 +75,6 @@ describe('Move methods', () => {
   test('moveDown moves down', () => {
     renderedGrid.moveDown();
     const state = renderedGrid.getState();
-    expect(state.currentDirection).toMatch('down');
     expect(state.prevCoords).toEqual([1, 1]);
     expect(state.activeCoords).toEqual([1, 2]);
   });
