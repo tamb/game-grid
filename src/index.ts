@@ -201,11 +201,25 @@ export default class GameGrid implements IGameGrid {
 
     const cells = this.refs.cells;
 
-    // TODO: fire events and callbacks
     const hitsBarrier = this.isBarrierCell(x, y);
     const wasAttached = this.isInteractiveCell(currentX, currentY);
-    const hitsOpen = this.isOpenCell(x, y);
     const hitsInteractive = this.isInteractiveCell(x, y);
+
+    if (hitsBarrier) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
+      this.options.callbacks?.onBlock?.(this, this.getState());
+    }
+    if (hitsInteractive) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
+      this.options.callbacks?.onCollide?.(this, this.getState());
+    }
+    if (wasAttached) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
+      this.options.callbacks?.onDettach?.(this, this.getState());
+    }
+
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
+    this.options.callbacks?.onLand?.(this, this.getState());
 
     this.setStateSync({
       activeCoords: [x, y],
@@ -324,37 +338,73 @@ export default class GameGrid implements IGameGrid {
     const yLimit: number = this.matrix.length - 1;
     const xLimit: number =
       this.matrix[this.getState().activeCoords[0]].length - 1;
+    let wrapped = false;
+    let bounded = false;
 
     if (nextX < 0) {
       if (this.options.infiniteX) {
         nextX = xLimit;
+        this.options.callbacks?.onWrapX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+        wrapped = true;
       } else {
         nextX = 0;
+        this.options.callbacks?.onBoundaryX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+        bounded = true;
       }
     }
 
     if (nextX > xLimit) {
       if (this.options.infiniteX) {
         nextX = 0;
+        this.options.callbacks?.onWrapX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+        wrapped = true;
       } else {
         nextX = xLimit;
+        this.options.callbacks?.onBoundaryX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+        bounded = true;
       }
     }
 
     if (nextY < 0) {
       if (this.options.infiniteY) {
         nextY = yLimit;
+        this.options.callbacks?.onWrapY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+        wrapped = true;
       } else {
         nextY = 0;
+        this.options.callbacks?.onBoundaryY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+        bounded = true;
       }
     }
 
     if (nextY > yLimit) {
       if (this.options.infiniteY) {
         nextY = 0;
+        this.options.callbacks?.onWrapY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+        wrapped = true;
       } else {
         nextY = yLimit;
+        this.options.callbacks?.onBoundaryY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+        bounded = true;
       }
+    }
+
+    if (wrapped) {
+      this.options.callbacks?.onWrap?.(this, this.getState());
+      fireCustomEvent.call(this, gridEventsEnum.WRAP);
+    }
+
+    if (bounded) {
+      this.options.callbacks?.onBoundary?.(this, this.getState());
+      fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
     }
 
     return [nextX, nextY];
