@@ -273,50 +273,42 @@ export default class GameGrid implements IGameGrid {
   /// DIRECTIONS
   public moveUp(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      currentDirection: directionsEnum.UP,
-    });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
+
     this.setActiveCell(
       this.state.activeCoords![0],
       this.state.activeCoords![1] - 1,
     );
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
   }
 
   public moveRight(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      currentDirection: directionsEnum.RIGHT,
-    });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
+
     this.setActiveCell(
       this.state.activeCoords![0] + 1,
       this.state.activeCoords![1],
     );
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
   }
 
   public moveDown(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      currentDirection: directionsEnum.DOWN,
-    });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
+
     this.setActiveCell(
       this.state.activeCoords![0],
       this.state.activeCoords![1] + 1,
     );
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
   }
 
   public moveLeft(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      currentDirection: directionsEnum.LEFT,
-    });
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
+
     this.setActiveCell(
       this.state.activeCoords![0] - 1,
       this.state.activeCoords![1],
     );
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
   }
 
   /// MOVEMENT HELPERS
