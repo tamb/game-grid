@@ -18,6 +18,7 @@ describe('Callbacks', () => {
       matrix,
       options: {
         callbacks,
+        infiniteX: true,
       },
     });
   });
@@ -78,34 +79,4 @@ describe('Callbacks', () => {
     memoryGrid.moveLeft();
     expect(callbacks.onWrap).toHaveBeenCalled();
   });
-
-  // TODO fix this problem in the future
-  // test('onLand is not called onBlock when hitting a boundary', () => {
-  //   const grid = new GameGrid({
-  //     matrix: [
-  //       [
-  //         {
-  //           type: 'open',
-  //         },
-  //         {
-  //           type: 'barrier',
-  //         },
-  //       ],
-  //     ],
-  //     options: {
-  //       infiniteX: false,
-  //       infiniteY: false,
-  //       callbacks: {
-  //         onLand: jest.fn(),
-  //         onBlock: jest.fn(),
-  //       },
-  //     },
-  //     state: {
-  //       activeCoords: [0, 0],
-  //     },
-  //   });
-  //   grid.moveRight();
-  //   grid.moveUp();
-  //   expect(callbacks.onLand).not.toHaveBeenCalled();
-  // });
 });

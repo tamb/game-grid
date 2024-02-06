@@ -1,9 +1,7 @@
 export interface IState {
   activeCoords: number[];
   prevCoords: number[];
-  nextCoords: number[];
   moves: number[][];
-  currentDirection?: string;
   rendered?: boolean;
   [key: string]: any;
 }
@@ -11,9 +9,7 @@ export interface IState {
 export interface IDefaultState {
   activeCoords?: number[];
   prevCoords?: number[];
-  nextCoords?: number[];
   moves?: number[][];
-  currentDirection?: string;
   rendered?: boolean;
 }
 export interface IOptions {
@@ -25,8 +21,8 @@ export interface IOptions {
   clickable?: boolean;
   rewindLimit?: number;
   middlewares?: {
-    pre: ((gamegridInstance: IGameGrid, newState: any) => void)[];
-    post: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+    pre?: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+    post?: ((gamegridInstance: IGameGrid, newState: any) => void)[];
   };
   callbacks?: {
     onMove?: (gamegridInstance: IGameGrid, newState: any) => void;
@@ -35,7 +31,11 @@ export interface IOptions {
     onCollide?: (gamegridInstance: IGameGrid, newState: any) => void;
     onDettach?: (gamegridInstance: IGameGrid, newState: any) => void;
     onBoundary?: (gamegridInstance: IGameGrid, newState: any) => void;
+    onBoundaryX?: (gamegridInstance: IGameGrid, newState: any) => void;
+    onBoundaryY?: (gamegridInstance: IGameGrid, newState: any) => void;
     onWrap?: (gamegridInstance: IGameGrid, newState: any) => void;
+    onWrapX?: (gamegridInstance: IGameGrid, newState: any) => void;
+    onWrapY?: (gamegridInstance: IGameGrid, newState: any) => void;
   };
 
   // TODO: Utilize these options to add additional supported cell types

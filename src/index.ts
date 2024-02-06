@@ -1,6 +1,5 @@
 import { fireCustomEvent, renderAttributes, insertStyles } from './utils';
 import {
-  directionsEnum,
   INITIAL_STATE,
   cellTypeEnum,
   gridEventsEnum,
@@ -28,9 +27,9 @@ export default class GameGrid implements IGameGrid {
     this.root = container;
     this.options = {
       arrowControls: true,
-      wasdControls: true,
-      infiniteX: true,
-      infiniteY: true,
+      wasdControls: false,
+      infiniteX: false,
+      infiniteY: false,
       clickable: true,
       rewindLimit: 20,
       blockOnType: [cellTypeEnum.BARRIER],
@@ -196,19 +195,48 @@ export default class GameGrid implements IGameGrid {
     return cell;
   }
 
-  public setActiveCell(col: number, row: number): void {
+  public setActiveCell(x: number, y: number): void {
+    [x, y] = this.getValidXandY(x, y);
+    const [currentX, currentY] = this.getState().activeCoords!;
+
     const cells = this.refs.cells;
-    if (!cells) {
-      throw new Error('No cells found');
+
+    const hitsBarrier = this.isBarrierCell(x, y);
+    const wasAttached = this.isInteractiveCell(currentX, currentY);
+    const hitsInteractive = this.isInteractiveCell(x, y);
+
+    if (hitsBarrier) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
+      this.options.callbacks?.onBlock?.(this, this.getState());
     }
-    this.removeActiveClasses();
-    cells[row][col].current?.classList.add(classesEnum.ACTIVE_CELL);
-    if (this.options.activeClasses) {
-      this.options.activeClasses.forEach((activeClass: string) => {
-        cells[row][col].current?.classList.add(activeClass);
-      });
+    if (hitsInteractive) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
+      this.options.callbacks?.onCollide?.(this, this.getState());
     }
-    this.setStateSync({ activeCoords: [col, row] });
+    if (wasAttached) {
+      fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
+      this.options.callbacks?.onDettach?.(this, this.getState());
+    }
+
+    fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
+    this.options.callbacks?.onLand?.(this, this.getState());
+
+    this.setStateSync({
+      activeCoords: hitsBarrier ? this.state.activeCoords : [x, y],
+      prevCoords: this.state.activeCoords,
+      moves: this.createNewMovesArray(),
+    });
+
+    if (this.getState().rendered) {
+      this.removeActiveClasses();
+      const [newX, newY] = this.getState().activeCoords!;
+      cells[newY][newX].current?.classList.add(classesEnum.ACTIVE_CELL);
+      if (this.options.activeClasses) {
+        this.options.activeClasses.forEach((activeClass: string) => {
+          cells[newY][newX].current?.classList.add(activeClass);
+        });
+      }
+    }
   }
 
   private removeActiveClasses(): void {
@@ -235,7 +263,7 @@ export default class GameGrid implements IGameGrid {
 
   public getPreviousCell(): ICell {
     return {
-      ...this.matrix[this.state.prevCoords![0]][this.state.prevCoords![1]],
+      ...this.refs.cells[this.state.prevCoords![0]][this.state.prevCoords![1]],
     };
   }
 
@@ -259,203 +287,140 @@ export default class GameGrid implements IGameGrid {
   /// DIRECTIONS
   public moveUp(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      nextCoords: [
-        this.state.activeCoords![0],
-        this.state.activeCoords![1] - 1,
-      ],
-      currentDirection: directionsEnum.UP,
-    });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
-    this.finishMove();
+
+    this.setActiveCell(
+      this.state.activeCoords![0],
+      this.state.activeCoords![1] - 1,
+    );
   }
 
   public moveRight(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      nextCoords: [
-        this.state.activeCoords![0] + 1,
-        this.state.activeCoords![1],
-      ],
-      currentDirection: directionsEnum.RIGHT,
-    });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
-    this.finishMove();
+
+    this.setActiveCell(
+      this.state.activeCoords![0] + 1,
+      this.state.activeCoords![1],
+    );
   }
 
   public moveDown(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      nextCoords: [
-        this.state.activeCoords![0],
-        this.state.activeCoords![1] + 1,
-      ],
-      currentDirection: directionsEnum.DOWN,
-    });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
-    this.finishMove();
+
+    this.setActiveCell(
+      this.state.activeCoords![0],
+      this.state.activeCoords![1] + 1,
+    );
   }
 
   public moveLeft(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.setStateSync({
-      nextCoords: [
-        this.state.activeCoords![0] - 1,
-        this.state.activeCoords![1],
-      ],
-      currentDirection: directionsEnum.LEFT,
-    });
     fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
-    this.finishMove();
+
+    this.setActiveCell(
+      this.state.activeCoords![0] - 1,
+      this.state.activeCoords![1],
+    );
   }
 
   /// MOVEMENT HELPERS
-  private addToMoves(): void {
+  private createNewMovesArray(): number[][] {
     const clonedMoves = [...this.getState().moves];
     clonedMoves.unshift(this.state.activeCoords);
     if (clonedMoves.length > this.options.rewindLimit!) {
       clonedMoves.shift();
     }
-    this.setStateSync({ moves: clonedMoves });
+    return clonedMoves;
   }
 
-  private testLimit(): boolean {
-    // use state direction, and state active coords
-    let nextX: number = this.state.nextCoords![0];
-    let nextY: number = this.state.nextCoords![1];
-
+  private getValidXandY(nextX: number, nextY: number): number[] {
     const yLimit: number = this.matrix.length - 1;
-    const xLimit: number = this.matrix[this.state.activeCoords[1]].length - 1;
+    const xLimit: number =
+      this.matrix[this.getState().activeCoords[0]].length - 1;
+    let wrapped = false;
+    let bounded = false;
 
-    let hitBoundary: boolean = false;
-    switch (this.state.currentDirection) {
-      case directionsEnum.UP:
-        if (nextY < 0) {
-          if (this.options.infiniteY) {
-            nextY = yLimit;
-            fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
-            fireCustomEvent.call(this, gridEventsEnum.WRAP);
-            this.options.callbacks?.onWrap?.(this, this.getState());
-          } else {
-            hitBoundary = true;
-            nextY = 0;
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
-            this.options.callbacks?.onBoundary?.(this, this.getState());
-          }
-        }
-        break;
-      case directionsEnum.RIGHT:
-        if (nextX > xLimit) {
-          if (!this.options.infiniteX) {
-            hitBoundary = true;
-            nextX = xLimit;
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
-            this.options.callbacks?.onBoundary?.(this, this.getState());
-          } else {
-            nextX = 0;
-            fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
-            fireCustomEvent.call(this, gridEventsEnum.WRAP);
-            this.options.callbacks?.onWrap?.(this, this.getState());
-          }
-        }
-        break;
-      case directionsEnum.DOWN:
-        if (nextY > yLimit) {
-          if (!this.options.infiniteY) {
-            hitBoundary = true;
-            nextY = yLimit;
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
-            this.options.callbacks?.onBoundary?.(this, this.getState());
-          } else {
-            nextY = 0;
-            fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
-            fireCustomEvent.call(this, gridEventsEnum.WRAP);
-            this.options.callbacks?.onWrap?.(this, this.getState());
-          }
-        }
-        break;
-      case directionsEnum.LEFT:
-        if (nextX < 0) {
-          if (this.options.infiniteX) {
-            nextX = xLimit;
-            fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
-            fireCustomEvent.call(this, gridEventsEnum.WRAP);
-            this.options.callbacks?.onWrap?.(this, this.getState());
-          } else {
-            hitBoundary = true;
-            nextX = 0;
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
-            fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
-            this.options.callbacks?.onBoundary?.(this, this.getState());
-          }
-        }
-        break;
-    }
-
-    this.setStateSync({
-      nextCoords: [nextX, nextY],
-      activeCoords: [nextX, nextY],
-      prevCoords: this.state.activeCoords,
-    });
-
-    return hitBoundary;
-  }
-
-  private testInteractive(): void {
-    const coords = this.state.nextCoords;
-    if (this.matrix[coords[1]][coords[0]]?.type === cellTypeEnum.INTERACTIVE) {
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
-      this.options.callbacks?.onCollide?.(this, this.getState());
-    }
-  }
-
-  private testBarrier(): boolean {
-    const coords = this.state.nextCoords;
-    if (this.matrix[coords[1]][coords[0]]?.type === cellTypeEnum.BARRIER) {
-      this.setStateSync({
-        activeCoords: this.state.prevCoords,
-        prevCoords: this.state.activeCoords,
-      });
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
-      this.options.callbacks?.onBlock?.(this, this.getState());
-      return true;
-    }
-    return false;
-  }
-
-  private testSpace(): void {
-    const coords = this.state.nextCoords;
-    if (this.matrix[coords[1]][coords[0]]?.type === cellTypeEnum.OPEN) {
-      const prevCoords = this.state.prevCoords;
-      if (
-        this.matrix[prevCoords[1]][prevCoords[0]].type ===
-        cellTypeEnum.INTERACTIVE
-      ) {
-        fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
-        this.options.callbacks?.onDettach?.(this, this.getState());
+    if (nextX < 0) {
+      if (this.options.infiniteX) {
+        nextX = xLimit;
+        this.options.callbacks?.onWrapX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+        wrapped = true;
+      } else {
+        nextX = 0;
+        this.options.callbacks?.onBoundaryX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+        bounded = true;
       }
     }
+
+    if (nextX > xLimit) {
+      if (this.options.infiniteX) {
+        nextX = 0;
+        this.options.callbacks?.onWrapX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+        wrapped = true;
+      } else {
+        nextX = xLimit;
+        this.options.callbacks?.onBoundaryX?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+        bounded = true;
+      }
+    }
+
+    if (nextY < 0) {
+      if (this.options.infiniteY) {
+        nextY = yLimit;
+        this.options.callbacks?.onWrapY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+        wrapped = true;
+      } else {
+        nextY = 0;
+        this.options.callbacks?.onBoundaryY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+        bounded = true;
+      }
+    }
+
+    if (nextY > yLimit) {
+      if (this.options.infiniteY) {
+        nextY = 0;
+        this.options.callbacks?.onWrapY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+        wrapped = true;
+      } else {
+        nextY = yLimit;
+        this.options.callbacks?.onBoundaryY?.(this, this.getState());
+        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+        bounded = true;
+      }
+    }
+
+    if (wrapped) {
+      this.options.callbacks?.onWrap?.(this, this.getState());
+      fireCustomEvent.call(this, gridEventsEnum.WRAP);
+    }
+
+    if (bounded) {
+      this.options.callbacks?.onBoundary?.(this, this.getState());
+      fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+    }
+
+    return [nextX, nextY];
   }
 
-  private finishMove(): void {
-    const hitBoundary = this.testLimit();
-    this.testSpace();
-    this.testInteractive();
-    const isBlocked = this.testBarrier();
-    this.state.rendered
-      ? this.setActiveCell(
-          this.state.activeCoords[0],
-          this.state.activeCoords[1],
-        )
-      : null;
-    this.addToMoves();
-    if (!isBlocked && !hitBoundary) {
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
-      this.options.callbacks?.onLand?.(this, this.getState());
-    }
+  private isInteractiveCell(x: number, y: number): boolean {
+    return this.matrix[y][x]?.type === cellTypeEnum.INTERACTIVE;
+  }
+
+  private isBarrierCell(x: number, y: number): boolean {
+    return this.matrix[y][x]?.type === cellTypeEnum.BARRIER;
+  }
+
+  private isOpenCell(x: number, y: number): boolean {
+    return this.matrix[y][x]?.type === cellTypeEnum.OPEN;
   }
 
   // EVENT HANDLERS
@@ -541,14 +506,8 @@ export default class GameGrid implements IGameGrid {
               .getAttribute('data-gamegrid-coords')!
               .split(',')
               .map((n) => Number(n));
-            this.setStateSync({
-              nextCoords: coords,
-            });
 
-            this.setActiveCell(
-              this.state.nextCoords![0],
-              this.state.nextCoords![1],
-            );
+            this.setActiveCell(coords![0], coords![1]);
           } else {
             throw new Error('No cell found');
           }

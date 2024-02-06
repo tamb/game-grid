@@ -42,17 +42,8 @@ export const cellTypeEnum = {
 export const INITIAL_STATE: IState = {
   activeCoords: [0, 0],
   prevCoords: [0, 0],
-  nextCoords: [],
-  currentDirection: '',
   rendered: false,
-  moves: [[0, 0]],
-};
-
-export const directionsEnum = {
-  UP: 'up',
-  DOWN: 'down',
-  LEFT: 'left',
-  RIGHT: 'right',
+  moves: [],
 };
 
 export enum elementsEnum {

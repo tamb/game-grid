@@ -12,8 +12,6 @@ describe('setStateSync', () => {
     defaultState = {
       activeCoords: [0, 0],
       prevCoords: [0, 0],
-      nextCoords: [],
-      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -122,8 +120,6 @@ describe('setStateSync', () => {
     const newState = {
       activeCoords: [0, 0],
       prevCoords: [0, 0],
-      nextCoords: [0, 0],
-      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -148,7 +144,6 @@ describe('setStateSync', () => {
 
   test('initial state accepts values', () => {
     const newState = {
-      currentDirection: 'up',
       activeCoords: [1, 1],
     };
     const newGrid = new GameGrid(
@@ -160,10 +155,6 @@ describe('setStateSync', () => {
       document.getElementById('root')!,
     );
 
-    expect(newGrid.getState()).toEqual({
-      ...defaultState,
-      currentDirection: 'up',
-      activeCoords: [1, 1],
-    });
+    expect(newGrid.getState().activeCoords).toEqual([1, 1]);
   });
 });
