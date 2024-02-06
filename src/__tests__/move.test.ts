@@ -91,7 +91,12 @@ describe('Move methods', () => {
   // test("hitting barrier fires barrier", () => {});
   // test("hitting custom type fires custom type event", () => {});
   // test("moveLeft unblocked goes left", () => {});
-  // test("moveLeft blocked stays", () => {});
+  test('move attempt into barrier stays put', () => {
+    renderedGrid.moveUp();
+    renderedGrid.moveRight();
+    const state = renderedGrid.getState();
+    expect(state.activeCoords).toEqual([1, 0]);
+  });
   // test("moveRight unblocked goes left", () => {});
   // test("moveRight blocked stays", () => {});
   // test("moveUp unblocked goes left", () => {});

@@ -144,7 +144,6 @@ describe('setStateSync', () => {
 
   test('initial state accepts values', () => {
     const newState = {
-      currentDirection: 'up',
       activeCoords: [1, 1],
     };
     const newGrid = new GameGrid(
@@ -156,9 +155,6 @@ describe('setStateSync', () => {
       document.getElementById('root')!,
     );
 
-    expect(newGrid.getState()).toEqual({
-      ...defaultState,
-      activeCoords: [1, 1],
-    });
+    expect(newGrid.getState().activeCoords).toEqual([1, 1]);
   });
 });

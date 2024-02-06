@@ -222,17 +222,18 @@ export default class GameGrid implements IGameGrid {
     this.options.callbacks?.onLand?.(this, this.getState());
 
     this.setStateSync({
-      activeCoords: [x, y],
+      activeCoords: hitsBarrier ? this.state.activeCoords : [x, y],
       prevCoords: this.state.activeCoords,
       moves: this.createNewMovesArray(),
     });
 
     if (this.getState().rendered) {
       this.removeActiveClasses();
-      cells[y][x].current?.classList.add(classesEnum.ACTIVE_CELL);
+      const [newX, newY] = this.getState().activeCoords!;
+      cells[newY][newX].current?.classList.add(classesEnum.ACTIVE_CELL);
       if (this.options.activeClasses) {
         this.options.activeClasses.forEach((activeClass: string) => {
-          cells[y][x].current?.classList.add(activeClass);
+          cells[newY][newX].current?.classList.add(activeClass);
         });
       }
     }
