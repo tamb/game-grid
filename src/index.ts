@@ -1,6 +1,5 @@
 import { fireCustomEvent, renderAttributes, insertStyles } from './utils';
 import {
-  directionsEnum,
   INITIAL_STATE,
   cellTypeEnum,
   gridEventsEnum,

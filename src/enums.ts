@@ -46,13 +46,6 @@ export const INITIAL_STATE: IState = {
   moves: [[0, 0]],
 };
 
-export const directionsEnum = {
-  UP: 'up',
-  DOWN: 'down',
-  LEFT: 'left',
-  RIGHT: 'right',
-};
-
 export enum elementsEnum {
   ROW = 'div',
   CELL = 'div',
