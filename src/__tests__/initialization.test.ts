@@ -90,4 +90,13 @@ describe('GameGrid class constructor', () => {
         .current?.classList.contains('gamegrid__cell--active'),
     ).toBe(true);
   });
+
+  test('getPreviousCell returns previous cell element', () => {
+    const prevCell = renderedGrid.getPreviousCell();
+
+    expect(prevCell.current).toBeTruthy();
+    expect(
+      prevCell.current?.classList.contains('gamegrid__cell'),
+    ).toBe(true);
+  });
 });
