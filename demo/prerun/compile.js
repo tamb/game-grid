@@ -12,7 +12,7 @@ function compile() {
   const html = template();
 
   fs.writeFileSync(path.resolve(__dirname, './../src/output.html'), html);
-};
+}
 
 function registerAllPartials() {
   const partialsDir = path.resolve(__dirname, './../src/partials');

@@ -79,6 +79,26 @@ describe('Move methods', () => {
     expect(state.activeCoords).toEqual([1, 2]);
   });
 
+  test("moveUp sets direction to 'UP'", () => {
+    renderedGrid.moveUp();
+    expect(renderedGrid.getState().currentDirection).toBe('UP');
+  });
+
+  test("moveDown sets direction to 'DOWN'", () => {
+    renderedGrid.moveDown();
+    expect(renderedGrid.getState().currentDirection).toBe('DOWN');
+  });
+
+  test("moveLeft sets direction to 'LEFT'", () => {
+    renderedGrid.moveLeft();
+    expect(renderedGrid.getState().currentDirection).toBe('LEFT');
+  });
+
+  test("moveRight sets direction to 'RIGHT'", () => {
+    renderedGrid.moveRight();
+    expect(renderedGrid.getState().currentDirection).toBe('RIGHT');
+  });
+
   test('Moving on right side edge works', () => {
     expect(renderedGrid.getState().activeCoords).toEqual([1, 1]);
     renderedGrid.moveRight();
@@ -103,4 +123,13 @@ describe('Move methods', () => {
   // test("moveUp blocked stays", () => {});
   // test("moveDown unblocked goes left", () => {});
   // test("moveDown blocked stays", () => {});
+
+  test('move direction class is added to Grid', () => {
+    renderedGrid.moveUp();
+    expect(
+      renderedGrid.refs.container?.classList.contains(
+        'gamegrid__direction--up',
+      ),
+    ).toBeTruthy();
+  });
 });

@@ -39,17 +39,27 @@ export const cellTypeEnum = {
   INTERACTIVE: 'interactive',
 };
 
+export enum directionEnum {
+  UP = 'UP',
+  DOWN = 'DOWN',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+}
+
+export const directionClassEnum: { [ket: string]: string } = {
+  UP: 'gamegrid__direction--up',
+  DOWN: 'gamegrid__direction--down',
+  LEFT: 'gamegrid__direction--left',
+  RIGHT: 'gamegrid__direction--right',
+};
+
 export const INITIAL_STATE: IState = {
   activeCoords: [0, 0],
   prevCoords: [0, 0],
   rendered: false,
   moves: [],
+  currentDirection: directionEnum.DOWN,
 };
-
-export enum elementsEnum {
-  ROW = 'div',
-  CELL = 'div',
-}
 
 export enum classesEnum {
   GRID = 'gamegrid',

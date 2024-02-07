@@ -3,9 +3,10 @@ import {
   INITIAL_STATE,
   cellTypeEnum,
   gridEventsEnum,
-  elementsEnum,
   classesEnum,
   keycodeEnum,
+  directionEnum,
+  directionClassEnum,
 } from './enums';
 import {
   IState,
@@ -106,6 +107,7 @@ export default class GameGrid implements IGameGrid {
     this.setActiveCell(
       this.state.activeCoords![0],
       this.state.activeCoords![1],
+      directionEnum.DOWN,
     );
   }
 
@@ -151,7 +153,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   private renderRow(rI: number): HTMLDivElement {
-    const row: HTMLDivElement = document.createElement(elementsEnum.ROW);
+    const row: HTMLDivElement = document.createElement('div');
     if (this.options.rowClasses) {
       this.options.rowClasses.forEach((rowClass: string) =>
         row.classList.add(rowClass),
@@ -164,7 +166,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   private renderCell(rI: number, cI: number, cellData: ICell): HTMLDivElement {
-    const cell: HTMLDivElement = document.createElement(elementsEnum.CELL);
+    const cell: HTMLDivElement = document.createElement('div');
     renderAttributes(cell, [
       ['data-gamegrid-ref', 'cell'],
       ['data-gamegrid-coords', `${cI},${rI}`],
@@ -195,7 +197,7 @@ export default class GameGrid implements IGameGrid {
     return cell;
   }
 
-  public setActiveCell(x: number, y: number): void {
+  public setActiveCell(x: number, y: number, direction?: string): void {
     const boundaryCheckData = this.getValidXandY(x, y);
 
     x = boundaryCheckData.x;
@@ -213,6 +215,7 @@ export default class GameGrid implements IGameGrid {
       activeCoords: hitsBarrier ? this.state.activeCoords : [x, y],
       prevCoords: this.state.activeCoords,
       moves: this.createNewMovesArray(),
+      currentDirection: direction,
     });
 
     if (hitsBarrier) {
@@ -250,10 +253,17 @@ export default class GameGrid implements IGameGrid {
     if (this.getState().rendered) {
       this.removeActiveClasses();
       const [newX, newY] = this.getState().activeCoords!;
-      cells[newY][newX].current?.classList.add(classesEnum.ACTIVE_CELL);
+      const newCell = cells[newY][newX];
+
+      newCell.current?.classList.add(classesEnum.ACTIVE_CELL);
+      for (let key in directionClassEnum) {
+        this.refs.container?.classList.remove(directionClassEnum[key]);
+      }
+      direction? this.refs.container?.classList.add(directionClassEnum[direction!]) : null;
+
       if (this.options.activeClasses) {
         this.options.activeClasses.forEach((activeClass: string) => {
-          cells[newY][newX].current?.classList.add(activeClass);
+          newCell.current?.classList.add(activeClass);
         });
       }
     }
@@ -312,6 +322,7 @@ export default class GameGrid implements IGameGrid {
     this.setActiveCell(
       this.state.activeCoords![0],
       this.state.activeCoords![1] - 1,
+      directionEnum.UP,
     );
   }
 
@@ -322,6 +333,7 @@ export default class GameGrid implements IGameGrid {
     this.setActiveCell(
       this.state.activeCoords![0] + 1,
       this.state.activeCoords![1],
+      directionEnum.RIGHT,
     );
   }
 
@@ -332,6 +344,7 @@ export default class GameGrid implements IGameGrid {
     this.setActiveCell(
       this.state.activeCoords![0],
       this.state.activeCoords![1] + 1,
+      directionEnum.DOWN,
     );
   }
 
@@ -342,6 +355,7 @@ export default class GameGrid implements IGameGrid {
     this.setActiveCell(
       this.state.activeCoords![0] - 1,
       this.state.activeCoords![1],
+      directionEnum.LEFT,
     );
   }
 
@@ -362,7 +376,7 @@ export default class GameGrid implements IGameGrid {
     x: number;
     y: number;
     eventName: string | undefined;
-    callbackFunction: Function | undefined;
+    callbackFunction: ((arg0: IGameGrid, arg1: any) => void) | undefined;
     wrapped: boolean;
     bounded: boolean;
   } {
@@ -372,7 +386,7 @@ export default class GameGrid implements IGameGrid {
     let wrapped = false;
     let bounded = false;
     let eventName: string | undefined;
-    let callbackFunction: Function | undefined;
+    let callbackFunction: ((arg0: IGameGrid, arg1: any) => void) | undefined;
 
     if (nextX < 0) {
       if (this.options.infiniteX) {

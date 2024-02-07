@@ -14,6 +14,7 @@ describe('setStateSync', () => {
       prevCoords: [0, 0],
       rendered: true,
       moves: [[0, 0]],
+      currentDirection: 'DOWN',
     };
 
     renderedGrid = new GameGrid(
@@ -118,10 +119,14 @@ describe('setStateSync', () => {
 
   test('setStateSync updates whole state correctly', () => {
     const newState = {
-      activeCoords: [0, 0],
+      activeCoords: [0, 1],
       prevCoords: [0, 0],
       rendered: true,
-      moves: [[0, 0]],
+      moves: [
+        [0, 0],
+        [0, 1],
+      ],
+      currentDirection: 'UP',
     };
     renderedGrid.setStateSync(newState);
     expect(renderedGrid.getState()).toEqual(newState);
@@ -149,7 +154,6 @@ describe('setStateSync', () => {
     const newGrid = new GameGrid(
       {
         matrix,
-        // @ts-ignore
         state: newState,
       },
       document.getElementById('root')!,
