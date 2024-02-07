@@ -8,6 +8,7 @@ describe('GameGrid rendering', () => {
   beforeAll(() => {
     document.body.insertAdjacentHTML('afterbegin', '<div id="root"></div>');
     document.body.insertAdjacentHTML('afterbegin', '<div id="root2"></div>');
+    document.body.insertAdjacentHTML('afterbegin', '<div id="root3"></div>');
   });
 
   beforeEach(() => {
@@ -32,6 +33,33 @@ describe('GameGrid rendering', () => {
   afterEach(() => {
     renderedGrid.destroy();
     renderedGrid = null!;
+    document.querySelector('#root')!.innerHTML = '';
+    document.querySelector('#root2')!.innerHTML = '';
+    document.querySelector('#root3')!.innerHTML = '';
+  });
+
+  test('Unrendered Grid has rendered state as false', () => {
+    const _memoryGrid = new GameGrid({ matrix });
+    // _memoryGrid.render(document.getElementById('root3')!);
+    expect(_memoryGrid.getState().rendered).toBe(false);
+  });
+
+  test('Rendering grid sets rendered state to true', () => {
+    const _memoryGrid = new GameGrid({ matrix });
+    _memoryGrid.render(document.getElementById('root3')!);
+    expect(_memoryGrid.getState().rendered).toBe(true);
+  });
+
+  test('Rendering grid sets refs correctly', () => {
+    const _memoryGrid = new GameGrid({ matrix });
+    _memoryGrid.render(document.getElementById('root3')!);
+    expect(_memoryGrid.refs.container).toBe(document.getElementById('root3')!);
+    expect(_memoryGrid.refs.rows.length).toBe(3);
+    expect(_memoryGrid.refs.cells.length).toBe(3);
+  });
+
+  test('Rendered Grid has rendered state as true', () => {
+    expect(renderedGrid.getState().rendered).toBe(true);
   });
 
   test('renderFunction returns HTMLElement', () => {
