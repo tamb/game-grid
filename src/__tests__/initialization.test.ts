@@ -80,12 +80,13 @@ describe('GameGrid class constructor', () => {
   });
 
   test('setActiveCell sets the active cell properly', () => {
-    renderedGrid.setActiveCell(1, 1);
+    renderedGrid.setActiveCell(1, 1, 'UP');
     expect(
       renderedGrid
         .getActiveCell()
         .current?.classList.contains('gamegrid__cell--active'),
     ).toBe(true);
+    expect(renderedGrid.getState().currentDirection).toBe('UP');
   });
 
   test('getPreviousCell returns previous cell element', () => {
