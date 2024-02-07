@@ -196,7 +196,11 @@ export default class GameGrid implements IGameGrid {
   }
 
   public setActiveCell(x: number, y: number): void {
-    [x, y] = this.getValidXandY(x, y);
+    const boundaryCheckData = this.getValidXandY(x, y);
+
+    x = boundaryCheckData.x;
+    y = boundaryCheckData.y;
+
     const [currentX, currentY] = this.getState().activeCoords!;
 
     const cells = this.refs.cells;
@@ -204,6 +208,12 @@ export default class GameGrid implements IGameGrid {
     const hitsBarrier = this.isBarrierCell(x, y);
     const wasAttached = this.isInteractiveCell(currentX, currentY);
     const hitsInteractive = this.isInteractiveCell(x, y);
+
+    this.setStateSync({
+      activeCoords: hitsBarrier ? this.state.activeCoords : [x, y],
+      prevCoords: this.state.activeCoords,
+      moves: this.createNewMovesArray(),
+    });
 
     if (hitsBarrier) {
       fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
@@ -218,14 +228,24 @@ export default class GameGrid implements IGameGrid {
       this.options.callbacks?.onDettach?.(this, this.getState());
     }
 
+    if (boundaryCheckData.eventName) {
+      fireCustomEvent.call(this, boundaryCheckData.eventName);
+    }
+    if (boundaryCheckData.callbackFunction) {
+      boundaryCheckData.callbackFunction(this, this.getState());
+    }
+    if (boundaryCheckData.wrapped) {
+      this.options.callbacks?.onWrap?.(this, this.getState());
+      fireCustomEvent.call(this, gridEventsEnum.WRAP);
+    }
+
+    if (boundaryCheckData.bounded) {
+      this.options.callbacks?.onBoundary?.(this, this.getState());
+      fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+    }
+
     fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
     this.options.callbacks?.onLand?.(this, this.getState());
-
-    this.setStateSync({
-      activeCoords: hitsBarrier ? this.state.activeCoords : [x, y],
-      prevCoords: this.state.activeCoords,
-      moves: this.createNewMovesArray(),
-    });
 
     if (this.getState().rendered) {
       this.removeActiveClasses();
@@ -335,23 +355,35 @@ export default class GameGrid implements IGameGrid {
     return clonedMoves;
   }
 
-  private getValidXandY(nextX: number, nextY: number): number[] {
+  private getValidXandY(
+    nextX: number,
+    nextY: number,
+  ): {
+    x: number;
+    y: number;
+    eventName: string | undefined;
+    callbackFunction: Function | undefined;
+    wrapped: boolean;
+    bounded: boolean;
+  } {
     const yLimit: number = this.matrix.length - 1;
     const xLimit: number =
       this.matrix[this.getState().activeCoords[0]].length - 1;
     let wrapped = false;
     let bounded = false;
+    let eventName: string | undefined;
+    let callbackFunction: Function | undefined;
 
     if (nextX < 0) {
       if (this.options.infiniteX) {
         nextX = xLimit;
-        this.options.callbacks?.onWrapX?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+        callbackFunction = this.options.callbacks?.onWrapX;
+        eventName = gridEventsEnum.WRAP_X;
         wrapped = true;
       } else {
         nextX = 0;
-        this.options.callbacks?.onBoundaryX?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+        callbackFunction = this.options.callbacks?.onBoundaryX;
+        eventName = gridEventsEnum.BOUNDARY_X;
         bounded = true;
       }
     }
@@ -359,13 +391,13 @@ export default class GameGrid implements IGameGrid {
     if (nextX > xLimit) {
       if (this.options.infiniteX) {
         nextX = 0;
-        this.options.callbacks?.onWrapX?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.WRAP_X);
+        callbackFunction = this.options.callbacks?.onWrapX;
+        eventName = gridEventsEnum.WRAP_X;
         wrapped = true;
       } else {
         nextX = xLimit;
-        this.options.callbacks?.onBoundaryX?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_X);
+        callbackFunction = this.options.callbacks?.onBoundaryX;
+        eventName = gridEventsEnum.BOUNDARY_X;
         bounded = true;
       }
     }
@@ -373,13 +405,13 @@ export default class GameGrid implements IGameGrid {
     if (nextY < 0) {
       if (this.options.infiniteY) {
         nextY = yLimit;
-        this.options.callbacks?.onWrapY?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+        callbackFunction = this.options.callbacks?.onWrapY;
+        eventName = gridEventsEnum.WRAP_Y;
         wrapped = true;
       } else {
         nextY = 0;
-        this.options.callbacks?.onBoundaryY?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+        callbackFunction = this.options.callbacks?.onBoundaryY;
+        eventName = gridEventsEnum.BOUNDARY_Y;
         bounded = true;
       }
     }
@@ -387,28 +419,25 @@ export default class GameGrid implements IGameGrid {
     if (nextY > yLimit) {
       if (this.options.infiniteY) {
         nextY = 0;
-        this.options.callbacks?.onWrapY?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.WRAP_Y);
+        callbackFunction = this.options.callbacks?.onWrapY;
+        eventName = gridEventsEnum.WRAP_Y;
         wrapped = true;
       } else {
         nextY = yLimit;
-        this.options.callbacks?.onBoundaryY?.(this, this.getState());
-        fireCustomEvent.call(this, gridEventsEnum.BOUNDARY_Y);
+        callbackFunction = this.options.callbacks?.onBoundaryY;
+        eventName = gridEventsEnum.BOUNDARY_Y;
         bounded = true;
       }
     }
 
-    if (wrapped) {
-      this.options.callbacks?.onWrap?.(this, this.getState());
-      fireCustomEvent.call(this, gridEventsEnum.WRAP);
-    }
-
-    if (bounded) {
-      this.options.callbacks?.onBoundary?.(this, this.getState());
-      fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
-    }
-
-    return [nextX, nextY];
+    return {
+      x: nextX,
+      y: nextY,
+      eventName,
+      callbackFunction,
+      wrapped,
+      bounded,
+    };
   }
 
   private isInteractiveCell(x: number, y: number): boolean {

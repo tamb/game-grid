@@ -27,7 +27,6 @@ describe('GameGrid class constructor', () => {
     defaultState = {
       activeCoords: [0, 0],
       prevCoords: [0, 0],
-      currentDirection: '',
       rendered: true,
       moves: [[0, 0]],
     };
@@ -79,6 +78,13 @@ describe('GameGrid class constructor', () => {
     expect(
       activeCell.current?.classList.contains('gamegrid__cell--active'),
     ).toBe(true);
+  });
+
+  test('activeCell contains all additional attributes', () => {
+    const activeCell = renderedGrid.getActiveCell();
+
+    expect(activeCell.foo).toBe('bar');
+    expect(activeCell.foo2).toBe('bar2');
   });
 
   test('setActiveCell sets the active cell properly', () => {
