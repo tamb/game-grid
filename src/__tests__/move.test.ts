@@ -123,4 +123,13 @@ describe('Move methods', () => {
   // test("moveUp blocked stays", () => {});
   // test("moveDown unblocked goes left", () => {});
   // test("moveDown blocked stays", () => {});
+
+  test('move direction class is added to Grid', () => {
+    renderedGrid.moveUp();
+    expect(
+      renderedGrid.refs.container?.classList.contains(
+        'gamegrid__direction--up',
+      ),
+    ).toBeTruthy();
+  });
 });

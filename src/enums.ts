@@ -46,6 +46,13 @@ export enum directionEnum {
   RIGHT = 'RIGHT',
 }
 
+export const directionClassEnum: { [ket: string]: string } = {
+  UP: 'gamegrid__direction--up',
+  DOWN: 'gamegrid__direction--down',
+  LEFT: 'gamegrid__direction--left',
+  RIGHT: 'gamegrid__direction--right',
+};
+
 export const INITIAL_STATE: IState = {
   activeCoords: [0, 0],
   prevCoords: [0, 0],
