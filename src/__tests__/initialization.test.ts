@@ -1,11 +1,10 @@
 import GameGrid from '../index';
-import { IOptions, IState } from '../interfaces';
+import { IOptions } from '../interfaces';
 import { matrix } from '../__mocks__/matrix';
 
 describe('GameGrid class constructor', () => {
   let renderedGrid: GameGrid;
   let defaultOptions: IOptions | null = null;
-  let defaultState: IState | null = null;
 
   beforeAll(() => {
     document.body.insertAdjacentHTML('afterbegin', '<div id="root"></div>');
@@ -24,19 +23,12 @@ describe('GameGrid class constructor', () => {
       collideOnType: ['interactive'],
       moveOnType: ['open'],
     };
-    defaultState = {
-      activeCoords: [0, 0],
-      prevCoords: [0, 0],
-      rendered: true,
-      moves: [[0, 0]],
-    };
   });
 
   afterEach(() => {
     renderedGrid.destroy();
     renderedGrid = null!;
     defaultOptions = null;
-    defaultState = null;
   });
 
   // instantiation tests

@@ -3,7 +3,7 @@ import { matrix } from '../__mocks__/matrix';
 
 describe('Callbacks', () => {
   let memoryGrid: GameGrid;
-  let callbacks = {
+  const callbacks = {
     onBlock: jest.fn(),
     onBoundary: jest.fn(),
     onCollide: jest.fn(),

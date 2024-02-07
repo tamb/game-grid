@@ -1,5 +1,3 @@
-import { gridEventsEnum } from './enums';
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getKeyByValue(object: any = {}, value: string) {
   return Object.keys(object).find((key) => object[key] === value);
@@ -33,7 +31,7 @@ export function fireCustomEvent(eventName: string, data?: any): void {
       detail: {
         ...data,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        // @ts-ignore
+        // @ts-expect-error - Will assume there's an implicit any here
         gameGridInstance: this,
       },
       bubbles: true,

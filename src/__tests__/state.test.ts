@@ -14,6 +14,7 @@ describe('setStateSync', () => {
       prevCoords: [0, 0],
       rendered: true,
       moves: [[0, 0]],
+      currentDirection: 'DOWN',
     };
 
     renderedGrid = new GameGrid(
@@ -149,7 +150,6 @@ describe('setStateSync', () => {
     const newGrid = new GameGrid(
       {
         matrix,
-        // @ts-ignore
         state: newState,
       },
       document.getElementById('root')!,

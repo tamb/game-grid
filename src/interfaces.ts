@@ -3,12 +3,14 @@ export interface IState {
   prevCoords: number[];
   moves: number[][];
   rendered?: boolean;
+  currentDirection?: string;
   [key: string]: any;
 }
 
 export interface IDefaultState {
   activeCoords?: number[];
   prevCoords?: number[];
+  currentDirection?: string;
   moves?: number[][];
   rendered?: boolean;
 }
@@ -101,7 +103,7 @@ export interface IGameGrid {
   getOptions(): IOptions;
   getPreviousCell(): ICell;
   getActiveCell(): ICell;
-  setActiveCell(x: number, y: number): void;
+  setActiveCell(x: number, y: number, direction?: string): void;
   getAllCellsByType(type: string): ICell[];
   getMatrix(): ICell[][];
   setMatrix(matrix: ICell[][]): void;
