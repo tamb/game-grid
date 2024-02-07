@@ -99,8 +99,11 @@ export default class GameGrid implements IGameGrid {
 
   public render(container: HTMLElement): void {
     insertStyles();
+    this.refs.container = container;
+    this.refs.cells = [];
+    this.refs.rows = [];
     const fragment = this.renderGrid();
-    container.appendChild(fragment);
+    this.refs.container.appendChild(fragment);
     this.setStateSync({ rendered: true });
     fireCustomEvent.call(this, gridEventsEnum.RENDERED);
     this.attachHandlers();
@@ -112,7 +115,7 @@ export default class GameGrid implements IGameGrid {
   }
 
   private renderGrid(): DocumentFragment {
-    this.augmentContainer(this.root!);
+    this.augmentContainer();
     const fragment = document.createDocumentFragment();
 
     this.matrix.forEach((rowData: ICell[], rI: number) => {
@@ -140,16 +143,19 @@ export default class GameGrid implements IGameGrid {
     return fragment;
   }
 
-  private augmentContainer(container: HTMLElement): void {
-    this.refs.container = container;
-    container.classList.add(classesEnum.GRID);
-    if (this.options.containerClasses) {
-      this.options.containerClasses.forEach((containerClass: string) =>
-        container.classList.add(containerClass),
-      );
+  private augmentContainer(): void {
+    if (this.refs.container !== null) {
+      this.refs.container.classList.add(classesEnum.GRID);
+      if (this.options.containerClasses) {
+        this.options.containerClasses.forEach((containerClass: string) =>
+          this.refs.container!.classList.add(containerClass),
+        );
+      }
+      this.refs.container.setAttribute('tabindex', '0');
+      this.refs.container.setAttribute('data-gamegrid-ref', 'container');
+    } else {
+      throw new Error('No container element found');
     }
-    container.setAttribute('tabindex', '0');
-    container.setAttribute('data-gamegrid-ref', 'container');
   }
 
   private renderRow(rI: number): HTMLDivElement {
@@ -259,7 +265,9 @@ export default class GameGrid implements IGameGrid {
       for (let key in directionClassEnum) {
         this.refs.container?.classList.remove(directionClassEnum[key]);
       }
-      direction? this.refs.container?.classList.add(directionClassEnum[direction!]) : null;
+      direction
+        ? this.refs.container?.classList.add(directionClassEnum[direction!])
+        : null;
 
       if (this.options.activeClasses) {
         this.options.activeClasses.forEach((activeClass: string) => {
