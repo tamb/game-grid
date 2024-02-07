@@ -259,7 +259,7 @@ export default class GameGrid implements IGameGrid {
       for (let key in directionClassEnum) {
         this.refs.container?.classList.remove(directionClassEnum[key]);
       }
-      this.refs.container?.classList.add(directionClassEnum[direction!]);
+      direction? this.refs.container?.classList.add(directionClassEnum[direction!]) : null;
 
       if (this.options.activeClasses) {
         this.options.activeClasses.forEach((activeClass: string) => {
