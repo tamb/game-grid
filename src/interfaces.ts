@@ -100,6 +100,7 @@ export interface IGameGrid {
   render(container: HTMLElement): void;
   refresh(): void; //TODO: Add support for this
   destroy(): void;
+  create(): void;
   getOptions(): IOptions;
   getPreviousCell(): ICell;
   getActiveCell(): ICell;

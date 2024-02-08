@@ -582,6 +582,9 @@ export default class GameGrid implements IGameGrid {
   public destroy(): void {
     this.state.rendered ? this.dettachHandlers() : null;
   }
+  public create(): void {
+    this.state.rendered ? this.attachHandlers() : null;
+  }
 
   public setMatrix(m: ICell[][]): void {
     this.matrix = m;
