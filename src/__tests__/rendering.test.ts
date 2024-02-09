@@ -187,4 +187,13 @@ describe('GameGrid rendering', () => {
     expect(cells[0][1].current?.getAttribute('data-butt')).toMatch('doody');
     expect(cells[0][1].current?.getAttribute('data-doody')).toMatch('butt');
   });
+
+  test('move direction class is added to Grid', () => {
+    renderedGrid.moveUp();
+    expect(
+      renderedGrid.refs.container?.classList.contains(
+        'gamegrid__direction--up',
+      ),
+    ).toBeTruthy();
+  });
 });

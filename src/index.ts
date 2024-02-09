@@ -390,7 +390,7 @@ export default class GameGrid implements IGameGrid {
   } {
     const yLimit: number = this.matrix.length - 1;
     const xLimit: number =
-      this.matrix[this.getState().activeCoords[0]].length - 1;
+      this.matrix[this.getState().activeCoords[1]].length - 1;
     let wrapped = false;
     let bounded = false;
     let eventName: string | undefined;
