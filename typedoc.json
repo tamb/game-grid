@@ -1,0 +1,16 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "tsconfig": "./tsconfig.typedoc.json",
+  "readme": "./README.md",
+  "name": "@tamb/gamegrid",
+  "out": "./gh-pages/docs",
+  "githubPages": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "searchInComments": true,
+  "navigation": {
+    "includeCategories": true
+  }
+}

@@ -1,4 +1,4 @@
-import GameGrid from 'gamegrid';
+import GameGrid, { GameGridDOMEvent, gridEventsEnum } from '@tamb/gamegrid';
 import { generateMaze } from './maze';
 
 export function setupMobileComponent() {
@@ -13,13 +13,15 @@ export function setupMobileComponent() {
     document.querySelector('#mobile-component-grid') as HTMLElement,
   );
 
-  window.addEventListener('gamegrid:move:land', (event: CustomEventInit) => {
+  window.addEventListener(gridEventsEnum.MOVE_LAND, (ev: Event) => {
+    const event = ev as GameGridDOMEvent;
     if (event.detail.gameGridInstance.options.id === 'mobile-component-grid') {
       console.log('from mobile component');
       const grid = event.detail.gameGridInstance;
       const state = grid.getState();
       const prev = state.prevCoords;
-      const curr = state.currentCoords;
+      const curr = state.activeCoords;
+      console.log({ prev, curr });
     }
   });
 }

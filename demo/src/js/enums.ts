@@ -1,5 +1,1 @@
-export const tileTypeEnum = {
-  OPEN: 'open',
-  INTERACTIVE: 'interactive',
-  BARRIER: 'barrier',
-};
+export { cellTypeEnum as tileTypeEnum } from '@tamb/gamegrid';

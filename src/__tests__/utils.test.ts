@@ -1,20 +1,17 @@
-import {
-  getKeyByValue,
-  renderAttributes,
-  fireCustomEvent,
-  insertStyles,
-} from '../utils';
+import { fireGameGridEvent, getCoordsFromElement, insertStyles, renderAttributes } from '../utils';
 
-describe('getKeyByValue util', () => {
-  test('returns the correct key for a given value', () => {
-    const testObject = { key1: 'value1', key2: 'value2' };
-    expect(getKeyByValue(testObject, 'value1')).toBe('key1');
-    expect(getKeyByValue(testObject, 'value2')).toBe('key2');
+describe('getCoordsFromElement util', () => {
+  test('parses data-gamegrid-coords as [x, y]', () => {
+    const el = document.createElement('div');
+    el.setAttribute('data-gamegrid-coords', '2,1');
+    expect(getCoordsFromElement(el)).toEqual([2, 1]);
   });
 
-  test('returns undefined if the value is not found', () => {
-    const testObject = { key1: 'value1', key2: 'value2' };
-    expect(getKeyByValue(testObject, 'value3')).toBeUndefined();
+  test('returns undefined for missing or invalid coords', () => {
+    expect(getCoordsFromElement(document.createElement('div'))).toBeUndefined();
+    const el = document.createElement('div');
+    el.setAttribute('data-gamegrid-coords', 'a,b');
+    expect(getCoordsFromElement(el)).toBeUndefined();
   });
 });
 
@@ -47,50 +44,49 @@ describe('renderAttributes util', () => {
   });
 });
 
-describe('fireCustomEvent util', () => {
-  let mockCallback: jest.Mock;
+describe('fireGameGridEvent util', () => {
+  let mockCallback: ReturnType<typeof vi.fn>;
   let testEventName: string;
   let testData: { key: string };
 
   beforeEach(() => {
-    // Mock window.dispatchEvent to test if it gets called correctly
-    window.dispatchEvent = jest.fn();
-
-    // Mock callback function
-    mockCallback = jest.fn();
-
-    // Test data
+    vi.spyOn(window, 'dispatchEvent').mockReturnValue(true);
+    mockCallback = vi.fn();
     testEventName = 'testEvent';
     testData = { key: 'value' };
-
     window.addEventListener(testEventName, mockCallback);
   });
 
-  test('dispatches custom event', () => {
-    fireCustomEvent(testEventName, testData);
+  test('dispatches custom event on target with gameGridInstance', () => {
+    const target = new EventTarget();
+    vi.spyOn(target, 'dispatchEvent').mockReturnValue(true);
+    const instance = { id: 'grid-a' };
+    fireGameGridEvent(target, instance, testEventName, testData);
 
-    expect(window.dispatchEvent).toHaveBeenCalled();
-    expect(window.dispatchEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: testEventName,
-        detail: expect.objectContaining({
-          ...testData,
-        }),
-      }),
-    );
+    expect(target.dispatchEvent).toHaveBeenCalled();
+    const ev = (target.dispatchEvent as ReturnType<typeof vi.fn>).mock.calls[0][0] as CustomEvent;
+    expect(ev.type).toBe(testEventName);
+    expect(ev.detail.key).toBe('value');
+    expect(ev.detail.gameGridInstance).toBe(instance);
   });
 
   afterEach(() => {
     window.removeEventListener(testEventName, mockCallback);
+    vi.restoreAllMocks();
   });
 });
 
 describe('insertStyles util', () => {
   test('inserts style tag into head', () => {
     insertStyles();
+    expect(document.querySelector('[data-testid="gamegrid-styles"]')).toBeTruthy();
+  });
 
-    expect(
-      document.querySelector('[data-testid="gamegrid-styles"]'),
-    ).toBeTruthy();
+  test('is idempotent (single stylesheet marker)', () => {
+    insertStyles();
+    const n = document.querySelectorAll('style[data-gamegrid-styles]').length;
+    insertStyles();
+    expect(document.querySelectorAll('style[data-gamegrid-styles]').length).toBe(n);
+    expect(n).toBeGreaterThanOrEqual(1);
   });
 });

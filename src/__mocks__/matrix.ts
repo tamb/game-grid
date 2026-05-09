@@ -1,4 +1,4 @@
-import { ICell } from '../interfaces';
+import type { ICell } from '../interfaces';
 
 export const matrix: ICell[][] = [
   [

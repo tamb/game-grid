@@ -1,6 +1,6 @@
-import GameGrid from '../index';
-import { IOptions } from '../interfaces';
 import { matrix } from '../__mocks__/matrix';
+import GameGrid from '../index';
+import type { IOptions } from '../interfaces';
 
 describe('GameGrid class constructor', () => {
   let renderedGrid: GameGrid;
@@ -21,7 +21,7 @@ describe('GameGrid class constructor', () => {
       rewindLimit: 20,
       blockOnType: ['barrier'],
       collideOnType: ['interactive'],
-      moveOnType: ['open'],
+      moveOnType: [],
     };
   });
 
@@ -67,9 +67,7 @@ describe('GameGrid class constructor', () => {
     const activeCell = renderedGrid.getActiveCell();
 
     expect(activeCell.current).toBeTruthy();
-    expect(
-      activeCell.current?.classList.contains('gamegrid__cell--active'),
-    ).toBe(true);
+    expect(activeCell.current?.classList.contains('gamegrid__cell--active')).toBe(true);
   });
 
   test('activeCell contains all additional attributes', () => {
@@ -81,11 +79,9 @@ describe('GameGrid class constructor', () => {
 
   test('setActiveCell sets the active cell properly', () => {
     renderedGrid.setActiveCell(1, 1, 'UP');
-    expect(
-      renderedGrid
-        .getActiveCell()
-        .current?.classList.contains('gamegrid__cell--active'),
-    ).toBe(true);
+    expect(renderedGrid.getActiveCell().current?.classList.contains('gamegrid__cell--active')).toBe(
+      true,
+    );
     expect(renderedGrid.getState().currentDirection).toBe('UP');
   });
 

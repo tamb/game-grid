@@ -1,0 +1,11 @@
+---
+description: Repo tooling — Biome, Vitest, Rolldown
+alwaysApply: true
+---
+
+# Toolchain
+
+- **Lint & format**: [Biome](https://biomejs.dev/). Run `npm run check` (read-only) or `npm run lint` (fix where safe). Prefer `npm run format` for formatting-only passes.
+- **Tests**: Vitest (`npm run test`, `npm run test.watch`). Use `describe` / `it` / `expect` globals; mocks use `vi` from globals (see `vitest.config.ts`).
+- **Build**: Rolldown bundles from `src/index.ts`; TypeScript declarations are emitted via `tsc -p tsconfig.build.json`. Do not bring back Rollup unless there is an explicit requirement.
+- **Docs**: TypeDoc writes to **`gh-pages/docs/`** (`npm run docs`). Full Pages bundle: **`npm run gh-pages`** (demo → **`gh-pages/demo/`**).

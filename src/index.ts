@@ -1,31 +1,107 @@
-import { fireCustomEvent, renderAttributes, insertStyles } from './utils';
+/**
+ * Barrel entry documenting the **`@tamb/gamegrid`** public API.
+ *
+ * @packageDocumentation
+ * @remarks The {@link GameGrid} class is the default export. Custom grid events use {@link IGameGridEventDetail} / {@link GameGridDOMEvent} with string names from {@link gridEventsEnum}.
+ */
+
 import {
-  INITIAL_STATE,
   cellTypeEnum,
-  gridEventsEnum,
   classesEnum,
-  keycodeEnum,
-  directionEnum,
   directionClassEnum,
+  directionEnum,
+  gridEventsEnum,
+  INITIAL_STATE,
+  keycodeEnum,
 } from './enums';
-import {
-  IState,
-  IOptions,
+import type {
   ICell,
-  IRefsObject,
   IConfig,
   IGameGrid,
+  IOptions,
+  IRefsObject,
+  IState,
+  StatePatch,
+} from './interfaces';
+import { fireGameGridEvent, getCoordsFromElement, insertStyles, renderAttributes } from './utils';
+
+export {
+  cellTypeEnum,
+  classesEnum,
+  directionClassEnum,
+  directionEnum,
+  gridEventsEnum,
+  INITIAL_STATE,
+  keycodeEnum,
+} from './enums';
+export type {
+  GameGridDOMEvent,
+  ICell,
+  ICellContext,
+  IConfig,
+  IDefaultState,
+  IGameGrid,
+  IGameGridEventDetail,
+  IOptions,
+  IRefs,
+  IRefsObject,
+  IRow,
+  IState,
+  MiddlewareFn,
+  StatePatch,
 } from './interfaces';
 
-export default class GameGrid implements IGameGrid {
+/**
+ * Compatibility alias exporting the identical object references as {@link gridEventsEnum}.
+ */
+export const gameGridEventsEnum = gridEventsEnum;
+
+/**
+ * Stateful 2‑D lattice with collision rules and optional {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement | HTMLElement} projection.
+ *
+ * @remarks
+ * - Implements {@link IGameGrid}. Coordinates are **column-major** tuples `[x,y]` (`matrix[y][x]`).
+ * - DOM notification uses bubbling `CustomEvent`s; {@link IGameGridEventDetail} describes `detail`. Event names live on {@link gridEventsEnum}.
+ *
+ * @category Grid runtime
+ *
+ * @example Render + keyboard handlers
+ * ```ts
+ * const grid = new GameGrid({ matrix, options: { wasdControls: true } }, document.querySelector('#stage')!);
+ * ```
+ *
+ * @example Headless state machine without calling render
+ * ```ts
+ * const grid = new GameGrid({ matrix });
+ * grid.moveRight(); // mutates internal state without touching the DOM
+ * ```
+ */
+class GameGrid implements IGameGrid {
+  /** @inheritDoc IGameGrid.options */
   public options: IOptions;
   private matrix: ICell[][];
   private state: IState = INITIAL_STATE;
+  /** @inheritDoc IGameGrid.refs */
   public refs: IRefsObject;
-  public root?: HTMLElement;
 
+  private getEventTarget(): EventTarget {
+    return (
+      this.options.eventTarget ??
+      (typeof globalThis.window !== 'undefined' ? globalThis.window : globalThis)
+    );
+  }
+
+  private emit(eventName: string, data?: Record<string, unknown>): void {
+    fireGameGridEvent(this.getEventTarget(), this, eventName, data);
+  }
+
+  /**
+   * Copies matrix/config, merges {@link IConfig.state}, runs {@link GameGrid.render} when `container` is passed, then dispatches {@link gridEventsEnum.CREATED}.
+   *
+   * @param config - Logical matrix plus optional {@link IConfig.options} / {@link IConfig.state}.
+   * @param container - When provided, behaves like invoking {@link GameGrid.render} synchronously afterward.
+   */
   constructor(config: IConfig, container?: HTMLElement) {
-    this.root = container;
     this.options = {
       arrowControls: true,
       wasdControls: false,
@@ -35,7 +111,7 @@ export default class GameGrid implements IGameGrid {
       rewindLimit: 20,
       blockOnType: [cellTypeEnum.BARRIER],
       collideOnType: [cellTypeEnum.INTERACTIVE],
-      moveOnType: [cellTypeEnum.OPEN],
+      moveOnType: [],
       // overrides
       ...config.options,
     };
@@ -54,31 +130,29 @@ export default class GameGrid implements IGameGrid {
       this.refs.cells = this.matrix;
       this.setStateSync({ rendered: false });
     }
-    fireCustomEvent.call(this, gridEventsEnum.CREATED);
+    this.emit(gridEventsEnum.CREATED);
   }
 
   // STATE
-  private updateState(obj: any): void {
+  private updateState(obj: StatePatch): void {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;
   }
-  public setStateSync(obj: any): void {
-    if (this.options.middlewares) {
-      this.options.middlewares.pre?.forEach(
-        (fn: (gamegridInstance: IGameGrid, newState: any) => void) => {
-          fn(this, obj);
-        },
-      );
-      this.updateState(obj);
-      this.options.middlewares.post?.forEach(
-        (fn: (gamegridInstance: IGameGrid, newState: any) => void) => {
-          fn(this, obj);
-        },
-      );
-    } else {
-      this.updateState(obj);
+  /** @inheritDoc IGameGrid.setStateSync */
+  public setStateSync(obj: StatePatch): void {
+    if (this.options.middlewares?.pre?.length) {
+      for (const fn of this.options.middlewares.pre) {
+        fn(this, obj);
+      }
+    }
+    this.updateState(obj);
+    if (this.options.middlewares?.post?.length) {
+      for (const fn of this.options.middlewares.post) {
+        fn(this, obj);
+      }
     }
   }
+  /** @inheritDoc IGameGrid.getState */
   public getState(): IState {
     return this.state;
   }
@@ -93,10 +167,24 @@ export default class GameGrid implements IGameGrid {
     };
   }
 
-  public refresh() {
-    throw new Error('Method not implemented.');
+  /** @inheritDoc IGameGrid.refresh */
+  public refresh(): void {
+    const container = this.refs.container;
+    if (!container) {
+      throw new Error('GameGrid.refresh requires render(container) to have run first.');
+    }
+    this.dettachHandlers();
+    container.replaceChildren();
+    this.refs.cells = [];
+    this.refs.rows = [];
+    insertStyles();
+    const fragment = this.renderGrid();
+    container.appendChild(fragment);
+    this.attachHandlers();
+    this.syncActiveDom(this.state.currentDirection);
   }
 
+  /** @inheritDoc IGameGrid.render */
   public render(container: HTMLElement): void {
     insertStyles();
     this.refs.container = container;
@@ -105,7 +193,7 @@ export default class GameGrid implements IGameGrid {
     const fragment = this.renderGrid();
     this.refs.container.appendChild(fragment);
     this.setStateSync({ rendered: true });
-    fireCustomEvent.call(this, gridEventsEnum.RENDERED);
+    this.emit(gridEventsEnum.RENDERED);
     this.attachHandlers();
     this.setActiveCell(
       this.state.activeCoords![0],
@@ -161,9 +249,7 @@ export default class GameGrid implements IGameGrid {
   private renderRow(rI: number): HTMLDivElement {
     const row: HTMLDivElement = document.createElement('div');
     if (this.options.rowClasses) {
-      this.options.rowClasses.forEach((rowClass: string) =>
-        row.classList.add(rowClass),
-      );
+      this.options.rowClasses.forEach((rowClass: string) => row.classList.add(rowClass));
     }
     row.setAttribute('data-gamegrid-row-index', rI.toString());
     row.setAttribute('data-gamegrid-ref', 'row');
@@ -194,7 +280,7 @@ export default class GameGrid implements IGameGrid {
     if (cellData.render) {
       cell.appendChild(
         cellData.render({
-          coords: [rI, cI],
+          coords: [cI, rI],
           cell: cellData,
           gamegrid: this,
         }),
@@ -203,6 +289,7 @@ export default class GameGrid implements IGameGrid {
     return cell;
   }
 
+  /** @inheritDoc IGameGrid.setActiveCell */
   public setActiveCell(x: number, y: number, direction?: string): void {
     const boundaryCheckData = this.getValidXandY(x, y);
 
@@ -211,70 +298,69 @@ export default class GameGrid implements IGameGrid {
 
     const [currentX, currentY] = this.getState().activeCoords!;
 
-    const cells = this.refs.cells;
-
-    const hitsBarrier = this.isBarrierCell(x, y);
-    const wasAttached = this.isInteractiveCell(currentX, currentY);
-    const hitsInteractive = this.isInteractiveCell(x, y);
+    const hitsBlock = this.isBlockingCell(x, y);
+    const wasAttached = this.isCollidingCell(currentX, currentY);
+    const hitsCollide = this.isCollidingCell(x, y);
 
     this.setStateSync({
-      activeCoords: hitsBarrier ? this.state.activeCoords : [x, y],
+      activeCoords: hitsBlock ? this.state.activeCoords : [x, y],
       prevCoords: this.state.activeCoords,
       moves: this.createNewMovesArray(),
       currentDirection: direction,
     });
 
-    if (hitsBarrier) {
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_BLOCKED);
+    if (hitsBlock) {
+      this.emit(gridEventsEnum.MOVE_BLOCKED);
       this.options.callbacks?.onBlock?.(this, this.getState());
     }
-    if (hitsInteractive) {
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_COLLISION);
+    if (hitsCollide) {
+      this.emit(gridEventsEnum.MOVE_COLLISION);
       this.options.callbacks?.onCollide?.(this, this.getState());
     }
     if (wasAttached) {
-      fireCustomEvent.call(this, gridEventsEnum.MOVE_DETTACH);
+      this.emit(gridEventsEnum.MOVE_DETTACH);
       this.options.callbacks?.onDettach?.(this, this.getState());
     }
 
     if (boundaryCheckData.eventName) {
-      fireCustomEvent.call(this, boundaryCheckData.eventName);
+      this.emit(boundaryCheckData.eventName);
     }
     if (boundaryCheckData.callbackFunction) {
       boundaryCheckData.callbackFunction(this, this.getState());
     }
     if (boundaryCheckData.wrapped) {
       this.options.callbacks?.onWrap?.(this, this.getState());
-      fireCustomEvent.call(this, gridEventsEnum.WRAP);
+      this.emit(gridEventsEnum.WRAP);
     }
 
     if (boundaryCheckData.bounded) {
       this.options.callbacks?.onBoundary?.(this, this.getState());
-      fireCustomEvent.call(this, gridEventsEnum.BOUNDARY);
+      this.emit(gridEventsEnum.BOUNDARY);
     }
 
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_LAND);
+    this.emit(gridEventsEnum.MOVE_LAND);
     this.options.callbacks?.onLand?.(this, this.getState());
 
-    if (this.getState().rendered) {
-      this.removeActiveClasses();
-      const [newX, newY] = this.getState().activeCoords!;
-      const newCell = cells[newY][newX];
+    this.syncActiveDom(direction);
+  }
 
-      newCell.current?.classList.add(classesEnum.ACTIVE_CELL);
-      for (let key in directionClassEnum) {
-        this.refs.container?.classList.remove(directionClassEnum[key]);
-      }
-      direction
-        ? this.refs.container?.classList.add(directionClassEnum[direction!])
-        : null;
-
-      if (this.options.activeClasses) {
-        this.options.activeClasses.forEach((activeClass: string) => {
-          newCell.current?.classList.add(activeClass);
-        });
-      }
+  private syncActiveDirectionClasses(direction?: string): void {
+    for (const key in directionClassEnum) {
+      this.refs.container?.classList.remove(directionClassEnum[key]);
     }
+    if (direction) {
+      this.refs.container?.classList.add(directionClassEnum[direction]);
+    }
+  }
+
+  private syncActiveDom(direction?: string): void {
+    if (!this.getState().rendered) return;
+    this.removeActiveClasses();
+    const [nx, ny] = this.getState().activeCoords!;
+    const cell = this.refs.cells[ny]?.[nx];
+    cell?.current?.classList.add(classesEnum.ACTIVE_CELL);
+    this.syncActiveDirectionClasses(direction);
+    this.options.activeClasses?.forEach((c) => cell?.current?.classList.add(c));
   }
 
   private removeActiveClasses(): void {
@@ -293,22 +379,28 @@ export default class GameGrid implements IGameGrid {
     }
   };
 
+  /** @inheritDoc IGameGrid.getActiveCell */
   public getActiveCell(): ICell {
-    return this.refs.cells[this.state.activeCoords![1]][
-      this.state.activeCoords![0]
-    ];
+    return this.refs.cells[this.state.activeCoords![1]][this.state.activeCoords![0]];
   }
 
+  /** @inheritDoc IGameGrid.getPreviousCell */
   public getPreviousCell(): ICell {
+    const x = this.state.prevCoords![0];
+    const y = this.state.prevCoords![1];
     return {
-      ...this.refs.cells[this.state.prevCoords![0]][this.state.prevCoords![1]],
+      ...this.refs.cells[y][x],
     };
   }
 
-  public getCell(coords: number[]): ICell {
-    return this.matrix[coords[0]][coords[1]];
+  /** @inheritDoc IGameGrid.getCell */
+  public getCell(coords: readonly [number, number] | number[]): ICell {
+    const x = coords[0];
+    const y = coords[1];
+    return this.matrix[y][x];
   }
 
+  /** @inheritDoc IGameGrid.getAllCellsByType */
   public getAllCellsByType(type: string): ICell[] {
     const cells: ICell[] = [];
     this.matrix.forEach((row: ICell[], rI: number) => {
@@ -321,11 +413,10 @@ export default class GameGrid implements IGameGrid {
     return cells;
   }
 
-  // MOVEMENT
-  /// DIRECTIONS
+  /** @inheritDoc IGameGrid.moveUp */
   public moveUp(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_UP);
+    this.emit(gridEventsEnum.MOVE_UP);
 
     this.setActiveCell(
       this.state.activeCoords![0],
@@ -334,9 +425,10 @@ export default class GameGrid implements IGameGrid {
     );
   }
 
+  /** @inheritDoc IGameGrid.moveRight */
   public moveRight(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_RIGHT);
+    this.emit(gridEventsEnum.MOVE_RIGHT);
 
     this.setActiveCell(
       this.state.activeCoords![0] + 1,
@@ -345,9 +437,10 @@ export default class GameGrid implements IGameGrid {
     );
   }
 
+  /** @inheritDoc IGameGrid.moveDown */
   public moveDown(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_DOWN);
+    this.emit(gridEventsEnum.MOVE_DOWN);
 
     this.setActiveCell(
       this.state.activeCoords![0],
@@ -356,9 +449,10 @@ export default class GameGrid implements IGameGrid {
     );
   }
 
+  /** @inheritDoc IGameGrid.moveLeft */
   public moveLeft(): void {
     this.options.callbacks?.onMove?.(this, this.getState());
-    fireCustomEvent.call(this, gridEventsEnum.MOVE_LEFT);
+    this.emit(gridEventsEnum.MOVE_LEFT);
 
     this.setActiveCell(
       this.state.activeCoords![0] - 1,
@@ -384,77 +478,83 @@ export default class GameGrid implements IGameGrid {
     x: number;
     y: number;
     eventName: string | undefined;
-    callbackFunction: ((arg0: IGameGrid, arg1: any) => void) | undefined;
+    callbackFunction: ((arg0: IGameGrid, arg1: IState) => void) | undefined;
     wrapped: boolean;
     bounded: boolean;
   } {
-    const yLimit: number = this.matrix.length - 1;
-    const xLimit: number =
-      this.matrix[this.getState().activeCoords[1]].length - 1;
+    const yLimit = Math.max(0, this.matrix.length - 1);
+    let y = nextY;
     let wrapped = false;
     let bounded = false;
     let eventName: string | undefined;
-    let callbackFunction: ((arg0: IGameGrid, arg1: any) => void) | undefined;
-
-    if (nextX < 0) {
-      if (this.options.infiniteX) {
-        nextX = xLimit;
-        callbackFunction = this.options.callbacks?.onWrapX;
-        eventName = gridEventsEnum.WRAP_X;
-        wrapped = true;
-      } else {
-        nextX = 0;
-        callbackFunction = this.options.callbacks?.onBoundaryX;
-        eventName = gridEventsEnum.BOUNDARY_X;
-        bounded = true;
-      }
-    }
-
-    if (nextX > xLimit) {
-      if (this.options.infiniteX) {
-        nextX = 0;
-        callbackFunction = this.options.callbacks?.onWrapX;
-        eventName = gridEventsEnum.WRAP_X;
-        wrapped = true;
-      } else {
-        nextX = xLimit;
-        callbackFunction = this.options.callbacks?.onBoundaryX;
-        eventName = gridEventsEnum.BOUNDARY_X;
-        bounded = true;
-      }
-    }
+    let callbackFunction: ((arg0: IGameGrid, arg1: IState) => void) | undefined;
 
     if (nextY < 0) {
       if (this.options.infiniteY) {
-        nextY = yLimit;
+        y = yLimit;
         callbackFunction = this.options.callbacks?.onWrapY;
         eventName = gridEventsEnum.WRAP_Y;
         wrapped = true;
       } else {
-        nextY = 0;
+        y = 0;
         callbackFunction = this.options.callbacks?.onBoundaryY;
         eventName = gridEventsEnum.BOUNDARY_Y;
         bounded = true;
       }
+    } else if (nextY > yLimit) {
+      if (this.options.infiniteY) {
+        y = 0;
+        callbackFunction = this.options.callbacks?.onWrapY;
+        eventName = gridEventsEnum.WRAP_Y;
+        wrapped = true;
+      } else {
+        y = yLimit;
+        callbackFunction = this.options.callbacks?.onBoundaryY;
+        eventName = gridEventsEnum.BOUNDARY_Y;
+        bounded = true;
+      }
+    } else {
+      y = nextY;
     }
 
-    if (nextY > yLimit) {
-      if (this.options.infiniteY) {
-        nextY = 0;
-        callbackFunction = this.options.callbacks?.onWrapY;
-        eventName = gridEventsEnum.WRAP_Y;
+    const row = this.matrix[y];
+    const xLimit = row && row.length > 0 ? row.length - 1 : 0;
+
+    let x = nextX;
+    if (nextX < 0) {
+      if (this.options.infiniteX) {
+        x = xLimit;
+        callbackFunction = this.options.callbacks?.onWrapX;
+        eventName = gridEventsEnum.WRAP_X;
         wrapped = true;
       } else {
-        nextY = yLimit;
-        callbackFunction = this.options.callbacks?.onBoundaryY;
-        eventName = gridEventsEnum.BOUNDARY_Y;
+        x = 0;
+        callbackFunction = this.options.callbacks?.onBoundaryX;
+        eventName = gridEventsEnum.BOUNDARY_X;
         bounded = true;
       }
+    } else if (nextX > xLimit) {
+      if (this.options.infiniteX) {
+        x = 0;
+        callbackFunction = this.options.callbacks?.onWrapX;
+        eventName = gridEventsEnum.WRAP_X;
+        wrapped = true;
+      } else {
+        x = xLimit;
+        callbackFunction = this.options.callbacks?.onBoundaryX;
+        eventName = gridEventsEnum.BOUNDARY_X;
+        bounded = true;
+      }
+    } else {
+      x = nextX;
     }
+
+    const maxX = Math.max(0, (this.matrix[y]?.length ?? 1) - 1);
+    x = Math.min(Math.max(0, x), maxX);
 
     return {
-      x: nextX,
-      y: nextY,
+      x,
+      y,
       eventName,
       callbackFunction,
       wrapped,
@@ -462,16 +562,20 @@ export default class GameGrid implements IGameGrid {
     };
   }
 
-  private isInteractiveCell(x: number, y: number): boolean {
-    return this.matrix[y][x]?.type === cellTypeEnum.INTERACTIVE;
+  private normalizedCellType(x: number, y: number): string {
+    return this.matrix[y]?.[x]?.type ?? cellTypeEnum.OPEN;
   }
 
-  private isBarrierCell(x: number, y: number): boolean {
-    return this.matrix[y][x]?.type === cellTypeEnum.BARRIER;
+  private isBlockingCell(x: number, y: number): boolean {
+    const t = this.normalizedCellType(x, y);
+    if (this.options.blockOnType?.includes(t)) return true;
+    const allow = this.options.moveOnType;
+    if (allow && allow.length > 0 && !allow.includes(t)) return true;
+    return false;
   }
 
-  private isOpenCell(x: number, y: number): boolean {
-    return this.matrix[y][x]?.type === cellTypeEnum.OPEN;
+  private isCollidingCell(x: number, y: number): boolean {
+    return this.options.collideOnType?.includes(this.normalizedCellType(x, y)) ?? false;
   }
 
   // EVENT HANDLERS
@@ -549,16 +653,14 @@ export default class GameGrid implements IGameGrid {
     try {
       if (this.getOptions().clickable) {
         if (event.target instanceof HTMLElement) {
-          const cellEl: HTMLElement = event.target.closest(
-            '[data-gamegrid-ref="cell"]',
-          )!;
-          if (cellEl) {
-            const coords: number[] = cellEl
-              .getAttribute('data-gamegrid-coords')!
-              .split(',')
-              .map((n) => Number(n));
-
-            this.setActiveCell(coords![0], coords![1]);
+          const cellEl = event.target.closest('[data-gamegrid-ref="cell"]');
+          if (cellEl instanceof HTMLElement) {
+            const coords = getCoordsFromElement(cellEl);
+            if (coords) {
+              this.setActiveCell(coords[0], coords[1]);
+            } else {
+              throw new Error('No cell found');
+            }
           } else {
             throw new Error('No cell found');
           }
@@ -566,30 +668,40 @@ export default class GameGrid implements IGameGrid {
       }
     } catch (e) {
       console.error(e);
-      throw new Error(
-        'Error handling cell click. You possibly have missing attributes',
-      );
+      throw new Error('Error handling cell click. You possibly have missing attributes');
     }
   };
 
-  // SET UP AND TEAR DOWN
+  /** @inheritDoc IGameGrid.getOptions */
   public getOptions(): IOptions {
     return this.options;
   }
+  /** @inheritDoc IGameGrid.setOptions */
   public setOptions(newOptions: IOptions): void {
     this.options = { ...this.options, ...newOptions };
   }
+  /** @inheritDoc IGameGrid.destroy */
   public destroy(): void {
-    this.state.rendered ? this.dettachHandlers() : null;
-  }
-  public create(): void {
-    this.state.rendered ? this.attachHandlers() : null;
+    const rendered = this.state.rendered;
+    const container = this.refs.container;
+    if (container && rendered) {
+      this.dettachHandlers();
+      container.replaceChildren();
+      container.classList.remove(classesEnum.GRID);
+      this.options.containerClasses?.forEach((cl) => container.classList.remove(cl));
+      this.refs.rows = [];
+      this.refs.cells = [];
+    }
+    this.updateState({ rendered: false });
+    this.emit(gridEventsEnum.DESTROYED);
   }
 
+  /** @inheritDoc IGameGrid.setMatrix */
   public setMatrix(m: ICell[][]): void {
     this.matrix = m;
   }
 
+  /** @inheritDoc IGameGrid.getMatrix */
   public getMatrix(): ICell[][] {
     return this.matrix;
   }
@@ -613,4 +725,5 @@ export default class GameGrid implements IGameGrid {
   }
 }
 
-export const gameGridEventsEnum = gridEventsEnum;
+export { GameGrid };
+export default GameGrid;

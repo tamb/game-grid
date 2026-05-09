@@ -1,5 +1,5 @@
-import GameGrid from '../index';
 import { matrix } from '../__mocks__/matrix';
+import GameGrid from '../index';
 
 describe('Move methods', () => {
   let renderedGrid: GameGrid;
@@ -122,5 +122,32 @@ describe('Move methods', () => {
   // test("moveUp unblocked goes left", () => {});
   // test("moveUp blocked stays", () => {});
   // test("moveDown unblocked goes left", () => {});
-  // test("moveDown blocked stays", () => {});
+
+  test('getPreviousCell resolves prior coords correctly when x and y differ', () => {
+    renderedGrid.setStateSync({ activeCoords: [2, 1] });
+    renderedGrid.moveLeft();
+    expect(renderedGrid.getState().prevCoords).toEqual([2, 1]);
+    expect(renderedGrid.getPreviousCell().coords).toEqual([2, 1]);
+  });
+
+  test('getCell indexes matrix as [x,y] into matrix[y][x]', () => {
+    expect(renderedGrid.getCell([2, 1])).toBe(matrix[1][2]);
+  });
+
+  test('moveOnType allowlist blocks entering non-listed types', () => {
+    const mount = document.createElement('div');
+    document.body.appendChild(mount);
+    const allowOnlyOpen = new GameGrid(
+      {
+        matrix,
+        options: { moveOnType: ['open'] },
+        state: { activeCoords: [0, 1] },
+      },
+      mount,
+    );
+    allowOnlyOpen.moveRight();
+    expect(allowOnlyOpen.getState().activeCoords).toEqual([0, 1]);
+    allowOnlyOpen.destroy();
+    mount.remove();
+  });
 });

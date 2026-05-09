@@ -1,6 +1,6 @@
-import GameGrid from '../index';
 import { matrix } from '../__mocks__/matrix';
-import { IState } from '../interfaces';
+import GameGrid from '../index';
+import type { IState } from '../interfaces';
 
 describe('setStateSync', () => {
   let defaultState: IState | null = null;
@@ -26,7 +26,7 @@ describe('setStateSync', () => {
   });
 
   test('pre middleware fires', () => {
-    const pre = jest.fn();
+    const pre = vi.fn();
     const x = new GameGrid(
       {
         matrix,
@@ -44,7 +44,7 @@ describe('setStateSync', () => {
   });
 
   test('post middleware fires', () => {
-    const post = jest.fn();
+    const post = vi.fn();
     const x = new GameGrid(
       {
         matrix,
@@ -62,8 +62,8 @@ describe('setStateSync', () => {
   });
 
   test('pre and post middleware fires in order', () => {
-    const pre = jest.fn();
-    const post = jest.fn();
+    const pre = vi.fn();
+    const post = vi.fn();
     const x = new GameGrid(
       {
         matrix,
@@ -79,16 +79,14 @@ describe('setStateSync', () => {
     x.setStateSync({ current_direction: 'blueberry' });
     expect(pre).toHaveBeenCalled();
     expect(post).toHaveBeenCalled();
-    expect(pre.mock.invocationCallOrder[0]).toBeLessThan(
-      post.mock.invocationCallOrder[0],
-    );
+    expect(pre.mock.invocationCallOrder[0]).toBeLessThan(post.mock.invocationCallOrder[0]);
   });
 
   test('multiple pre and post middleware fire in order', () => {
-    const pre1 = jest.fn();
-    const pre2 = jest.fn();
-    const post1 = jest.fn();
-    const post2 = jest.fn();
+    const pre1 = vi.fn();
+    const pre2 = vi.fn();
+    const post1 = vi.fn();
+    const post2 = vi.fn();
     const x = new GameGrid(
       {
         matrix,
@@ -106,15 +104,9 @@ describe('setStateSync', () => {
     expect(pre2).toHaveBeenCalled();
     expect(post1).toHaveBeenCalled();
     expect(post2).toHaveBeenCalled();
-    expect(pre1.mock.invocationCallOrder[0]).toBeLessThan(
-      pre2.mock.invocationCallOrder[0],
-    );
-    expect(pre2.mock.invocationCallOrder[0]).toBeLessThan(
-      post1.mock.invocationCallOrder[0],
-    );
-    expect(post1.mock.invocationCallOrder[0]).toBeLessThan(
-      post2.mock.invocationCallOrder[0],
-    );
+    expect(pre1.mock.invocationCallOrder[0]).toBeLessThan(pre2.mock.invocationCallOrder[0]);
+    expect(pre2.mock.invocationCallOrder[0]).toBeLessThan(post1.mock.invocationCallOrder[0]);
+    expect(post1.mock.invocationCallOrder[0]).toBeLessThan(post2.mock.invocationCallOrder[0]);
   });
 
   test('setStateSync updates whole state correctly', () => {
@@ -145,6 +137,20 @@ describe('setStateSync', () => {
 
   test('initial state defaults correctly', () => {
     expect(renderedGrid.getState()).toEqual(defaultState);
+  });
+
+  test('post middleware can read merged state via getState', () => {
+    const post = vi.fn();
+    const grid = new GameGrid({
+      matrix,
+      options: {
+        middlewares: { post: [post] },
+      },
+    });
+    grid.setStateSync({ currentDirection: 'UP' });
+    expect(post.mock.calls.length).toBeGreaterThanOrEqual(1);
+    const lastGg = post.mock.calls.at(-1)![0];
+    expect(lastGg.getState().currentDirection).toBe('UP');
   });
 
   test('initial state accepts values', () => {

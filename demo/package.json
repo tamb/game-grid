@@ -1,21 +1,21 @@
 {
-  "name": "y",
+  "name": "@tamb/gamegrid-demo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Parcel demo consuming the sibling @tamb/gamegrid package",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node prerun/cleanup && npm install && node prerun/compile && npx parcel src/output.html --no-cache --dist-dir dist --open"
+    "start": "node prerun/cleanup.js && npm install && node prerun/compile.js && npx parcel src/output.html --no-cache --dist-dir dist --open",
+    "start:parcel": "node prerun/compile.js && npx parcel src/output.html --no-cache --dist-dir dist --open",
+    "build:gh-pages": "node ../scripts/build-demo-gh-pages.js"
   },
-  "author": "",
   "license": "ISC",
   "dependencies": {
-    "gamegrid": "./../tamb-gamegrid-1.0.0-beta.13.tgz"
+    "@tamb/gamegrid": "file:.."
   },
   "devDependencies": {
-    "@parcel/transformer-sass": "^2.11.0",
+    "@parcel/transformer-sass": "^2.16.4",
     "handlebars": "^4.7.8",
-    "parcel": "^2.11.0",
-    "rimraf": "^5.0.5"
+    "parcel": "^2.16.4",
+    "rimraf": "^6.1.3"
   }
 }
