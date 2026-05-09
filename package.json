@@ -8,14 +8,18 @@
     "dist/**/*"
   ],
   "scripts": {
+    "docs": "typedoc",
+    "gh-pages": "node scripts/prepare-gh-pages.js && npm run build && npm --prefix demo install && npm run docs && node scripts/build-demo-gh-pages.js",
     "test": "vitest run",
     "test.watch": "vitest",
     "build": "rolldown -c rolldown.config.mjs && tsc -p tsconfig.build.json",
     "build.safe": "npm run test && npm run build",
     "safe.publish": "npm run build.safe && npm publish",
     "dev": "rolldown -c rolldown.config.mjs -w",
-    "demo": "node clean.js && npm run build && npm pack && npm start",
-    "demo.safe": "node clean.js && npm run build.safe && npm pack && npm start",
+    "demo": "node clean.js && npm run build && npm --prefix demo install && npm start",
+    "demo.safe": "node clean.js && npm run build.safe && npm --prefix demo install && npm start",
+    "link:lib": "npm run build && npm link",
+    "demo:link": "npm run link:lib && npm --prefix demo install && npm --prefix demo link @tamb/gamegrid",
     "start": "cd demo && npm start",
     "lint": "biome check --write",
     "format": "biome format --write .",
@@ -30,7 +34,18 @@
     "jsdom": "^29.1.1",
     "rimraf": "^6.1.3",
     "rolldown": "^1.0.0",
+    "typedoc": "^0.28.19",
     "typescript": "^5.9.3",
     "vitest": "^4.1.5"
-  }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/main.js",
+      "default": "./dist/main.js"
+    },
+    "./dist/main.umd.js": "./dist/main.umd.js",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": true
 }

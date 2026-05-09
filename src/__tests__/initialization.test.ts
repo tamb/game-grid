@@ -21,7 +21,7 @@ describe('GameGrid class constructor', () => {
       rewindLimit: 20,
       blockOnType: ['barrier'],
       collideOnType: ['interactive'],
-      moveOnType: ['open'],
+      moveOnType: [],
     };
   });
 

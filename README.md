@@ -1,42 +1,105 @@
 # GameGrid
 
 **A 2D HTML Grid for Creating Web Games**
-<br/>
-<small>or other things that could use a 2D Matrix</small>
 
-## Goals of this project
+<small>or other things that could use a 2D matrix</small>
 
-- Create a 2D grid in memory capable of handling coordinates and interactions
-- Define a set of interactions that are baked in and allow for augmentation
-- Optional rendering for the physical grid.
-- TypeScript support
-- Have fun with it!
+## Goals
 
-## The GameGrid class
+- 2D grid in memory with coordinates and movement rules
+- Hooks: callbacks, middleware, and DOM-optional rendering
+- TypeScript types included
+- Have fun with it
 
-`GameGrid` is a class that you instantiate to create a 2D grid in memory, with optional rendering of the grid.
+## Demo (Parcel app)
 
-```ts
-// All code examples are written in Typescript
+The **`demo/`** package depends on this library via **`"@tamb/gamegrid": "file:.."`** so `npm install` inside **`demo/`** always picks up the built **`dist/`** next to it (no **`npm pack`** tarball).
 
-const grid : GameGrid = new GameGrid(config: IConfig, element: HTMLElement);
+From the repository root:
+
+```bash
+npm run demo
 ```
 
-## `config : IConfig`
+That runs **`clean`**, **`npm run build`**, **`npm install` in `demo/`**, then **`npm start` in `demo/`** (Handlebars build + Parcel).
+
+**Strict `npm link` workflow** (optional): register the library globally, then wire the demo to that link:
+
+```bash
+npm run link:lib          # build + npm link (registers @tamb/gamegrid globally)
+npm run demo:link          # demo npm install + npm link @tamb/gamegrid
+npm start                  # cd demo && npm start
+```
+
+After a change to the library, run **`npm run build`** again so **`dist/`** updates; Parcel will pick it up on reload when using **`file:..`** or a **`npm link`** symlink.
+
+## API documentation (TypeDoc)
+
+Generate TypeDoc-only:
+
+```bash
+npm run docs
+```
+
+HTML lands in **`gh-pages/docs/`** (open **`gh-pages/docs/index.html`** locally).
+
+Combined **demo + docs** bundle for GitHub Pages:
+
+```bash
+npm run gh-pages
+```
+
+That clears **`gh-pages/docs`** and **`gh-pages/demo`**, **`npm run build`**, reinstalls **`demo/`** deps, runs TypeDoc to **`gh-pages/docs`**, and **`parcel build`** to **`gh-pages/demo/`**. The checked-in **`gh-pages/index.html`** links to **`demo/output.html`** and **`docs/`**.
+
+## GitHub Pages
+
+Use **`gh-pages/`** as the site root **`/`**: keep **`index.html`** and **`.nojekyll`** tracked. Generated **`gh-pages/docs/`** and **`gh-pages/demo/`** are **gitignored** (so they won't show up in `git status`) — editors may hide gitignored folders; this repo sets **`explorer.excludeGitIgnore`** to **`false`** in **`.vscode/settings.json`** so `gh-pages/demo` stays visible locally. Confirm with **`ls gh-pages/demo`** after **`npm run gh-pages`**.
+
+**TSDoc tip:** `{@link …}` tags must appear in normal comment text. Wrapping the whole `{@link …}` in inline code (Markdown backticks) stops TypeDoc from resolving links in the generated HTML.
+
+## Coordinates
+
+Movement and state use **`[x, y]`**: **column (x), then row (y)**. The backing matrix is a normal 2D array: **`matrix[row][col]`** i.e. **`matrix[y][x]`**. Methods like **`getCell([x, y])`**, **`setActiveCell(x, y, …)`**, and **`getState().activeCoords`** all follow that convention.
+
+## The class
+
+Install **`@tamb/gamegrid`**. The **default export** is **`GameGrid`**. Many constants and types are **named exports** (see [Public exports](#public-exports)).
+
+```ts
+import type { IGameGrid } from "@tamb/gamegrid";
+import GameGrid from "@tamb/gamegrid";
+
+// Optional second argument: container to render into immediately.
+const grid: IGameGrid = new GameGrid(config, rootElement);
+
+// Headless (no DOM): omit the container.
+const memory: IGameGrid = new GameGrid(config);
+```
+
+When you pass a **`container`** in the constructor, **`render(container)`** runs immediately. Otherwise call **`render(element)`** later. Headless mode sets **`refs.cells`** to your matrix reference and **`state.rendered`** to **`false`**.
+
+### `config: IConfig`
 
 ```ts
 export interface IConfig {
   options?: IOptions;
   matrix: ICell[][];
-  state?: IState;
+  state?: IDefaultState | IState;
 }
 ```
 
-### `options : IOptions`
+### `options: IOptions`
 
 ```ts
+export type MiddlewareFn = (
+  gamegridInstance: IGameGrid,
+  patch: StatePatch,
+) => void;
+
 export interface IOptions {
   id?: string;
+  /** Dispatches custom events here; defaults to `window`. */
+  eventTarget?: EventTarget;
   arrowControls?: boolean;
   wasdControls?: boolean;
   infiniteX?: boolean;
@@ -44,210 +107,262 @@ export interface IOptions {
   clickable?: boolean;
   rewindLimit?: number;
   middlewares?: {
-    pre: ((gamegridInstance: IGameGrid, newState: any) => void)[];
-    post: ((gamegridInstance: IGameGrid, newState: any) => void)[];
+    pre?: MiddlewareFn[];
+    post?: MiddlewareFn[];
+  };
+  callbacks?: {
+    onMove?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onLand?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onBlock?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onCollide?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onDettach?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onBoundary?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onBoundaryX?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onBoundaryY?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onWrap?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onWrapX?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onWrapY?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
 
-  // TODO: Utilize these options to add additional supported cell types
+  /** Cell `type` values you cannot step onto; you stay on the previous cell. */
   blockOnType?: string[];
+  /** Cell `type` values that trigger collision when entered (you still move unless also blocked). */
   collideOnType?: string[];
+  /**
+   * If non-empty, only these `type` values are enterable (in addition to `blockOnType`).
+   * If omitted or empty, any non-blocked cell is enterable.
+   */
   moveOnType?: string[];
 
-  // TODO: Add support for this
-  // render options
-  activeClass?: string;
-  containerClass?: string;
-  rowClass?: string;
+  activeClasses?: string[];
+  cellClasses?: string[];
+  containerClasses?: string[];
+  rowClasses?: string[];
 }
 ```
 
-The default options are as follows:
+Default options (before your `config.options` spread):
 
 ```ts
-      {
-        activeClass: classesEnum.ACTIVE_CELL,
-        arrowControls: true,
-        wasdControls: true,
-        infiniteX: true,
-        infiniteY: true,
-        clickable: true,
-        rewindLimit: 20,
-        blockOnType: [cellTypeEnum.BARRIER],
-        collideOnType: [cellTypeEnum.INTERACTIVE],
-        moveOnType: [cellTypeEnum.OPEN],
-      }
+{
+  arrowControls: true,
+  wasdControls: false,
+  infiniteX: false,
+  infiniteY: false,
+  clickable: true,
+  rewindLimit: 20,
+  blockOnType: [cellTypeEnum.BARRIER],
+  collideOnType: [cellTypeEnum.INTERACTIVE],
+  moveOnType: [],
+}
 ```
 
-### `matrix : ICell[][]`
+Use **`cellAttributes`** on **`ICell`** for per-cell attributes; **`activeClasses`** / **`cellClasses`** / **`containerClasses`** / **`rowClasses`** append classes on render.
 
-The Matrix is a great movie. It's also a 2D representation of the game grid you're making.
+### `matrix: ICell[][]`
 
-- `ICell[][]`
+Rows of cells. Each **`ICell`** must include **`type`** (see **`cellTypeEnum`**). Optional **`render`**, **`cellAttributes`**, etc.
 
-#### `cell : ICell`
+```ts
+export interface ICell extends IRef {
+  type: string;
+  render?: (context: ICellContext) => HTMLElement;
+  cellAttributes?: string[][];
+  eventTypes?: { onEnter: string; onExit: string };
+  coords?: number[];
+}
 
-The Cell is a really inferior movie.\* It's also an object representing a single point in the grid.
+interface ICellContext {
+  coords: number[];
+  cell: ICell;
+  gamegrid: IGameGrid;
+}
+```
 
-### `state : IState`
-
-The State is a really funny TV show. It's also an object representing the current state of the grid.
+### `state: IState`
 
 ```ts
 export interface IState {
   activeCoords: number[];
   prevCoords: number[];
-  nextCoords: number[];
   moves: number[][];
-  currentDirection?: string;
   rendered?: boolean;
+  currentDirection?: string;
 }
+
+export type StatePatch = Partial<IState> & Record<string, unknown>;
 ```
 
-State has to have preceeding attributes to be valid. But when you `setStateSync` you can add whatever else you want. You can also do a partial state update and it will work.
+**`setStateSync(patch)`** shallow-merges a **`StatePatch`** into state. **`StatePatch`** still allows arbitrary extra keys for your own bookkeeping.
 
-The default state is
+Initial merge uses **`INITIAL_STATE`** from the package (actual export lives in **`src/enums.ts`**):
 
 ```ts
 export const INITIAL_STATE: IState = {
   activeCoords: [0, 0],
   prevCoords: [0, 0],
-  nextCoords: [],
-  currentDirection: '',
   rendered: false,
-  moves: [[0, 0]],
+  moves: [],
+  currentDirection: directionEnum.DOWN,
 };
 ```
 
-#### State Middleware
+### Middleware
 
-## pre
+**`pre`** runs before the merge; you can mutate the **`patch`** object in place before it is merged.
 
-The `pre` middleware is called everytime before the state is updated. It receives the `gamegridInstance` and the `newState` as arguments. You can modify the `newState` object and it will be used to update the state. You can also access the `gamegridInstance` to get the current state.
-These functions execute in the order in which they are registered.
-
-## post
-
-The `post` middleware is called everytime after the state is updated. It receives the `gamegridInstance` and the `newState` as arguments. These functions execute in the order in which they are registered.
+**`post`** runs after the merge; use **`gamegridInstance.getState()`** for the full merged **`IState`**. The second argument remains the **`patch`** passed to **`setStateSync`**.
 
 ## Refs
 
-Refs are... I'm not gonna continue with the bit.
-<br/>
-The GameGrid instance has a `refs` object that contains references to the optional HTML elements of the grid
-
 ```ts
-export interface IRefs {
+export interface IRefsObject {
   container: HTMLElement | null;
-  rows: HTMLDivElement[];
-  cells: HTMLDivElement[][];
+  rows: IRow[];
+  cells: ICell[][];
+}
+
+export interface IRow extends IRef {
+  index: number;
+  cells: ICell[];
 }
 ```
 
-## GameGrid Instance
+**`IRow`** can carry a **`current`** **`HTMLDivElement`** for the row when rendered. **`IRefs`** is a deprecated alias for **`IRefsObject`**.
 
-```
+## `IGameGrid` (instance API)
+
+```ts
 export interface IGameGrid {
-  refs: IRefs;
+  refs: IRefsObject;
   options: IOptions;
-  root?: HTMLElement;
 
-  renderGrid(container: HTMLElement): void;
+  render(container: HTMLElement): void;
+  /** Rebuild DOM from current `matrix` and re-apply active cell UI. Requires a prior render. */
+  refresh(): void;
+  /** Tear down listeners and DOM when rendered; always emits DESTROYED. */
+  destroy(): void;
   getOptions(): IOptions;
   setOptions(newOptions: IOptions): void;
-  destroy(): void;
+
   getState(): IState;
-  moveLeft(): void;
+  setStateSync(obj: StatePatch): void;
+
+  getActiveCell(): ICell;
+  getPreviousCell(): ICell;
+  getCell(coords: readonly [number, number] | number[]): ICell;
+  getAllCellsByType(type: string): ICell[];
+  setActiveCell(x: number, y: number, direction?: string): void;
+
+  getMatrix(): ICell[][];
+  setMatrix(matrix: ICell[][]): void;
+
   moveUp(): void;
   moveRight(): void;
   moveDown(): void;
-  setMatrix(m: ICell[][]): void;
-  getMatrix(): ICell[][];
-  setStateSync(obj: IState): void;
-  getActiveCell(): IRenderedCell;
-  getPreviousCell(): IRenderedCell;
+  moveLeft(): void;
 }
 ```
+
+The **`GameGrid`** class implements **`IGameGrid`**. The mounted root element is **`refs.container`** after **`render`**; it stays **`null`** on headless constructions until **`render`** runs.
 
 ## Events
 
-GameGrid emits the following custom events from the `window` object. Each event has a `detail` object with the `gameGridInstance` containing all of the above.
+Events are bubbling **`CustomEvent`s**. Their **`detail`** objects implement **`IGameGridEventDetail`**: at minimum `{ gameGridInstance: IGameGrid }` (plus any extra keys you pass if you call **`fireGameGridEvent`** yourself). For typing listeners, use **`GameGridDOMEvent`** (`CustomEvent<IGameGridEventDetail>`).
 
-- `gamegrid:grid:rendered`
-- `gamegrid:move:left`
-- `gamegrid:move:right`
-- `gamegrid:move:up`
-- `gamegrid:move:down`
-- `gamegrid:move:blocked`
-- `gamegrid:move:collide`
-- `gamegrid:move:dettach`
-- `gamegrid:move:land`
-- `gamegrid:limit`
-- `gamegrid:limit:x`
-- `gamegrid:limit:y`
-- `gamegrid:wrap`
-- `gamegrid:wrap:x`
-- `gamegrid:wrap:y`
+By default the grid dispatches on **`window`**. Set **`options.eventTarget`** (for example a dedicated **`EventTarget`**) so multiple grids do not all share the global bus.
 
-### User Defined Events
-
-... coming soon ...
-
-## Instantiation
+**`gameGridEventsEnum`** is an identical compatibility alias — use either name.
 
 ```ts
-import GameGrid from "@tamb/gamegrid";
+export const gridEventsEnum = {
+  // Dispatched after GameGrid.render wires the container (`detail` follows IGameGridEventDetail).
+  RENDERED: "gamegrid:grid:rendered",
+  // Dispatched at the end of construction (after optional initial render).
+  CREATED: "gamegrid:grid:created",
+  // Dispatched from GameGrid.destroy; fires even if the grid stayed headless / unmounted.
+  DESTROYED: "gamegrid:grid:destroyed",
 
-const config = // my config settings
+  // Keyboard / pointer path: onMove already ran; these fire before setActiveCell.
+  MOVE_LEFT: "gamegrid:move:left",
+  MOVE_RIGHT: "gamegrid:move:right",
+  MOVE_UP: "gamegrid:move:up",
+  MOVE_DOWN: "gamegrid:move:down",
 
-const gg : GameGrid = new GameGrid(config, rootElement);
+  // Target rejected by blockOnType or moveOnType allow-list; coords roll back.
+  MOVE_BLOCKED: "gamegrid:move:blocked",
+  // Entered a collideOnType cell (movement may still succeed).
+  MOVE_COLLISION: "gamegrid:move:collide",
+  // Left a collide-type cell from the square occupied before this move attempt.
+  MOVE_DETTACH: "gamegrid:move:dettach",
+  // Finished block/collide/boundary/wrap resolution; mirrors callbacks.onLand.
+  MOVE_LAND: "gamegrid:move:land",
 
-// optionally render the grid
-gg.render();
+  // Aggregate finite-edge clamp — axis BOUNDARY_X / BOUNDARY_Y first when relevant.
+  BOUNDARY: "gamegrid:move:boundary",
+  // X-axis requested outside row span when infiniteX is off — coordinate clamped.
+  BOUNDARY_X: "gamegrid:move:boundary:x",
+  // Y-axis requested outside matrix height when infiniteY is off — coordinate clamped.
+  BOUNDARY_Y: "gamegrid:move:boundary:y",
 
-// create moves like so
-gg.moveLeft();
-gg.moveRight();
+  // Aggregate infinite wrap — WRAP_X / WRAP_Y first when relevant.
+  WRAP: "gamegrid:move:wrap",
+  // Horizontal infinite teleport; runs alongside callbacks.onWrapX.
+  WRAP_X: "gamegrid:move:wrap:x",
+  // Vertical infinite teleport; runs alongside callbacks.onWrapY.
+  WRAP_Y: "gamegrid:move:wrap:y",
+};
 ```
 
-## Enums
+This mirrors **`src/enums.ts`** (same keys and string literals). Import **`gridEventsEnum`** or **`gameGridEventsEnum`** from **`@tamb/gamegrid`** rather than duplicating. **`npm run docs`** expands the same members with full cross-links.
 
-The following enums are available for use in your code and are named exports of the package.
+## Instantiation quick start
 
 ```ts
-export enum classesEnum {
-  GRID = 'gamegrid',
-  ROW = 'gamegrid__row',
-  CELL = 'gamegrid__cell',
-  ACTIVE_CELL = 'gamegrid__cell--active',
-}
+import GameGrid, { gridEventsEnum, type GameGridDOMEvent } from "@tamb/gamegrid";
 
-export enum cellTypeEnum {
-  OPEN = 'open',
-  BARRIER = 'barrier',
-  INTERACTIVE = 'interactive',
-}
+const gg = new GameGrid(
+  {
+    matrix: myMatrix,
+    state: { activeCoords: [0, 0] },
+    options: { wasdControls: true },
+  },
+  document.querySelector("#root")!,
+);
 
-export const gridEventsEnum = {
-  RENDERED: 'gamegrid:grid:rendered',
-  CREATED: 'gamegrid:grid:created',
-  DESTROYED: 'gamegrid:grid:destroyed',
+gg.moveDown();
+window.addEventListener(gridEventsEnum.MOVE_LAND, (e: Event) => {
+  const ce = e as GameGridDOMEvent;
+  console.log(ce.detail.gameGridInstance);
+});
+```
 
-  MOVE_LEFT: 'gamegrid:move:left',
-  MOVE_RIGHT: 'gamegrid:move:right',
-  MOVE_UP: 'gamegrid:move:up',
-  MOVE_DOWN: 'gamegrid:move:down',
+For a grid created without a container, call **`render(el)`** when you want DOM.
 
-  MOVE_BLOCKED: 'gamegrid:move:blocked', // hits a wall
-  MOVE_COLLISION: 'gamegrid:move:collide', // overlaps another entity
-  MOVE_DETTACH: 'gamegrid:move:dettach', // leaves overlapping an entity
-  MOVE_LAND: 'gamegrid:move:land', // move finished
+## Public exports
 
-  LIMIT: 'gamegrid:move:limit',
-  LIMIT_X: 'gamegrid:move:limit:x',
-  LIMIT_Y: 'gamegrid:move:limit:y',
+Besides the **`default`** **`GameGrid`**, the package re-exports:
 
-  WRAP: 'gamegrid:move:wrap',
-  WRAP_X: 'gamegrid:move:wrap:x',
-  WRAP_Y: 'gamegrid:move:wrap:y',
-};
+- Types: **`IConfig`**, **`IOptions`**, **`IState`**, **`IGameGrid`**, **`IGameGridEventDetail`**, **`GameGridDOMEvent`**, **`ICell`**, **`ICellContext`**, **`IRefsObject`**, **`IRow`**, **`IDefaultState`**, **`MiddlewareFn`**, **`StatePatch`**, and deprecated **`IRefs`**
+- Values: **`gridEventsEnum`**, **`gameGridEventsEnum`**, **`cellTypeEnum`**, **`classesEnum`**, **`directionEnum`**, **`directionClassEnum`**, **`INITIAL_STATE`**, **`keycodeEnum`**
+
+**`cellTypeEnum`** values are constants on an object (**not** an `enum`). **`classesEnum`** and **`directionEnum`** are TypeScript enums. Example:
+
+```ts
+import GameGrid, {
+  cellTypeEnum,
+  classesEnum,
+  directionEnum,
+  gridEventsEnum,
+} from "@tamb/gamegrid";
+
+// cell — const object:
+cellTypeEnum.OPEN;
+
+// enums:
+classesEnum.GRID;
+directionEnum.DOWN;
+
+// Event name strings — see [Events](#events) for the full map
+gridEventsEnum.BOUNDARY === "gamegrid:move:boundary";
 ```

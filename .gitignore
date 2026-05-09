@@ -5,3 +5,7 @@ demos/ts/node_modules
 .parcel-cache
 demo/dist
 dist
+
+# Generated site payloads (landing page at gh-pages/* is tracked)
+/gh-pages/docs/
+/gh-pages/demo/

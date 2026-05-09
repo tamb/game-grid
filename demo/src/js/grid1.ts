@@ -1,5 +1,5 @@
-import { IGameGrid } from './../../../src/interfaces';
-import GameGrid from 'gamegrid';
+import type { IGameGrid } from '@tamb/gamegrid';
+import GameGrid from '@tamb/gamegrid';
 import { tileTypeEnum } from './enums';
 const matrix = [
   [

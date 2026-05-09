@@ -1,4 +1,5 @@
-import GameGrid from 'gamegrid';
+import type { ICell } from '@tamb/gamegrid';
+import GameGrid, { GameGridDOMEvent, gridEventsEnum } from '@tamb/gamegrid';
 import { generateMaze } from './maze';
 import Coin from './coin';
 
@@ -7,11 +8,11 @@ Coin();
 function createCoinGrid() {
   const coinMaze = generateMaze(10, 10);
 
-  coinMaze.forEach((row, rowIndex) => {
-    //@ts-ignore
-    row.forEach((cell: ICell) => {
-      if (cell.type === 'interactive') {
-        cell.render = () => document.createElement('game-coin');
+  coinMaze.forEach((row) => {
+    row.forEach((cell) => {
+      const c = cell as ICell;
+      if (c.type === 'interactive') {
+        c.render = () => document.createElement('game-coin');
       }
     });
   });
@@ -53,15 +54,13 @@ function createCoinGrid() {
 
   console.log('Coin Grid: ', coinGrid);
 
-  window.addEventListener(
-    'gamegrid:move:collide',
-    function (e: CustomEventInit) {
-      if (e.detail.gameGridInstance.options.id === 'coinGrid') {
-        const cell = e.detail.gameGridInstance.getActiveCell();
-        cell.current.querySelector('game-coin')?.remove();
-      }
-    },
-  );
+  window.addEventListener(gridEventsEnum.MOVE_COLLISION, (ev: Event) => {
+    const e = ev as GameGridDOMEvent;
+    if (e.detail.gameGridInstance.options.id === 'coinGrid') {
+      const cell = e.detail.gameGridInstance.getActiveCell();
+      cell.current?.querySelector('game-coin')?.remove();
+    }
+  });
 }
 
 export function setupCoinGrid() {

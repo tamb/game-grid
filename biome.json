@@ -10,6 +10,7 @@
     "includes": [
       "src/**",
       "clean.js",
+      "scripts/**",
       "rolldown.config.mjs",
       "vitest.config.ts",
       ".vscode/settings.json",

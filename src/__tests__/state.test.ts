@@ -139,6 +139,20 @@ describe('setStateSync', () => {
     expect(renderedGrid.getState()).toEqual(defaultState);
   });
 
+  test('post middleware can read merged state via getState', () => {
+    const post = vi.fn();
+    const grid = new GameGrid({
+      matrix,
+      options: {
+        middlewares: { post: [post] },
+      },
+    });
+    grid.setStateSync({ currentDirection: 'UP' });
+    expect(post.mock.calls.length).toBeGreaterThanOrEqual(1);
+    const lastGg = post.mock.calls.at(-1)![0];
+    expect(lastGg.getState().currentDirection).toBe('UP');
+  });
+
   test('initial state accepts values', () => {
     const newState = {
       activeCoords: [1, 1],

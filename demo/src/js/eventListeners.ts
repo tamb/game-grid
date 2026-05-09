@@ -1,9 +1,10 @@
-import { gameGridEventsEnum } from 'gamegrid';
+import { GameGridDOMEvent, gridEventsEnum } from '@tamb/gamegrid';
 
 export function attachListeners() {
-  Object.keys(gameGridEventsEnum).forEach((key) => {
-    const event = gameGridEventsEnum[key];
-    window.addEventListener(event, (e) => {
+  (Object.keys(gridEventsEnum) as (keyof typeof gridEventsEnum)[]).forEach((key) => {
+    const event = gridEventsEnum[key];
+    window.addEventListener(event, (ev: Event) => {
+      const e = ev as GameGridDOMEvent;
       if (e.detail.gameGridInstance.options.id === 'grid1') {
         const el = document.querySelector('#move-events ul');
         const li = document.createElement('li');
