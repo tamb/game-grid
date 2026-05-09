@@ -1,3 +1,4 @@
+import type { IGameGrid } from '@tamb/gamegrid';
 import GameGrid from '@tamb/gamegrid';
 // Function to generate a random type ('open', 'interactive', or 'barrier')
 function getRandomType() {
@@ -22,11 +23,11 @@ export function generateMaze(rows: number, columns: number) {
   return maze;
 }
 
-export function renderMaze(selector, mazeSize) {
+export function renderMaze(selector: string, mazeSize: number): IGameGrid {
   return new GameGrid(
     {
       matrix: generateMaze(mazeSize, mazeSize),
     },
-    document.querySelector(selector),
+    document.querySelector(selector) as HTMLElement,
   );
 }

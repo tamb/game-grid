@@ -65,7 +65,7 @@ const matrix = [
   ],
 ];
 
-export function createGrid() {
+export function createGrid(): IGameGrid {
   console.log('building grid');
 
   const grid: IGameGrid = new GameGrid(
@@ -85,4 +85,6 @@ export function createGrid() {
   grid.setStateSync({
     whatever: 'you want',
   });
+
+  return grid;
 }

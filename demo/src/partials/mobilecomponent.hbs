@@ -5,16 +5,23 @@
   aria-labelledby='mobile-component-tab'
   tabindex='0'
 >
-  <div class='row'>
-    <div class='col-sm-7'>
+  <div class='row g-3 align-items-start'>
+    <div class='col-12 col-xl-7 order-2 order-xl-1'>
       <h2>Mobile Component</h2>
-      <p>This is a mobile component</p>
-      <p>Use WASD or Arrow Keys to move around and render the component in
-        different cells.</p>
-
+      <p>
+        Move around the grid with WASD / arrow keys, or use the directional pad
+        below the grid on touch-sized viewports.
+      </p>
+      <p>
+        The grid logs move details to the browser console when you land on a
+        cell.
+      </p>
     </div>
-    <div class='col-sm-5'>
-      <div id='mobile-component-grid'></div>
+    <div class='col-12 col-xl-5 order-1 order-xl-2'>
+      <div class='demo-grid-wrap mx-auto'>
+        <div id='mobile-component-grid'></div>
+        {{> touchpad id="mobile-demo-dpad"}}
+      </div>
     </div>
   </div>
 </div>

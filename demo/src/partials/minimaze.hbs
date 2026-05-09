@@ -5,11 +5,14 @@
   aria-labelledby='disabled-tab'
   tabindex='0'
 >
-  <div class='row'>
-    <div class='col-sm-7'>
+  <div class='row g-3 align-items-start'>
+    <div class='col-12 col-xl-7 order-2 order-xl-1'>
       <h2>Mini Maze</h2>
-      <p>This maze is 10x10</p>
-      <p>Use WASD or Arrow Keys to travel around the maze</p>
+      <p>This maze is 10×10.</p>
+      <p>
+        Use WASD or Arrow Keys, or the on-screen directional pad on smaller
+        viewports, to travel around the maze.
+      </p>
       <p>You can wrap on both the X and Y axis</p>
       <p>
         <strong>Note:</strong>
@@ -21,8 +24,11 @@
         Regenerate Maze
       </button>
     </div>
-    <div class='col-sm-5'>
-      <div id='maze2'></div>
+    <div class='col-12 col-xl-5 order-1 order-xl-2'>
+      <div class='demo-grid-wrap mx-auto'>
+        <div id='maze2'></div>
+        {{> touchpad id="minimaze-demo-dpad"}}
+      </div>
     </div>
   </div>
 </div>

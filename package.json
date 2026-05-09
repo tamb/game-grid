@@ -30,6 +30,9 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
+    "@emnapi/core": "1.10.0",
+    "@emnapi/runtime": "1.10.0",
+    "@types/node": "^25.2.14",
     "@types/node": "^25.2.14",
     "jsdom": "^29.1.1",
     "rimraf": "^6.1.3",

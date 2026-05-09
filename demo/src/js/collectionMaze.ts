@@ -1,9 +1,12 @@
-import type { ICell } from '@tamb/gamegrid';
+import type { ICell, IGameGrid } from '@tamb/gamegrid';
 import GameGrid, { GameGridDOMEvent, gridEventsEnum } from '@tamb/gamegrid';
+import { wireDirectionPad } from './mobile-controls.ts';
 import { generateMaze } from './maze';
 import Coin from './coin';
 
 Coin();
+
+let coinGrid: IGameGrid | null = null;
 
 function createCoinGrid() {
   const coinMaze = generateMaze(10, 10);
@@ -17,7 +20,7 @@ function createCoinGrid() {
     });
   });
 
-  const coinGrid = new GameGrid(
+  coinGrid = new GameGrid(
     {
       matrix: coinMaze,
       options: {
@@ -52,8 +55,10 @@ function createCoinGrid() {
     document.querySelector<HTMLElement>('#maze3')!,
   );
 
-  console.log('Coin Grid: ', coinGrid);
+  console.log('Coin Grid: ', coinGrid!);
+}
 
+export function setupCoinGrid() {
   window.addEventListener(gridEventsEnum.MOVE_COLLISION, (ev: Event) => {
     const e = ev as GameGridDOMEvent;
     if (e.detail.gameGridInstance.options.id === 'coinGrid') {
@@ -61,10 +66,8 @@ function createCoinGrid() {
       cell.current?.querySelector('game-coin')?.remove();
     }
   });
-}
-
-export function setupCoinGrid() {
   createCoinGrid();
+  wireDirectionPad(() => coinGrid, '#coin-demo-dpad');
   document
     .querySelector('#regenerate-maze')
     ?.addEventListener('click', function () {

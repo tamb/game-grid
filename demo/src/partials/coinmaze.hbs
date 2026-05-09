@@ -5,11 +5,12 @@
   aria-labelledby='home-tab'
   tabindex='0'
 >
-  <div class='row'>
-    <div class='col-sm-8'>
+  <div class='row g-3 align-items-start'>
+    <div class='col-12 col-xl-8 order-2 order-xl-1'>
       <h2>Coin Collector</h2>
       <p>
-        Use WASD or Arrow Keys to travel around the maze and collect coins.
+        Use WASD or Arrow Keys (or the on-screen pad on smaller screens) to
+        travel around the maze and collect coins.
       </p>
       <p>You can wrap on both the X and Y axis</p>
       <p>
@@ -22,8 +23,11 @@
         Regenerate Maze
       </button>
     </div>
-    <div class='col-sm-4'>
-      <div id='maze3'></div>
+    <div class='col-12 col-xl-4 order-1 order-xl-2'>
+      <div class='demo-grid-wrap mx-auto'>
+        <div id='maze3'></div>
+        {{> touchpad id="coin-demo-dpad"}}
+      </div>
     </div>
   </div>
 </div>
