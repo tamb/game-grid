@@ -2,17 +2,17 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "outDir": "./dist/",
     "noImplicitAny": true,
-    "module": "es6",
-    "target": "es5",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
     "jsx": "react",
     "allowJs": true,
-    "declaration": true,
     "esModuleInterop": true,
-    "types": ["node", "jest"]
+    "skipLibCheck": true,
+    "types": ["vitest/globals", "node"],
+    "noEmit": true
   },
-  "exclude": ["node_modules/**/*"],
-  "include": ["src/index.ts"],
-  "declarations": true
+  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules/**/*"]
 }

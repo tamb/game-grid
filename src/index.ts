@@ -1,21 +1,14 @@
-import { fireCustomEvent, renderAttributes, insertStyles } from './utils';
 import {
-  INITIAL_STATE,
   cellTypeEnum,
-  gridEventsEnum,
   classesEnum,
-  keycodeEnum,
-  directionEnum,
   directionClassEnum,
+  directionEnum,
+  gridEventsEnum,
+  INITIAL_STATE,
+  keycodeEnum,
 } from './enums';
-import {
-  IState,
-  IOptions,
-  ICell,
-  IRefsObject,
-  IConfig,
-  IGameGrid,
-} from './interfaces';
+import type { ICell, IConfig, IGameGrid, IOptions, IRefsObject, IState } from './interfaces';
+import { fireCustomEvent, insertStyles, renderAttributes } from './utils';
 
 export default class GameGrid implements IGameGrid {
   public options: IOptions;
@@ -161,9 +154,7 @@ export default class GameGrid implements IGameGrid {
   private renderRow(rI: number): HTMLDivElement {
     const row: HTMLDivElement = document.createElement('div');
     if (this.options.rowClasses) {
-      this.options.rowClasses.forEach((rowClass: string) =>
-        row.classList.add(rowClass),
-      );
+      this.options.rowClasses.forEach((rowClass: string) => row.classList.add(rowClass));
     }
     row.setAttribute('data-gamegrid-row-index', rI.toString());
     row.setAttribute('data-gamegrid-ref', 'row');
@@ -262,12 +253,10 @@ export default class GameGrid implements IGameGrid {
       const newCell = cells[newY][newX];
 
       newCell.current?.classList.add(classesEnum.ACTIVE_CELL);
-      for (let key in directionClassEnum) {
+      for (const key in directionClassEnum) {
         this.refs.container?.classList.remove(directionClassEnum[key]);
       }
-      direction
-        ? this.refs.container?.classList.add(directionClassEnum[direction!])
-        : null;
+      direction ? this.refs.container?.classList.add(directionClassEnum[direction!]) : null;
 
       if (this.options.activeClasses) {
         this.options.activeClasses.forEach((activeClass: string) => {
@@ -294,9 +283,7 @@ export default class GameGrid implements IGameGrid {
   };
 
   public getActiveCell(): ICell {
-    return this.refs.cells[this.state.activeCoords![1]][
-      this.state.activeCoords![0]
-    ];
+    return this.refs.cells[this.state.activeCoords![1]][this.state.activeCoords![0]];
   }
 
   public getPreviousCell(): ICell {
@@ -389,8 +376,7 @@ export default class GameGrid implements IGameGrid {
     bounded: boolean;
   } {
     const yLimit: number = this.matrix.length - 1;
-    const xLimit: number =
-      this.matrix[this.getState().activeCoords[1]].length - 1;
+    const xLimit: number = this.matrix[this.getState().activeCoords[1]].length - 1;
     let wrapped = false;
     let bounded = false;
     let eventName: string | undefined;
@@ -549,9 +535,7 @@ export default class GameGrid implements IGameGrid {
     try {
       if (this.getOptions().clickable) {
         if (event.target instanceof HTMLElement) {
-          const cellEl: HTMLElement = event.target.closest(
-            '[data-gamegrid-ref="cell"]',
-          )!;
+          const cellEl: HTMLElement = event.target.closest('[data-gamegrid-ref="cell"]')!;
           if (cellEl) {
             const coords: number[] = cellEl
               .getAttribute('data-gamegrid-coords')!
@@ -566,9 +550,7 @@ export default class GameGrid implements IGameGrid {
       }
     } catch (e) {
       console.error(e);
-      throw new Error(
-        'Error handling cell click. You possibly have missing attributes',
-      );
+      throw new Error('Error handling cell click. You possibly have missing attributes');
     }
   };
 

@@ -1,4 +1,4 @@
-import { IState } from './interfaces';
+import type { IState } from './interfaces';
 
 export const gridEventsEnum = {
   RENDERED: 'gamegrid:grid:rendered',

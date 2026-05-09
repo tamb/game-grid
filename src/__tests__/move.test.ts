@@ -1,5 +1,5 @@
-import GameGrid from '../index';
 import { matrix } from '../__mocks__/matrix';
+import GameGrid from '../index';
 
 describe('Move methods', () => {
   let renderedGrid: GameGrid;

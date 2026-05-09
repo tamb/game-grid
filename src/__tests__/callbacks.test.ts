@@ -1,16 +1,16 @@
-import GameGrid from '../index';
 import { matrix } from '../__mocks__/matrix';
+import GameGrid from '../index';
 
 describe('Callbacks', () => {
   let memoryGrid: GameGrid;
   const callbacks = {
-    onBlock: jest.fn(),
-    onBoundary: jest.fn(),
-    onCollide: jest.fn(),
-    onDettach: jest.fn(),
-    onLand: jest.fn(),
-    onMove: jest.fn(),
-    onWrap: jest.fn(),
+    onBlock: vi.fn(),
+    onBoundary: vi.fn(),
+    onCollide: vi.fn(),
+    onDettach: vi.fn(),
+    onLand: vi.fn(),
+    onMove: vi.fn(),
+    onWrap: vi.fn(),
   };
 
   beforeEach(() => {

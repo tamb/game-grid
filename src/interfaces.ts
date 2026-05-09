@@ -78,7 +78,6 @@ export interface ICell extends IRef {
     onExit: string;
   };
   coords?: number[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

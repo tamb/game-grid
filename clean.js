@@ -1,13 +1,13 @@
-const rimraf = require('rimraf');
-const fs = require('fs');
+const { rimrafSync } = require('rimraf');
+const fs = require('node:fs');
 
 function cleanup() {
-  rimraf.sync('dist');
+  rimrafSync('dist');
 
-  const tgzFiles = fs
-    .readdirSync('.')
-    .filter((f) => f.match(/gamegrid.*\.tgz/gm));
-  rimraf.sync(tgzFiles.map((f) => `./${f}`));
+  const tgzFiles = fs.readdirSync('.').filter((f) => f.match(/gamegrid.*\.tgz/gm));
+  for (const f of tgzFiles) {
+    rimrafSync(`./${f}`);
+  }
 }
 
 cleanup();

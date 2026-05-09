@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getKeyByValue(object: any = {}, value: string) {
   return Object.keys(object).find((key) => object[key] === value);
 }
@@ -18,19 +17,17 @@ export function getCoordsFromElement(el: HTMLElement): number[] | undefined {
     return el
       ?.getAttribute('data-coords')
       ?.split(',')
-      .map((num: string) => parseInt(num));
-  } catch (err) {
+      .map((num: string) => parseInt(num, 10));
+  } catch {
     throw new Error('Could not get coordinates from element');
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function fireCustomEvent(eventName: string, data?: any): void {
   window.dispatchEvent(
     new CustomEvent(eventName, {
       detail: {
         ...data,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // @ts-expect-error - Will assume there's an implicit any here
         gameGridInstance: this,
       },

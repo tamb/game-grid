@@ -1,0 +1,12 @@
+---
+description: TypeScript conventions for GameGrid sources
+globs: src/**/*.ts
+alwaysApply: false
+---
+
+# Library code
+
+- **Entry**: Consumers import the default export from `src/index.ts`; keep types in `interfaces.ts` and shared constants in `enums.ts`.
+- **Naming**: Preserve existing spellings used in public API (e.g. callback names such as `onDettach`) even when they differ from dictionary spelling.
+- **Unused parameters**: Prefix with `_` to satisfy lint (`noUnusedVariables` ignore pattern).
+- **DOM / browser APIs**: Assume browser context for the main implementation; Vitest runs with `jsdom` only in tests under `src/__tests__/`.

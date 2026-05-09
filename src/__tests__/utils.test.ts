@@ -1,9 +1,4 @@
-import {
-  getKeyByValue,
-  renderAttributes,
-  fireCustomEvent,
-  insertStyles,
-} from '../utils';
+import { fireCustomEvent, getKeyByValue, insertStyles, renderAttributes } from '../utils';
 
 describe('getKeyByValue util', () => {
   test('returns the correct key for a given value', () => {
@@ -48,16 +43,16 @@ describe('renderAttributes util', () => {
 });
 
 describe('fireCustomEvent util', () => {
-  let mockCallback: jest.Mock;
+  let mockCallback: ReturnType<typeof vi.fn>;
   let testEventName: string;
   let testData: { key: string };
 
   beforeEach(() => {
     // Mock window.dispatchEvent to test if it gets called correctly
-    window.dispatchEvent = jest.fn();
+    vi.spyOn(window, 'dispatchEvent').mockReturnValue(true);
 
     // Mock callback function
-    mockCallback = jest.fn();
+    mockCallback = vi.fn();
 
     // Test data
     testEventName = 'testEvent';
@@ -82,6 +77,7 @@ describe('fireCustomEvent util', () => {
 
   afterEach(() => {
     window.removeEventListener(testEventName, mockCallback);
+    vi.restoreAllMocks();
   });
 });
 
@@ -89,8 +85,6 @@ describe('insertStyles util', () => {
   test('inserts style tag into head', () => {
     insertStyles();
 
-    expect(
-      document.querySelector('[data-testid="gamegrid-styles"]'),
-    ).toBeTruthy();
+    expect(document.querySelector('[data-testid="gamegrid-styles"]')).toBeTruthy();
   });
 });
