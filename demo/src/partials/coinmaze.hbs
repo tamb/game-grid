@@ -1,33 +1,37 @@
-<div
-  class='tab-pane fade show active'
-  id='home-tab-pane'
-  role='tabpanel'
-  aria-labelledby='home-tab'
-  tabindex='0'
->
+<div class='demo-pane' id='demo-coin'>
   <div class='row g-3 align-items-start'>
     <div class='col-12 col-xl-8 order-2 order-xl-1'>
-      <h2>Coin Collector</h2>
-      <p>
-        Use WASD or Arrow Keys (or the on-screen pad on smaller screens) to
-        travel around the maze and collect coins.
-      </p>
-      <p>You can wrap on both the X and Y axis</p>
-      <p>
-        <strong>Note:</strong>
-        This map is randomly generated. If you are unable to complete the maze
-        please click the "Regenerate Maze" button
-      </p>
+      <div class="row">
+        <div class="col">
+          <h2>Coin Collector</h2>
+          <p>
+            Use WASD or Arrow Keys (or the on-screen pad on smaller screens) to
+            travel around the maze and collect coins.
+          </p>
+          <p>You can wrap on both the X and Y axis</p>
+        </div>
+        <div class="col">
+              <p>
+            <strong>Note:</strong>
+            This map is randomly generated. If you are unable to complete the maze
+            please click the "Regenerate Maze" button
+          </p>
 
-      <button id='regenerate-maze' class='btn btn-primary'>
-        Regenerate Maze
-      </button>
+          <button id='regenerate-maze' class='btn btn-primary'>
+            Regenerate Maze
+          </button>
+        </div>
+      </div>
     </div>
     <div class='col-12 col-xl-4 order-1 order-xl-2'>
       <div class='demo-grid-wrap mx-auto'>
         <div id='maze3'></div>
         {{> touchpad id="coin-demo-dpad"}}
       </div>
+    </div>
+    <div class="col-12">
+      priate art: https://opengameart.org/content/animated-pirate-captain
+      coin art: 
     </div>
   </div>
 </div>

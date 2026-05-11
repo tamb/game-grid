@@ -1,5 +1,6 @@
 import './../styles/styles.scss';
 import { attachListeners } from './eventListeners.ts';
+import { setupDemoNavigation } from './demo-navigation.ts';
 import { renderMaze } from './maze.ts';
 import { createGrid } from './grid1.ts';
 import { setupCoinGrid } from './collectionMaze.ts';
@@ -7,6 +8,7 @@ import { setupMobileComponent } from './mobile-component.ts';
 import { wireDirectionPad } from './mobile-controls.ts';
 
 document.addEventListener('DOMContentLoaded', function () {
+  setupDemoNavigation();
   attachListeners();
   const eventsGrid = createGrid();
   const bigMazeGrid = renderMaze('#maze', 50);

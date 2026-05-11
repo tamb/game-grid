@@ -11,20 +11,31 @@
       defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
     ></script>
-    <title>GameGrid - Demos</title>
+    <title>GameGrid Demos</title>
   </head>
   <body>
+    {{> offcanvas-demolist}}
     <div class="container-fluid px-3 px-md-4 py-3">
       <div class="row">
         <div class="col-12">
-          <h1 class="mb-3">GameGrid Demos</h1>
+          <div
+            class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"
+          >
+            <h1 class="mb-0 h5">GameGrid Demos</h1>
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#demoMenu"
+              aria-controls="demoMenu"
+            >
+              Demos
+            </button>
+          </div>
         </div>
         <div class="col-12">
-          {{> tabs}}
-          <div class="tab-content" id="myTabContent">
-            &nbsp; {{> coinmaze}} &nbsp; {{> events}} &nbsp; {{> bigmaze}}
-            &nbsp; {{> minimaze}} &nbsp; {{> mobilecomponent}}
-          </div>
+          {{> coinmaze}} {{> events}} {{> bigmaze}} {{> minimaze}}
+          {{> mobilecomponent}}
         </div>
       </div>
     </div>

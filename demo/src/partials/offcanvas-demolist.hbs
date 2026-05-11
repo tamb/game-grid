@@ -1,0 +1,66 @@
+<div
+  class='offcanvas offcanvas-start'
+  tabindex='-1'
+  id='demoMenu'
+  aria-labelledby='demoMenuLabel'
+>
+  <div class='offcanvas-header border-bottom'>
+    <h5 class='offcanvas-title' id='demoMenuLabel'>
+      Demo gallery
+    </h5>
+    <button
+      type='button'
+      class='btn-close'
+      data-bs-dismiss='offcanvas'
+      aria-label='Close'
+    ></button>
+  </div>
+  <div class='offcanvas-body'>
+    <p class='text-muted small mb-3'>
+      Pick a demo. Movement uses WASD, arrow keys, or the on-screen directional
+      pad (when shown).
+    </p>
+    <nav class='d-grid gap-2' aria-label='Demos'>
+      <button
+        type='button'
+        class='btn btn-primary text-start'
+        id='demo-nav-coin'
+        data-demo-pane='demo-coin'
+      >
+        Coin Collector
+      </button>
+      <button
+        type='button'
+        class='btn btn-outline-secondary text-start'
+        id='demo-nav-events'
+        data-demo-pane='demo-events'
+      >
+        With Events
+      </button>
+      <button
+        type='button'
+        class='btn btn-outline-secondary text-start'
+        id='demo-nav-bigmaze'
+        data-demo-pane='demo-bigmaze'
+      >
+        Big Maze
+      </button>
+      <button
+        type='button'
+        class='btn btn-outline-secondary text-start'
+        id='demo-nav-minimaze'
+        data-demo-pane='demo-minimaze'
+      >
+        Mini Maze
+      </button>
+      <button
+        type='button'
+        class='btn btn-outline-secondary text-start'
+        id='demo-nav-mobile'
+        data-demo-pane='demo-mobile'
+      >
+        Mobile Component
+      </button>
+    </nav>
+  </div>
+</div>
