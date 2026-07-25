@@ -54,6 +54,17 @@ export const gridEventsEnum = {
   WRAP_X: 'gamegrid:move:wrap:x',
   /** Vertical infinite teleport (runs alongside **onWrapY** in {@link IOptions.callbacks}). */
   WRAP_Y: 'gamegrid:move:wrap:y',
+
+  /** Dispatched after {@link GameGrid.setZoom} applies a viewport window. */
+  ZOOM_SET: 'gamegrid:zoom:set',
+  /** Dispatched after {@link GameGrid.clearZoom}. */
+  ZOOM_CLEARED: 'gamegrid:zoom:cleared',
+  /** Active cell attempted to move past the zoom window while {@link IOptions.constrainToZoom} is enabled. */
+  ZOOM_EDGE: 'gamegrid:zoom:edge',
+  /** Active cell left the zoom window while {@link IOptions.constrainToZoom} is disabled. */
+  ZOOM_EXIT: 'gamegrid:zoom:exit',
+  /** Active cell moved from one region tile to another. */
+  REGION_CHANGE: 'gamegrid:region:change',
 };
 
 /**
@@ -103,6 +114,8 @@ export const INITIAL_STATE: IState = {
   rendered: false,
   moves: [],
   currentDirection: directionEnum.DOWN,
+  zoom: null,
+  region: null,
 };
 
 /**
@@ -112,9 +125,13 @@ export const INITIAL_STATE: IState = {
  */
 export enum classesEnum {
   GRID = 'gamegrid',
+  GRID_ZOOMED = 'gamegrid--zoomed',
+  GRID_ZOOM_ANIMATING = 'gamegrid--zoom-animating',
+  VIEWPORT = 'gamegrid__viewport',
   ROW = 'gamegrid__row',
   CELL = 'gamegrid__cell',
   ACTIVE_CELL = 'gamegrid__cell--active',
+  CELL_ZOOM_EDGE = 'gamegrid__cell--zoom-edge',
 }
 
 /**

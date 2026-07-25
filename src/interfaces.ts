@@ -1,3 +1,28 @@
+/** Inclusive axis-aligned zoom window in world coordinates. */
+export interface IZoomBounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+/** Per-call overrides for {@link GameGrid.setZoom} / {@link GameGrid.clearZoom} / convenience zoom methods. */
+export interface IZoomOptions {
+  /** Overrides {@link IOptions.animateZoom} for this call only. */
+  animate?: boolean;
+}
+
+/** A fraction/quadrant tile index within the full grid. */
+export interface IRegionTile {
+  divisions: number;
+  tileX: number;
+  tileY: number;
+  /** Present when `divisions === 2`. */
+  quadrant?: ZoomQuadrant;
+}
+
+export type ZoomQuadrant = 'nw' | 'ne' | 'sw' | 'se';
+
 /** `activeCoords`, `prevCoords`, and cell `coords` use `[x, y]` → column, then row (`matrix[row][col]` → `matrix[y][x]`). */
 export interface IState {
   /** Current focus column `x`, then row `y`. Same order as {@link GameGrid.setActiveCell}. */
@@ -10,6 +35,10 @@ export interface IState {
   rendered?: boolean;
   /** Last cardinal direction string (`directionEnum.UP`, `directionEnum.DOWN`, ...). */
   currentDirection?: string;
+  /** Current viewport window; `null` when zoom is cleared. */
+  zoom: IZoomBounds | null;
+  /** Last known region tile when {@link IOptions.regionDivisions} is set; otherwise `null`. */
+  region: IRegionTile | null;
 }
 
 /**
@@ -49,6 +78,8 @@ export interface IDefaultState {
   currentDirection?: string;
   moves?: number[][];
   rendered?: boolean;
+  zoom?: IZoomBounds | null;
+  region?: IRegionTile | null;
 }
 
 /**
@@ -151,6 +182,52 @@ export interface IGameGrid {
    * @remarks Dispatches {@link gridEventsEnum.MOVE_LEFT} before {@link GameGrid.setActiveCell}.
    */
   moveLeft(): void;
+
+  /** Current zoom bounds or `null` when no zoom is active. */
+  getZoom(): IZoomBounds | null;
+
+  /**
+   * Apply a zoom window in world coordinates.
+   *
+   * @remarks Clamps `activeCoords` into bounds when outside. Dispatches {@link gridEventsEnum.ZOOM_SET}.
+   */
+  setZoom(bounds: IZoomBounds, options?: IZoomOptions): void;
+
+  /** Clear the zoom window. Dispatches {@link gridEventsEnum.ZOOM_CLEARED}. */
+  clearZoom(options?: IZoomOptions): void;
+
+  /** Compute zoom bounds around a center cell ± radii, clipped to the matrix. */
+  getZoomAround(
+    center: readonly [number, number] | number[],
+    radiusX: number,
+    radiusY?: number,
+  ): IZoomBounds;
+
+  /** Compute zoom bounds for a quadrant (`divisions === 2`). */
+  getQuadrantZoom(quadrant: ZoomQuadrant): IZoomBounds;
+
+  /** Compute zoom bounds for a fraction tile (`divisions×divisions` grid). */
+  getFractionZoom(divisions: number, tileX: number, tileY: number): IZoomBounds;
+
+  /** Compute bounds then {@link GameGrid.setZoom}. */
+  zoomAround(
+    center: readonly [number, number] | number[],
+    radiusX: number,
+    radiusY?: number,
+    options?: IZoomOptions,
+  ): void;
+
+  /** Compute quadrant bounds then {@link GameGrid.setZoom}. */
+  zoomQuadrant(quadrant: ZoomQuadrant, options?: IZoomOptions): void;
+
+  /** Compute fraction bounds then {@link GameGrid.setZoom}. */
+  zoomFraction(divisions: number, tileX: number, tileY: number, options?: IZoomOptions): void;
+
+  /** Region tile for `coords`; `divisions` defaults to {@link IOptions.regionDivisions}. */
+  getRegionAt(coords: readonly [number, number] | number[], divisions?: number): IRegionTile;
+
+  /** {@link IState.region} or computed from the active cell when region tracking is enabled. */
+  getActiveRegion(): IRegionTile | null;
 }
 
 /**
@@ -211,7 +288,40 @@ export interface IOptions {
     onWrap?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onWrapX?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onWrapY?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomSet?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomCleared?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomEdge?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomExit?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onRegionChange?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
+
+  /** Default whether zoom transitions animate. Overridden by {@link IZoomOptions.animate}. Default: `false`. */
+  animateZoom?: boolean;
+
+  /**
+   * When zoom is set, keep movement inside the zoom window.
+   * @remarks `true` (default): clamp/wrap to zoom; attempts past the window emit {@link gridEventsEnum.ZOOM_EDGE}.
+   * `false`: full-matrix movement; leaving the window emits {@link gridEventsEnum.ZOOM_EXIT}.
+   */
+  constrainToZoom?: boolean;
+
+  /**
+   * Opt-in region tracking. `2` = quadrants, `3` = ninths, etc.
+   * @remarks Moves that change tile emit {@link gridEventsEnum.REGION_CHANGE} and update {@link IState.region}.
+   */
+  regionDivisions?: number;
+
+  /** CSS transition duration (ms) for zoom slide. Default: `300`. */
+  zoomSlideDuration?: number;
+
+  /**
+   * When `true` with {@link IOptions.regionDivisions}, {@link gridEventsEnum.ZOOM_EDGE} auto-zooms to the adjacent region tile.
+   * Default: `false`.
+   */
+  slideZoomOnEdge?: boolean;
+
+  /** Appended to `.gamegrid__viewport` whenever zoom is active. */
+  zoomViewportClasses?: string[];
 
   /** Cell `type` values that cannot be entered; movement snaps back to the previous cell. */
   blockOnType?: string[];

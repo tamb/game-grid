@@ -114,6 +114,64 @@
   overflow: auto;
 }
 
+.demo-grid-wrap--zoom {
+  max-width: min(100%, 300px);
+  max-height: min(45vh, 300px);
+  overflow: auto;
+}
+
+$zoom-quadrant-nw: #93c5fd;
+$zoom-quadrant-ne: #86efac;
+$zoom-quadrant-sw: #fcd34d;
+$zoom-quadrant-se: #f9a8d4;
+
+#zoom-maze {
+  [data-gamegrid-quadrant='nw'] {
+    background-color: $zoom-quadrant-nw;
+  }
+
+  [data-gamegrid-quadrant='ne'] {
+    background-color: $zoom-quadrant-ne;
+  }
+
+  [data-gamegrid-quadrant='sw'] {
+    background-color: $zoom-quadrant-sw;
+  }
+
+  [data-gamegrid-quadrant='se'] {
+    background-color: $zoom-quadrant-se;
+  }
+
+  [data-gamegrid-cell-type='barrier'] {
+    filter: brightness(0.82);
+  }
+}
+
+.zoom-maze-quadrant-btn {
+  border-width: 2px;
+  font-weight: 600;
+}
+
+#zoom-maze-nw {
+  background-color: $zoom-quadrant-nw;
+  border-color: darken($zoom-quadrant-nw, 18%);
+}
+
+#zoom-maze-ne {
+  background-color: $zoom-quadrant-ne;
+  border-color: darken($zoom-quadrant-ne, 18%);
+}
+
+#zoom-maze-sw {
+  background-color: $zoom-quadrant-sw;
+  border-color: darken($zoom-quadrant-sw, 22%);
+}
+
+#zoom-maze-se {
+  background-color: $zoom-quadrant-se;
+  border-color: darken($zoom-quadrant-se, 18%);
+}
+
 .demo-grid-wrap [data-gamegrid-ref='container'] {
   min-width: 0;
 }

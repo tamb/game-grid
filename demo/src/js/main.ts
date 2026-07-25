@@ -6,6 +6,7 @@ import { createGrid } from './grid1.ts';
 import { setupCoinGrid } from './collectionMaze.ts';
 import { setupMobileComponent } from './mobile-component.ts';
 import { wireDirectionPad } from './mobile-controls.ts';
+import { attachZoomMazeListeners, setupZoomMaze } from './zoom-maze.ts';
 
 document.addEventListener('DOMContentLoaded', function () {
   setupDemoNavigation();
@@ -13,9 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const eventsGrid = createGrid();
   const bigMazeGrid = renderMaze('#maze', 50);
   const miniMazeGrid = renderMaze('#maze2', 10);
+  const zoomMazeGrid = setupZoomMaze();
+  attachZoomMazeListeners(zoomMazeGrid);
   wireDirectionPad(() => eventsGrid, '#events-demo-dpad');
   wireDirectionPad(() => bigMazeGrid, '#bigmaze-demo-dpad');
   wireDirectionPad(() => miniMazeGrid, '#minimaze-demo-dpad');
+  wireDirectionPad(() => zoomMazeGrid, '#zoommaze-demo-dpad');
   setupCoinGrid();
   setupMobileComponent();
 });

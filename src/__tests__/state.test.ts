@@ -15,6 +15,8 @@ describe('setStateSync', () => {
       rendered: true,
       moves: [[0, 0]],
       currentDirection: 'DOWN',
+      zoom: null,
+      region: null,
     };
 
     renderedGrid = new GameGrid(
@@ -119,6 +121,8 @@ describe('setStateSync', () => {
         [0, 1],
       ],
       currentDirection: 'UP',
+      zoom: null,
+      region: null,
     };
     renderedGrid.setStateSync(newState);
     expect(renderedGrid.getState()).toEqual(newState);

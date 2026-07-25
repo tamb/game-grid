@@ -20,10 +20,27 @@ import type {
   IGameGrid,
   IOptions,
   IRefsObject,
+  IRegionTile,
   IState,
+  IZoomBounds,
+  IZoomOptions,
   StatePatch,
+  ZoomQuadrant,
 } from './interfaces';
 import { fireGameGridEvent, getCoordsFromElement, insertStyles, renderAttributes } from './utils';
+import {
+  clampCoordsToZoom,
+  getRegionAt as computeRegionAt,
+  getZoomAround as computeZoomAround,
+  getAdjacentRegion,
+  getFractionZoom,
+  getQuadrantZoom,
+  isInsideZoom,
+  normalizeZoomBounds,
+  regionsEqual,
+  resolveAnimate,
+} from './zoom';
+import { runZoomSlide } from './zoom-render';
 
 export {
   cellTypeEnum,
@@ -45,10 +62,14 @@ export type {
   IOptions,
   IRefs,
   IRefsObject,
+  IRegionTile,
   IRow,
   IState,
+  IZoomBounds,
+  IZoomOptions,
   MiddlewareFn,
   StatePatch,
+  ZoomQuadrant,
 } from './interfaces';
 
 /**
@@ -83,6 +104,8 @@ class GameGrid implements IGameGrid {
   private state: IState = INITIAL_STATE;
   /** @inheritDoc IGameGrid.refs */
   public refs: IRefsObject;
+  private appliedZoomViewportClasses: string[] = [];
+  private slideRenderBounds: { from: IZoomBounds; to: IZoomBounds } | null = null;
 
   private getEventTarget(): EventTarget {
     return (
@@ -112,6 +135,10 @@ class GameGrid implements IGameGrid {
       blockOnType: [cellTypeEnum.BARRIER],
       collideOnType: [cellTypeEnum.INTERACTIVE],
       moveOnType: [],
+      animateZoom: false,
+      constrainToZoom: true,
+      zoomSlideDuration: 300,
+      slideZoomOnEdge: false,
       // overrides
       ...config.options,
     };
@@ -173,6 +200,15 @@ class GameGrid implements IGameGrid {
     if (!container) {
       throw new Error('GameGrid.refresh requires render(container) to have run first.');
     }
+    this.rebuildDom();
+    this.syncActiveDom(this.state.currentDirection);
+  }
+
+  private rebuildDom(): void {
+    const container = this.refs.container;
+    if (!container) {
+      return;
+    }
     this.dettachHandlers();
     container.replaceChildren();
     this.refs.cells = [];
@@ -181,7 +217,6 @@ class GameGrid implements IGameGrid {
     const fragment = this.renderGrid();
     container.appendChild(fragment);
     this.attachHandlers();
-    this.syncActiveDom(this.state.currentDirection);
   }
 
   /** @inheritDoc IGameGrid.render */
@@ -205,30 +240,136 @@ class GameGrid implements IGameGrid {
   private renderGrid(): DocumentFragment {
     this.augmentContainer();
     const fragment = document.createDocumentFragment();
+    const viewport = document.createElement('div');
+    viewport.classList.add(classesEnum.VIEWPORT);
+    viewport.setAttribute('data-gamegrid-ref', 'viewport');
 
-    this.matrix.forEach((rowData: ICell[], rI: number) => {
+    const zoom = this.state.zoom;
+    const slide = this.slideRenderBounds;
+    const renderBounds = slide ? this.unionSlideBounds(slide.from, slide.to) : zoom;
+    const yStart = renderBounds?.minY ?? 0;
+    const yEnd = renderBounds?.maxY ?? Math.max(0, this.matrix.length - 1);
+    const defaultColCount = (rI: number): number => this.matrix[rI]?.length ?? 1;
+    const visibleColCount = zoom ? zoom.maxX - zoom.minX + 1 : null;
+
+    this.refs.cells = this.matrix.map((rowData: ICell[], rI: number) =>
+      rowData.map((cellData: ICell, cI: number) => ({
+        ...cellData,
+        current: null,
+        coords: [cI, rI],
+      })),
+    );
+    this.refs.rows = [];
+
+    for (let rI = yStart; rI <= yEnd; rI++) {
+      const rowData = this.matrix[rI];
+      if (!rowData) {
+        continue;
+      }
+
+      const xStart = renderBounds ? renderBounds.minX : 0;
+      const xEnd = renderBounds
+        ? Math.min(renderBounds.maxX, rowData.length - 1)
+        : rowData.length - 1;
+      const colCount = visibleColCount ?? defaultColCount(rI);
       const row: HTMLDivElement = this.renderRow(rI);
-      this.refs.cells.push([]);
 
-      rowData.forEach((cellData: ICell, cI: number) => {
-        const cell: HTMLDivElement = this.renderCell(rI, cI, cellData);
+      for (let cI = xStart; cI <= xEnd; cI++) {
+        const cellData = rowData[cI];
+        if (!cellData) {
+          continue;
+        }
+        const isZoomEdge = zoom && !slide ? this.isZoomEdgeCell(cI, rI, zoom) : false;
+        const cell: HTMLDivElement = this.renderCell(rI, cI, cellData, colCount, isZoomEdge);
         row.appendChild(cell);
-        this.refs.cells[rI].push({
+        this.refs.cells[rI][cI] = {
           ...cellData,
           current: cell,
           coords: [cI, rI],
-        });
-      });
+        };
+      }
+
       this.refs.rows.push({
         index: rI,
-        ...rowData,
-        current: row,
         cells: this.refs.cells[rI],
+        current: row,
       });
-      fragment.appendChild(row);
-    });
+      viewport.appendChild(row);
+    }
 
+    fragment.appendChild(viewport);
+    this.syncZoomDom(viewport);
     return fragment;
+  }
+
+  private isZoomEdgeCell(cI: number, rI: number, zoom: IZoomBounds): boolean {
+    return cI === zoom.minX || cI === zoom.maxX || rI === zoom.minY || rI === zoom.maxY;
+  }
+
+  private unionSlideBounds(from: IZoomBounds, to: IZoomBounds): IZoomBounds {
+    return {
+      minX: Math.min(from.minX, to.minX),
+      minY: Math.min(from.minY, to.minY),
+      maxX: Math.max(from.maxX, to.maxX),
+      maxY: Math.max(from.maxY, to.maxY),
+    };
+  }
+
+  private getFullMatrixBounds(): IZoomBounds {
+    const height = this.matrix.length;
+    let width = 0;
+    for (const row of this.matrix) {
+      width = Math.max(width, row.length);
+    }
+    return {
+      minX: 0,
+      minY: 0,
+      maxX: Math.max(0, width - 1),
+      maxY: Math.max(0, height - 1),
+    };
+  }
+
+  private syncZoomDom(viewportEl?: HTMLElement | null): void {
+    const container = this.refs.container;
+    if (!container) {
+      return;
+    }
+
+    const viewport =
+      viewportEl ??
+      (container.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement | null);
+    if (!viewport) {
+      return;
+    }
+
+    for (const cls of this.appliedZoomViewportClasses) {
+      viewport.classList.remove(cls);
+    }
+    this.appliedZoomViewportClasses = [];
+
+    const zoom = this.state.zoom;
+    if (zoom) {
+      container.classList.add(classesEnum.GRID_ZOOMED);
+      viewport.setAttribute(
+        'data-gamegrid-zoom',
+        `${zoom.minX},${zoom.minY},${zoom.maxX},${zoom.maxY}`,
+      );
+      if (this.state.region?.quadrant) {
+        viewport.setAttribute('data-gamegrid-region', this.state.region.quadrant);
+      } else {
+        viewport.removeAttribute('data-gamegrid-region');
+      }
+      if (this.options.zoomViewportClasses) {
+        for (const cls of this.options.zoomViewportClasses) {
+          viewport.classList.add(cls);
+          this.appliedZoomViewportClasses.push(cls);
+        }
+      }
+    } else {
+      container.classList.remove(classesEnum.GRID_ZOOMED);
+      viewport.removeAttribute('data-gamegrid-zoom');
+      viewport.removeAttribute('data-gamegrid-region');
+    }
   }
 
   private augmentContainer(): void {
@@ -257,7 +398,13 @@ class GameGrid implements IGameGrid {
     return row;
   }
 
-  private renderCell(rI: number, cI: number, cellData: ICell): HTMLDivElement {
+  private renderCell(
+    rI: number,
+    cI: number,
+    cellData: ICell,
+    colCount: number,
+    isZoomEdge = false,
+  ): HTMLDivElement {
     const cell: HTMLDivElement = document.createElement('div');
     renderAttributes(cell, [
       ['data-gamegrid-ref', 'cell'],
@@ -265,12 +412,15 @@ class GameGrid implements IGameGrid {
       ['data-gamegrid-cell-type', cellData.type || cellTypeEnum.OPEN],
     ]);
 
-    cell.style.width = `${100 / this.matrix[rI].length}%`;
+    cell.style.width = `${100 / colCount}%`;
     cellData.cellAttributes?.forEach((attr: string[]) => {
       cell.setAttribute(attr[0], attr[1]);
     });
 
     cell.classList.add(classesEnum.CELL);
+    if (isZoomEdge) {
+      cell.classList.add(classesEnum.CELL_ZOOM_EDGE);
+    }
     if (this.options.cellClasses) {
       this.options.cellClasses.forEach((cellClass: string) => {
         cell.classList.add(cellClass);
@@ -297,6 +447,7 @@ class GameGrid implements IGameGrid {
     y = boundaryCheckData.y;
 
     const [currentX, currentY] = this.getState().activeCoords!;
+    const prevCoords: [number, number] = [currentX, currentY];
 
     const hitsBlock = this.isBlockingCell(x, y);
     const wasAttached = this.isCollidingCell(currentX, currentY);
@@ -338,10 +489,93 @@ class GameGrid implements IGameGrid {
       this.emit(gridEventsEnum.BOUNDARY);
     }
 
+    let deferredActiveSync = false;
+    if (boundaryCheckData.zoomEdge) {
+      const zoom = this.state.zoom!;
+      this.emit(gridEventsEnum.ZOOM_EDGE, {
+        direction,
+        zoom,
+        activeCoords: [...this.getState().activeCoords!],
+      });
+      this.options.callbacks?.onZoomEdge?.(this, this.getState());
+      deferredActiveSync = this.handleSlideZoomOnEdge(direction);
+    }
+
     this.emit(gridEventsEnum.MOVE_LAND);
     this.options.callbacks?.onLand?.(this, this.getState());
 
-    this.syncActiveDom(direction);
+    if (!hitsBlock) {
+      this.handleZoomExit(prevCoords, direction);
+      this.handleRegionChange(prevCoords);
+    }
+
+    if (!deferredActiveSync) {
+      this.syncActiveDom(direction);
+    }
+  }
+
+  private handleSlideZoomOnEdge(direction?: string): boolean {
+    if (!this.options.slideZoomOnEdge || !direction) {
+      return false;
+    }
+
+    const divisions = this.options.regionDivisions;
+    if (!divisions || divisions < 2) {
+      return false;
+    }
+
+    const activeCoords = this.getState().activeCoords!;
+    const tile = this.state.region ?? computeRegionAt(this.matrix, activeCoords, divisions);
+    const next = getAdjacentRegion(tile, direction);
+    if (!next) {
+      return false;
+    }
+
+    this.zoomFraction(next.divisions, next.tileX, next.tileY, {
+      animate: resolveAnimate(undefined, this.options.animateZoom),
+    });
+    return true;
+  }
+
+  private handleZoomExit(prevCoords: [number, number], direction?: string): void {
+    const zoom = this.state.zoom;
+    if (!zoom || this.options.constrainToZoom !== false) {
+      return;
+    }
+
+    const activeCoords = this.getState().activeCoords!;
+    if (isInsideZoom(prevCoords, zoom) && !isInsideZoom(activeCoords, zoom)) {
+      this.emit(gridEventsEnum.ZOOM_EXIT, {
+        direction,
+        zoom,
+        activeCoords: [...activeCoords],
+        prevCoords: [...prevCoords],
+      });
+      this.options.callbacks?.onZoomExit?.(this, this.getState());
+    }
+  }
+
+  private handleRegionChange(prevCoords: [number, number]): void {
+    const divisions = this.options.regionDivisions;
+    if (!divisions || divisions < 2) {
+      return;
+    }
+
+    const activeCoords = this.getState().activeCoords!;
+    if (prevCoords[0] === activeCoords[0] && prevCoords[1] === activeCoords[1]) {
+      return;
+    }
+
+    const from = computeRegionAt(this.matrix, prevCoords, divisions);
+    const to = computeRegionAt(this.matrix, activeCoords, divisions);
+    if (regionsEqual(from, to)) {
+      return;
+    }
+
+    this.setStateSync({ region: to });
+    this.syncZoomDom();
+    this.emit(gridEventsEnum.REGION_CHANGE, { from, to });
+    this.options.callbacks?.onRegionChange?.(this, this.getState());
   }
 
   private syncActiveDirectionClasses(direction?: string): void {
@@ -481,76 +715,108 @@ class GameGrid implements IGameGrid {
     callbackFunction: ((arg0: IGameGrid, arg1: IState) => void) | undefined;
     wrapped: boolean;
     bounded: boolean;
+    zoomEdge: boolean;
   } {
-    const yLimit = Math.max(0, this.matrix.length - 1);
+    const zoom = this.state.zoom;
+    const useZoom = zoom !== null && this.options.constrainToZoom !== false;
+
+    let yMin = 0;
+    let yMax = Math.max(0, this.matrix.length - 1);
+    if (useZoom) {
+      yMin = zoom.minY;
+      yMax = zoom.maxY;
+    }
+
     let y = nextY;
     let wrapped = false;
     let bounded = false;
+    let zoomEdge = false;
     let eventName: string | undefined;
     let callbackFunction: ((arg0: IGameGrid, arg1: IState) => void) | undefined;
 
-    if (nextY < 0) {
+    if (nextY < yMin) {
       if (this.options.infiniteY) {
-        y = yLimit;
+        y = yMax;
         callbackFunction = this.options.callbacks?.onWrapY;
         eventName = gridEventsEnum.WRAP_Y;
         wrapped = true;
       } else {
-        y = 0;
+        y = yMin;
         callbackFunction = this.options.callbacks?.onBoundaryY;
         eventName = gridEventsEnum.BOUNDARY_Y;
         bounded = true;
+        if (useZoom) {
+          zoomEdge = true;
+        }
       }
-    } else if (nextY > yLimit) {
+    } else if (nextY > yMax) {
       if (this.options.infiniteY) {
-        y = 0;
+        y = yMin;
         callbackFunction = this.options.callbacks?.onWrapY;
         eventName = gridEventsEnum.WRAP_Y;
         wrapped = true;
       } else {
-        y = yLimit;
+        y = yMax;
         callbackFunction = this.options.callbacks?.onBoundaryY;
         eventName = gridEventsEnum.BOUNDARY_Y;
         bounded = true;
+        if (useZoom) {
+          zoomEdge = true;
+        }
       }
     } else {
       y = nextY;
     }
 
     const row = this.matrix[y];
-    const xLimit = row && row.length > 0 ? row.length - 1 : 0;
+    let xMin = 0;
+    let xMax = row && row.length > 0 ? row.length - 1 : 0;
+    if (useZoom) {
+      xMin = zoom.minX;
+      xMax = Math.min(zoom.maxX, xMax);
+    }
 
     let x = nextX;
-    if (nextX < 0) {
+    if (nextX < xMin) {
       if (this.options.infiniteX) {
-        x = xLimit;
+        x = xMax;
         callbackFunction = this.options.callbacks?.onWrapX;
         eventName = gridEventsEnum.WRAP_X;
         wrapped = true;
       } else {
-        x = 0;
+        x = xMin;
         callbackFunction = this.options.callbacks?.onBoundaryX;
         eventName = gridEventsEnum.BOUNDARY_X;
         bounded = true;
+        if (useZoom) {
+          zoomEdge = true;
+        }
       }
-    } else if (nextX > xLimit) {
+    } else if (nextX > xMax) {
       if (this.options.infiniteX) {
-        x = 0;
+        x = xMin;
         callbackFunction = this.options.callbacks?.onWrapX;
         eventName = gridEventsEnum.WRAP_X;
         wrapped = true;
       } else {
-        x = xLimit;
+        x = xMax;
         callbackFunction = this.options.callbacks?.onBoundaryX;
         eventName = gridEventsEnum.BOUNDARY_X;
         bounded = true;
+        if (useZoom) {
+          zoomEdge = true;
+        }
       }
     } else {
       x = nextX;
     }
 
-    const maxX = Math.max(0, (this.matrix[y]?.length ?? 1) - 1);
-    x = Math.min(Math.max(0, x), maxX);
+    const maxX = Math.max(xMin, (this.matrix[y]?.length ?? 1) - 1);
+    if (useZoom) {
+      x = Math.min(Math.max(xMin, x), Math.min(zoom.maxX, maxX));
+    } else {
+      x = Math.min(Math.max(0, x), maxX);
+    }
 
     return {
       x,
@@ -559,6 +825,7 @@ class GameGrid implements IGameGrid {
       callbackFunction,
       wrapped,
       bounded,
+      zoomEdge,
     };
   }
 
@@ -688,6 +955,8 @@ class GameGrid implements IGameGrid {
       this.dettachHandlers();
       container.replaceChildren();
       container.classList.remove(classesEnum.GRID);
+      container.classList.remove(classesEnum.GRID_ZOOMED);
+      container.classList.remove(classesEnum.GRID_ZOOM_ANIMATING);
       this.options.containerClasses?.forEach((cl) => container.classList.remove(cl));
       this.refs.rows = [];
       this.refs.cells = [];
@@ -704,6 +973,174 @@ class GameGrid implements IGameGrid {
   /** @inheritDoc IGameGrid.getMatrix */
   public getMatrix(): ICell[][] {
     return this.matrix;
+  }
+
+  /** @inheritDoc IGameGrid.getZoom */
+  public getZoom(): IZoomBounds | null {
+    return this.state.zoom;
+  }
+
+  /** @inheritDoc IGameGrid.setZoom */
+  public setZoom(bounds: IZoomBounds, options?: IZoomOptions): void {
+    const fromZoom = this.state.zoom;
+    const normalized = normalizeZoomBounds(bounds, this.matrix);
+    const animate = resolveAnimate(options, this.options.animateZoom);
+    const activeCoords = this.getState().activeCoords!;
+    const clamped = clampCoordsToZoom(activeCoords, normalized);
+    const patch: StatePatch = { zoom: normalized };
+
+    if (activeCoords[0] !== clamped[0] || activeCoords[1] !== clamped[1]) {
+      patch.activeCoords = clamped;
+      patch.prevCoords = activeCoords;
+    }
+
+    const divisions = this.options.regionDivisions;
+    if (divisions && divisions >= 2) {
+      patch.region = computeRegionAt(this.matrix, clamped, divisions);
+    }
+
+    this.setStateSync(patch);
+
+    if (this.state.rendered) {
+      const container = this.refs.container;
+      const viewport = container?.querySelector(
+        '[data-gamegrid-ref="viewport"]',
+      ) as HTMLElement | null;
+
+      if (animate && fromZoom && container && viewport) {
+        const duration = this.options.zoomSlideDuration ?? 300;
+        this.slideRenderBounds = { from: fromZoom, to: normalized };
+        runZoomSlide(container, viewport, fromZoom, normalized, duration, () => {
+          this.rebuildDom();
+          this.syncActiveDom(this.state.currentDirection);
+        }).then(() => {
+          this.slideRenderBounds = null;
+          this.rebuildDom();
+          this.emitZoomSet(animate, normalized);
+          this.syncActiveDom(this.state.currentDirection);
+        });
+        return;
+      }
+
+      this.refresh();
+    }
+
+    this.emitZoomSet(animate, normalized);
+    this.syncActiveDom(this.state.currentDirection);
+  }
+
+  /** @inheritDoc IGameGrid.clearZoom */
+  public clearZoom(options?: IZoomOptions): void {
+    const fromZoom = this.state.zoom;
+    const animate = resolveAnimate(options, this.options.animateZoom);
+    const fullBounds = this.getFullMatrixBounds();
+
+    this.setStateSync({ zoom: null });
+
+    if (this.state.rendered) {
+      const container = this.refs.container;
+      const viewport = container?.querySelector(
+        '[data-gamegrid-ref="viewport"]',
+      ) as HTMLElement | null;
+
+      if (animate && fromZoom && container && viewport) {
+        const duration = this.options.zoomSlideDuration ?? 300;
+        this.slideRenderBounds = { from: fromZoom, to: fullBounds };
+        runZoomSlide(container, viewport, fromZoom, fullBounds, duration, () => {
+          this.rebuildDom();
+          this.syncActiveDom(this.state.currentDirection);
+        }).then(() => {
+          this.slideRenderBounds = null;
+          this.rebuildDom();
+          this.emitZoomCleared(animate);
+          this.syncActiveDom(this.state.currentDirection);
+        });
+        return;
+      }
+
+      this.refresh();
+    }
+
+    this.emitZoomCleared(animate);
+    this.syncActiveDom(this.state.currentDirection);
+  }
+
+  private emitZoomSet(animate: boolean, zoom: IZoomBounds): void {
+    this.emit(gridEventsEnum.ZOOM_SET, { animate, zoom });
+    this.options.callbacks?.onZoomSet?.(this, this.getState());
+  }
+
+  private emitZoomCleared(animate: boolean): void {
+    this.emit(gridEventsEnum.ZOOM_CLEARED, { animate, zoom: null });
+    this.options.callbacks?.onZoomCleared?.(this, this.getState());
+  }
+
+  /** @inheritDoc IGameGrid.getZoomAround */
+  public getZoomAround(
+    center: readonly [number, number] | number[],
+    radiusX: number,
+    radiusY?: number,
+  ): IZoomBounds {
+    return computeZoomAround(this.matrix, center, radiusX, radiusY);
+  }
+
+  /** @inheritDoc IGameGrid.getQuadrantZoom */
+  public getQuadrantZoom(quadrant: ZoomQuadrant): IZoomBounds {
+    return getQuadrantZoom(this.matrix, quadrant);
+  }
+
+  /** @inheritDoc IGameGrid.getFractionZoom */
+  public getFractionZoom(divisions: number, tileX: number, tileY: number): IZoomBounds {
+    return getFractionZoom(this.matrix, divisions, tileX, tileY);
+  }
+
+  /** @inheritDoc IGameGrid.zoomAround */
+  public zoomAround(
+    center: readonly [number, number] | number[],
+    radiusX: number,
+    radiusY?: number,
+    options?: IZoomOptions,
+  ): void {
+    this.setZoom(this.getZoomAround(center, radiusX, radiusY), options);
+  }
+
+  /** @inheritDoc IGameGrid.zoomQuadrant */
+  public zoomQuadrant(quadrant: ZoomQuadrant, options?: IZoomOptions): void {
+    this.setZoom(this.getQuadrantZoom(quadrant), options);
+  }
+
+  /** @inheritDoc IGameGrid.zoomFraction */
+  public zoomFraction(
+    divisions: number,
+    tileX: number,
+    tileY: number,
+    options?: IZoomOptions,
+  ): void {
+    this.setZoom(this.getFractionZoom(divisions, tileX, tileY), options);
+  }
+
+  /** @inheritDoc IGameGrid.getRegionAt */
+  public getRegionAt(
+    coords: readonly [number, number] | number[],
+    divisions?: number,
+  ): IRegionTile {
+    const resolvedDivisions = divisions ?? this.options.regionDivisions;
+    if (!resolvedDivisions || resolvedDivisions < 2) {
+      throw new Error('regionDivisions must be >= 2');
+    }
+    return computeRegionAt(this.matrix, coords, resolvedDivisions);
+  }
+
+  /** @inheritDoc IGameGrid.getActiveRegion */
+  public getActiveRegion(): IRegionTile | null {
+    if (this.state.region) {
+      return this.state.region;
+    }
+    const divisions = this.options.regionDivisions;
+    if (!divisions || divisions < 2) {
+      return null;
+    }
+    return computeRegionAt(this.matrix, this.getState().activeCoords!, divisions);
   }
 
   private attachHandlers(): void {
