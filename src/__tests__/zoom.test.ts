@@ -8,6 +8,13 @@ function makeMatrix(rows: number, cols: number): ICell[][] {
   return Array.from({ length: rows }, () => Array.from({ length: cols }, open));
 }
 
+/** 6×6 with a barrier at [2,3] — west neighbor of SE quadrant edge [3,3]. */
+function makeMatrixWithWestEdgeBarrier(): ICell[][] {
+  const matrix = makeMatrix(6, 6);
+  matrix[3][2] = { type: 'barrier' };
+  return matrix;
+}
+
 describe('zoom helpers and state', () => {
   afterEach(() => {
     document.body.innerHTML = '';
@@ -409,6 +416,70 @@ describe('getAdjacentRegion', () => {
 describe('slideZoomOnEdge', () => {
   afterEach(() => {
     document.body.innerHTML = '';
+  });
+
+  test('blocks movement into adjacent region when beyond-edge cell is a barrier', () => {
+    const target = new EventTarget();
+    const events: string[] = [];
+    for (const name of [
+      gridEventsEnum.MOVE_BLOCKED,
+      gridEventsEnum.ZOOM_EDGE,
+      gridEventsEnum.BOUNDARY_X,
+    ]) {
+      target.addEventListener(name, () => events.push(name));
+    }
+
+    const grid = new GameGrid({
+      matrix: makeMatrixWithWestEdgeBarrier(),
+      options: { eventTarget: target, constrainToZoom: true },
+      state: { activeCoords: [3, 3] },
+    });
+    grid.zoomQuadrant('se');
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([3, 3]);
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
+    expect(events).toContain(gridEventsEnum.MOVE_BLOCKED);
+    expect(events).toContain(gridEventsEnum.ZOOM_EDGE);
+    expect(events).toContain(gridEventsEnum.BOUNDARY_X);
+    grid.destroy();
+  });
+
+  test('does not auto-advance zoom when beyond-edge cell is a barrier', () => {
+    const grid = new GameGrid({
+      matrix: makeMatrixWithWestEdgeBarrier(),
+      options: {
+        regionDivisions: 2,
+        slideZoomOnEdge: true,
+        animateZoom: false,
+        constrainToZoom: true,
+      },
+      state: { activeCoords: [3, 3] },
+    });
+    grid.zoomQuadrant('se');
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([3, 3]);
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
+    expect(grid.getState().region?.quadrant).toBe('se');
+    grid.destroy();
+  });
+
+  test('manual zoomQuadrant aborts when clamp would land on a barrier', () => {
+    const onBlock = vi.fn();
+    const grid = new GameGrid({
+      matrix: makeMatrixWithWestEdgeBarrier(),
+      options: {
+        regionDivisions: 2,
+        constrainToZoom: true,
+        callbacks: { onBlock },
+      },
+      state: { activeCoords: [3, 3] },
+    });
+    grid.zoomQuadrant('se');
+    grid.zoomQuadrant('sw');
+    expect(grid.getState().activeCoords).toEqual([3, 3]);
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
+    expect(onBlock).toHaveBeenCalledTimes(1);
+    grid.destroy();
   });
 
   test('auto-advances zoom to adjacent region on edge', () => {
