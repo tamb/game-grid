@@ -4,6 +4,8 @@
 
 <small>or other things that could use a 2D matrix</small>
 
+**Docs & demo (GitHub Pages):** [site home](https://tamb.github.io/game-grid/) · [API reference](https://tamb.github.io/game-grid/docs/) · [interactive demo](https://tamb.github.io/game-grid/demo/output.html)
+
 ## Goals
 
 - 2D grid in memory with coordinates and movement rules
@@ -12,6 +14,8 @@
 - Have fun with it
 
 ## Demo (Parcel app)
+
+Try the [published demo](https://tamb.github.io/game-grid/demo/output.html) on GitHub Pages, or run it locally (below).
 
 The **`demo/`** package depends on this library via **`"@tamb/gamegrid": "file:.."`** so `npm install` inside **`demo/`** always picks up the built **`dist/`** next to it (no **`npm pack`** tarball).
 
@@ -51,7 +55,7 @@ After a change to the library, run **`npm run build`** again so **`dist/`** upda
 
 ## API documentation (TypeDoc)
 
-Generate TypeDoc-only:
+Browse the [published API reference](https://tamb.github.io/game-grid/docs/) on GitHub Pages, or generate HTML locally:
 
 ```bash
 npm run docs
@@ -68,6 +72,8 @@ npm run gh-pages
 That clears **`gh-pages/docs`** and **`gh-pages/demo`**, **`npm run build`**, reinstalls **`demo/`** deps, runs TypeDoc to **`gh-pages/docs`**, and **`parcel build`** to **`gh-pages/demo/`**. The checked-in **`gh-pages/index.html`** links to **`demo/output.html`** and **`docs/`**.
 
 ## GitHub Pages
+
+Live site: **https://tamb.github.io/game-grid/** (API docs at **`/docs/`**, demo at **`/demo/output.html`**).
 
 Use **`gh-pages/`** as the site root **`/`**: keep **`index.html`** and **`.nojekyll`** tracked. Generated **`gh-pages/docs/`** and **`gh-pages/demo/`** are **gitignored** (so they won't show up in `git status`) — editors may hide gitignored folders; this repo sets **`explorer.excludeGitIgnore`** to **`false`** in **`.vscode/settings.json`** so `gh-pages/demo` stays visible locally. Confirm with **`ls gh-pages/demo`** after **`npm run gh-pages`**.
 
@@ -376,7 +382,7 @@ export const gridEventsEnum = {
 };
 ```
 
-This mirrors **`src/enums.ts`** (same keys and string literals). Import **`gridEventsEnum`** or **`gameGridEventsEnum`** from **`@tamb/gamegrid`** rather than duplicating. **`npm run docs`** expands the same members with full cross-links.
+This mirrors **`src/enums.ts`** (same keys and string literals). Import **`gridEventsEnum`** or **`gameGridEventsEnum`** from **`@tamb/gamegrid`** rather than duplicating. The [published TypeDoc site](https://tamb.github.io/game-grid/docs/) (or **`npm run docs`** locally) expands the same members with full cross-links.
 
 ## Instantiation quick start
 
