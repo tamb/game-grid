@@ -2,6 +2,7 @@
   "name": "@tamb/gamegrid",
   "version": "1.0.0-rc.0",
   "description": "",
+  "homepage": "https://tamb.github.io/game-grid/docs/",
   "main": "dist/main.js",
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
