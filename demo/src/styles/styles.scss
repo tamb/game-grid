@@ -13,6 +13,8 @@
 }
 
 .site-body--demo {
+  margin: 0;
+  overflow-x: clip;
   background:
     radial-gradient(ellipse 70% 40% at 50% -10%, rgba(56, 189, 248, 0.12), transparent),
     linear-gradient(180deg, #0f1623 0%, var(--gg-bg) 38%);
@@ -317,7 +319,7 @@
   overflow: auto;
 }
 
-/* Mobile: grid 85vw with 7vw side controls (99vw total) */
+/* Mobile: grid 99vw with 7vw side controls; break out of container padding */
 @media (max-width: 1199.98px) {
   .demo-grid-wrap {
     display: grid;
@@ -332,8 +334,8 @@
     justify-items: stretch;
     width: 99vw;
     max-width: 99vw;
-    margin-left: auto;
-    margin-right: auto;
+    margin-left: calc(50% - 49.5vw);
+    margin-right: calc(50% - 49.5vw);
     overflow: visible;
   }
 
