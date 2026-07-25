@@ -1,5 +1,5 @@
 import { matrix } from '../__mocks__/matrix';
-import GameGrid from '../index';
+import GameGrid, { gridEventsEnum } from '../index';
 
 describe('Callbacks', () => {
   let memoryGrid: GameGrid;
@@ -78,5 +78,21 @@ describe('Callbacks', () => {
   test('onWrap callback is called', () => {
     memoryGrid.moveLeft();
     expect(callbacks.onWrap).toHaveBeenCalled();
+  });
+
+  test('MOVE_BLOCKED is dispatched when movement is blocked', () => {
+    const events: string[] = [];
+    const target = new EventTarget();
+    target.addEventListener(gridEventsEnum.MOVE_BLOCKED, () =>
+      events.push(gridEventsEnum.MOVE_BLOCKED),
+    );
+    const grid = new GameGrid({
+      matrix,
+      options: { eventTarget: target },
+      state: { activeCoords: [1, 0] },
+    });
+    grid.moveRight();
+    expect(events).toContain(gridEventsEnum.MOVE_BLOCKED);
+    grid.destroy();
   });
 });

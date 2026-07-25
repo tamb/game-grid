@@ -266,7 +266,15 @@ class GameGrid implements IGameGrid {
     ]);
 
     cell.style.width = `${100 / this.matrix[rI].length}%`;
+    const reservedCellAttributes = new Set([
+      'data-gamegrid-ref',
+      'data-gamegrid-coords',
+      'data-gamegrid-cell-type',
+    ]);
     cellData.cellAttributes?.forEach((attr: string[]) => {
+      if (reservedCellAttributes.has(attr[0])) {
+        return;
+      }
       cell.setAttribute(attr[0], attr[1]);
     });
 

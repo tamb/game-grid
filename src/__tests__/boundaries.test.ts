@@ -86,4 +86,15 @@ describe('boundary and wrap behavior', () => {
     expect(events).toContain(gridEventsEnum.WRAP_Y);
     grid.destroy();
   });
+
+  test('jagged rows clamp x when moving into a shorter row', () => {
+    const jagged = [[{ type: 'open' }, { type: 'open' }, { type: 'open' }], [{ type: 'open' }]];
+    const grid = new GameGrid({
+      matrix: jagged,
+      state: { activeCoords: [2, 0] },
+    });
+    grid.moveDown();
+    expect(grid.getState().activeCoords).toEqual([0, 1]);
+    grid.destroy();
+  });
 });
