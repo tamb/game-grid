@@ -1,4 +1,8 @@
-/** Inclusive axis-aligned zoom window in world coordinates. */
+/**
+ * Inclusive axis-aligned zoom window in world coordinates.
+ *
+ * @category Zoom
+ */
 export interface IZoomBounds {
   minX: number;
   minY: number;
@@ -6,13 +10,21 @@ export interface IZoomBounds {
   maxY: number;
 }
 
-/** Per-call overrides for {@link GameGrid.setZoom} / {@link GameGrid.clearZoom} / convenience zoom methods. */
+/**
+ * Per-call overrides for {@link GameGrid.setZoom} / {@link GameGrid.clearZoom} / convenience zoom methods.
+ *
+ * @category Zoom
+ */
 export interface IZoomOptions {
   /** Overrides {@link IOptions.animateZoom} for this call only. */
   animate?: boolean;
 }
 
-/** A fraction/quadrant tile index within the full grid. */
+/**
+ * A fraction/quadrant tile index within the full grid.
+ *
+ * @category Zoom
+ */
 export interface IRegionTile {
   divisions: number;
   tileX: number;
@@ -21,9 +33,18 @@ export interface IRegionTile {
   quadrant?: ZoomQuadrant;
 }
 
+/**
+ * Cardinal quadrant label when {@link IRegionTile.divisions} is `2`.
+ *
+ * @category Zoom
+ */
 export type ZoomQuadrant = 'nw' | 'ne' | 'sw' | 'se';
 
-/** `activeCoords`, `prevCoords`, and cell `coords` use `[x, y]` → column, then row (`matrix[row][col]` → `matrix[y][x]`). */
+/**
+ * `activeCoords`, `prevCoords`, and cell `coords` use `[x, y]` → column, then row (`matrix[row][col]` → `matrix[y][x]`).
+ *
+ * @category State
+ */
 export interface IState {
   /** Current focus column `x`, then row `y`. Same order as {@link GameGrid.setActiveCell}. */
   activeCoords: number[];
@@ -49,6 +70,8 @@ export interface IState {
  * ```ts
  * grid.setStateSync({ activeCoords: [1, 2], myMeta: true });
  * ```
+ *
+ * @category State
  */
 export type StatePatch = Partial<IState> & Record<string, unknown>;
 
@@ -71,7 +94,11 @@ export interface IGameGridEventDetail extends Record<string, unknown> {
  */
 export type GameGridDOMEvent = CustomEvent<IGameGridEventDetail>;
 
-/** Allowed fields when merging initial grid {@link GameGrid} state. */
+/**
+ * Allowed fields when merging initial grid {@link GameGrid} state.
+ *
+ * @category State
+ */
 export interface IDefaultState {
   activeCoords?: number[];
   prevCoords?: number[];
@@ -407,7 +434,11 @@ export interface ICell extends IRef {
   coords?: number[];
 }
 
-/** Describes a rendered row plus associated {@link ICell} metadata. */
+/**
+ * Describes a rendered row plus associated {@link ICell} metadata.
+ *
+ * @category References
+ */
 export interface IRow extends IRef {
   index: number;
   cells: ICell[];
@@ -424,5 +455,9 @@ export interface IRefsObject {
   cells: ICell[][];
 }
 
-/** @deprecated Use {@link IRefsObject}; identical alias retained for transitional typings. */
+/**
+ * @deprecated Use {@link IRefsObject}; identical alias retained for transitional typings.
+ *
+ * @category References
+ */
 export type IRefs = IRefsObject;

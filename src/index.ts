@@ -74,6 +74,8 @@ export type {
 
 /**
  * Compatibility alias exporting the identical object references as {@link gridEventsEnum}.
+ *
+ * @category Events
  */
 export const gameGridEventsEnum = gridEventsEnum;
 
