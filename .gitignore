@@ -7,6 +7,8 @@ demo/dist
 dist
 coverage
 coverage/
+.npmrc
+.env
 
 # Generated site payloads (landing page at gh-pages/* is tracked)
 /gh-pages/docs/
