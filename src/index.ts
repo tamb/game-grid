@@ -413,6 +413,11 @@ class GameGrid implements IGameGrid {
     ]);
 
     cell.style.width = `${100 / colCount}%`;
+    const reservedCellAttributes = new Set([
+      'data-gamegrid-ref',
+      'data-gamegrid-coords',
+      'data-gamegrid-cell-type',
+    ]);
     cellData.cellAttributes?.forEach((attr: string[]) => {
       if (reservedCellAttributes.has(attr[0])) {
         return;
