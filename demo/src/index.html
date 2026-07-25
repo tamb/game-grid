@@ -11,25 +11,31 @@
       defer
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
     ></script>
-    <title>GameGrid Demos</title>
+    <title>GameGrid Demos · @tamb/gamegrid</title>
   </head>
-  <body>
+  <body class="site-body site-body--demo">
+    {{> site-header}}
     {{> offcanvas-demolist}}
-    <div class="container-fluid px-3 px-md-4 py-3">
+    <div class="container-fluid site-demo px-3 px-md-4 py-3">
       <div class="row">
         <div class="col-12">
           <div
-            class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"
+            class="site-demo__toolbar d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3"
           >
-            <h1 class="mb-0 h5">GameGrid Demos</h1>
+            <div>
+              <h1 class="site-demo__title mb-0">Interactive demos</h1>
+              <p class="site-demo__subtitle text-muted small mb-0">
+                WASD, arrow keys, or on-screen controls on smaller screens.
+              </p>
+            </div>
             <button
               type="button"
-              class="btn btn-outline-primary"
+              class="btn btn-outline-primary site-demo__menu-btn"
               data-bs-toggle="offcanvas"
               data-bs-target="#demoMenu"
               aria-controls="demoMenu"
             >
-              Demos
+              Demo gallery
             </button>
           </div>
         </div>
@@ -38,15 +44,18 @@
           {{> zoommaze}} {{> mobilecomponent}}
         </div>
       </div>
-      <div class="row">
-        <div class="col-12">
-          <div class="small p-3 word-break">
-            <p><a href="https://opengameart.org/content/animated-pirate-captain">pirate art</a></p>
-            <p><a href="https://opengameart.org/content/grass-tiles-0">grass art</a></p>
-            <p><a href="https://opengameart.org/content/wooden-box-pixel-art-32x32">box art</a></p>
-          </div>
-        </div>
-      </div>
+      <footer class="site-demo__footer">
+        <p class="small text-muted mb-2">
+          Art credits:
+          <a href="https://opengameart.org/content/animated-pirate-captain">pirate</a>,
+          <a href="https://opengameart.org/content/grass-tiles-0">grass</a>,
+          <a href="https://opengameart.org/content/wooden-box-pixel-art-32x32">box</a>
+          ·
+          <a href="https://tamb.github.io/game-grid/docs/">API docs</a>
+          ·
+          <a href="https://github.com/tamb/game-grid">GitHub</a>
+        </p>
+      </footer>
     </div>
     <script type="module" src="js/main.ts"></script>
   </body>

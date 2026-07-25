@@ -3,23 +3,91 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@tamb/gamegrid</title>
-    <style>
-      body {
-        font-family: system-ui, sans-serif;
-        max-width: 36rem;
-        margin: 2rem auto;
-        padding: 0 1rem;
-        line-height: 1.5;
-      }
-    </style>
+    <meta
+      name="description"
+      content="GameGrid — a TypeScript library for 2D grid-based web games and interactive matrices."
+    />
+    <title>GameGrid · @tamb/gamegrid</title>
+    <link rel="stylesheet" href="site.css" />
   </head>
   <body>
-    <h1>@tamb/gamegrid</h1>
-    <p>Static previews from the repository build.</p>
-    <ul>
-      <li><a href="demo/output.html">Demo (Parcel bundle)</a></li>
-      <li><a href="docs/index.html">TypeDoc API reference</a></li>
-    </ul>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-brand" href="./">
+          <span class="site-brand__mark" aria-hidden="true">▦</span>
+          <span class="site-brand__text">GameGrid</span>
+          <span class="site-brand__pkg">@tamb/gamegrid</span>
+        </a>
+        <nav class="site-nav" aria-label="Site">
+          <a class="site-nav__link site-nav__link--active" href="./">Home</a>
+          <a class="site-nav__link" href="demo/output.html">Demos</a>
+          <a class="site-nav__link" href="docs/">API docs</a>
+          <a
+            class="site-nav__link"
+            href="https://github.com/tamb/game-grid"
+            rel="noopener noreferrer"
+            >GitHub</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <section class="hero">
+        <p class="hero__badge">TypeScript · DOM-optional · MIT</p>
+        <h1>A 2D grid for web games</h1>
+        <p class="hero__lead">
+          Stateful coordinates, movement rules, events, zoom regions, and optional
+          rendering — or use it headless as a pure matrix API.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="demo/output.html">Try interactive demos</a>
+          <a class="btn btn--secondary" href="docs/">Browse API reference</a>
+        </div>
+      </section>
+
+      <section class="card-grid" aria-label="Resources">
+        <a class="card" href="demo/output.html">
+          <span class="card__icon" aria-hidden="true">🎮</span>
+          <h2>Interactive demos</h2>
+          <p>
+            Coin mazes, event logging, zoom quadrants, and mobile touch controls —
+            all built with the library.
+          </p>
+          <span class="card__arrow">Open demos →</span>
+        </a>
+        <a class="card" href="docs/">
+          <span class="card__icon" aria-hidden="true">📖</span>
+          <h2>API reference</h2>
+          <p>
+            Full TypeDoc coverage for <code>GameGrid</code>, options, events, zoom
+            helpers, and exported types.
+          </p>
+          <span class="card__arrow">Read the docs →</span>
+        </a>
+        <a
+          class="card"
+          href="https://github.com/tamb/game-grid"
+          rel="noopener noreferrer"
+        >
+          <span class="card__icon" aria-hidden="true">⌥</span>
+          <h2>Source on GitHub</h2>
+          <p>
+            Issues, releases, and the full README with install instructions and
+            configuration examples.
+          </p>
+          <span class="card__arrow">View repository →</span>
+        </a>
+      </section>
+
+      <footer class="site-footer">
+        <p>
+          MIT License ·
+          <a href="https://github.com/tamb/game-grid">tamb/game-grid</a>
+          · Demo art credits on the
+          <a href="demo/output.html">demos page</a>
+        </p>
+      </footer>
+    </main>
   </body>
 </html>
