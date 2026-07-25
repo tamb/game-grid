@@ -2,15 +2,37 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src/index.ts"],
   "tsconfig": "./tsconfig.typedoc.json",
-  "readme": "./README.md",
+  "readme": "./docs/API.md",
   "name": "@tamb/gamegrid",
   "out": "./gh-pages/docs",
   "githubPages": true,
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeInternal": true,
+  "excludeReferences": true,
   "searchInComments": true,
+  "groupReferencesByType": true,
+  "categoryOrder": [
+    "Grid runtime",
+    "Grid contract",
+    "Configuration",
+    "State",
+    "Data model",
+    "Events",
+    "Zoom",
+    "References",
+    "Cells",
+    "Movement",
+    "Inputs",
+    "Presentation",
+    "*"
+  ],
   "navigation": {
     "includeCategories": true
+  },
+  "navigationLinks": {
+    "Site home": "../",
+    "Demos": "../demo/output.html",
+    "GitHub": "https://github.com/tamb/game-grid"
   }
 }

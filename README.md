@@ -61,7 +61,7 @@ Browse the [published API reference](https://tamb.github.io/game-grid/docs/) on 
 npm run docs
 ```
 
-HTML lands in **`gh-pages/docs/`** (open **`gh-pages/docs/index.html`** locally).
+HTML lands in **`gh-pages/docs/`** (open **`gh-pages/docs/index.html`** locally). The TypeDoc landing page uses **`docs/API.md`** (overview + table of contents); the full README stays on GitHub.
 
 Combined **demo + docs** bundle for GitHub Pages:
 

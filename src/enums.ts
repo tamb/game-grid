@@ -107,7 +107,12 @@ export const directionClassEnum: { [ket: string]: string } = {
   RIGHT: 'gamegrid__direction--right',
 };
 
-/** Default {@link IState} seeded before {@link IConfig.state} merges. Shipped as a named runtime export from the package barrel. */
+/**
+ * Default {@link IState} seeded before {@link IConfig.state} merges.
+ * Shipped as a named runtime export from the package barrel.
+ *
+ * @category State
+ */
 export const INITIAL_STATE: IState = {
   activeCoords: [0, 0],
   prevCoords: [0, 0],
