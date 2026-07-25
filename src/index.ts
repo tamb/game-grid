@@ -449,6 +449,8 @@ class GameGrid implements IGameGrid {
 
   /** @inheritDoc IGameGrid.setActiveCell */
   public setActiveCell(x: number, y: number, direction?: string): void {
+    const requestedX = x;
+    const requestedY = y;
     const boundaryCheckData = this.getValidXandY(x, y);
 
     x = boundaryCheckData.x;
@@ -457,7 +459,14 @@ class GameGrid implements IGameGrid {
     const [currentX, currentY] = this.getState().activeCoords!;
     const prevCoords: [number, number] = [currentX, currentY];
 
-    const hitsBlock = this.isBlockingCell(x, y);
+    let hitsBlock = this.isBlockingCell(x, y);
+    if (
+      boundaryCheckData.zoomEdge &&
+      (requestedX !== x || requestedY !== y) &&
+      this.isBlockingCell(requestedX, requestedY)
+    ) {
+      hitsBlock = true;
+    }
     const wasAttached = this.isCollidingCell(currentX, currentY);
     const hitsCollide = this.isCollidingCell(x, y);
 
@@ -506,7 +515,9 @@ class GameGrid implements IGameGrid {
         activeCoords: [...this.getState().activeCoords!],
       });
       this.options.callbacks?.onZoomEdge?.(this, this.getState());
-      deferredActiveSync = this.handleSlideZoomOnEdge(direction);
+      if (!hitsBlock) {
+        deferredActiveSync = this.handleSlideZoomOnEdge(direction);
+      }
     }
 
     this.emit(gridEventsEnum.MOVE_LAND);
@@ -995,6 +1006,13 @@ class GameGrid implements IGameGrid {
     const animate = resolveAnimate(options, this.options.animateZoom);
     const activeCoords = this.getState().activeCoords!;
     const clamped = clampCoordsToZoom(activeCoords, normalized);
+    if (
+      (activeCoords[0] !== clamped[0] || activeCoords[1] !== clamped[1]) &&
+      this.isBlockingCell(clamped[0], clamped[1])
+    ) {
+      this.options.callbacks?.onBlock?.(this, this.getState());
+      return;
+    }
     const patch: StatePatch = { zoom: normalized };
 
     if (activeCoords[0] !== clamped[0] || activeCoords[1] !== clamped[1]) {
