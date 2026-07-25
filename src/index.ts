@@ -414,6 +414,9 @@ class GameGrid implements IGameGrid {
 
     cell.style.width = `${100 / colCount}%`;
     cellData.cellAttributes?.forEach((attr: string[]) => {
+      if (reservedCellAttributes.has(attr[0])) {
+        return;
+      }
       cell.setAttribute(attr[0], attr[1]);
     });
 

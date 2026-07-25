@@ -71,6 +71,7 @@ export function setupCoinGrid() {
   document
     .querySelector('#regenerate-maze')
     ?.addEventListener('click', function () {
+      coinGrid?.destroy();
       document.getElementById('maze3')!.innerHTML = '';
       createCoinGrid();
     });
