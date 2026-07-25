@@ -97,4 +97,29 @@ describe('keyboard and pointer input', () => {
     styled.destroy();
     styledContainer.remove();
   });
+
+  test('reserved cellAttributes cannot override internal gamegrid coords', () => {
+    const spoofed = new GameGrid(
+      {
+        matrix: [
+          [
+            {
+              type: 'open',
+              cellAttributes: [['data-gamegrid-coords', '2,2']],
+            },
+            { type: 'open' },
+            { type: 'open' },
+          ],
+          [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
+          [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
+        ],
+        state: { activeCoords: [0, 0] },
+      },
+      container,
+    );
+    const cell = container.querySelector('[data-gamegrid-coords="0,0"]') as HTMLElement;
+    cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(spoofed.getState().activeCoords).toEqual([0, 0]);
+    spoofed.destroy();
+  });
 });
