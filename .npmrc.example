@@ -1,0 +1,13 @@
+# Copy to .npmrc (gitignored) for publishing @tamb/gamegrid.
+# Do not commit real tokens.
+
+registry=https://registry.npmjs.org/
+
+# Required when publishing scoped packages to the public npm registry.
+access=public
+
+# Create a token at https://www.npmjs.com/settings/~/tokens
+# (Automation for CI, or Granular Access with publish permission).
+//registry.npmjs.org/:_authToken=${NPM_TOKEN}
+
+# Local alternative: run `npm login` and omit the _authToken line above.
