@@ -3,6 +3,7 @@
   "version": "1.0.0-rc.0",
   "description": "",
   "main": "dist/main.js",
+  "source": "src/index.ts",
   "types": "dist/index.d.ts",
   "files": [
     "dist/**/*"
