@@ -95,6 +95,9 @@ export function insertStyles(): void {
   .gamegrid * {
     box-sizing: border-box;
   }
+  .gamegrid {
+    overflow: hidden;
+  }
   .gamegrid__stage {
     display: flex;
     justify-content: center;
@@ -102,6 +105,24 @@ export function insertStyles(): void {
     flex-wrap: wrap;
     box-sizing: border-box;
     border: 1px solid;
+  }
+  .gamegrid__viewport {
+    display: flex;
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    transition: transform var(--gamegrid-zoom-duration, 300ms) ease-out;
+  }
+  .gamegrid--zoomed .gamegrid__viewport {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  .gamegrid__cell--zoom-edge {
+    box-shadow: inset 0 0 0 1px currentColor;
+  }
+  .gamegrid--zoom-animating {
+    pointer-events: none;
   }
   .gamegrid__row {
     display: flex;

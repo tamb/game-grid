@@ -1,12 +1,11 @@
-const { rimrafSync } = require('rimraf');
 const fs = require('node:fs');
 
 function cleanup() {
-  rimrafSync('dist');
+  fs.rmSync('dist', { recursive: true, force: true });
 
   const tgzFiles = fs.readdirSync('.').filter((f) => f.match(/gamegrid.*\.tgz/gm));
   for (const f of tgzFiles) {
-    rimrafSync(`./${f}`);
+    fs.rmSync(`./${f}`, { force: true });
   }
 }
 

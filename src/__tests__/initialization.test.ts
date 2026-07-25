@@ -22,6 +22,10 @@ describe('GameGrid class constructor', () => {
       blockOnType: ['barrier'],
       collideOnType: ['interactive'],
       moveOnType: [],
+      animateZoom: false,
+      constrainToZoom: true,
+      zoomSlideDuration: 300,
+      slideZoomOnEdge: false,
     };
   });
 

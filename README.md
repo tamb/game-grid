@@ -15,20 +15,36 @@
 
 The **`demo/`** package depends on this library via **`"@tamb/gamegrid": "file:.."`** so `npm install` inside **`demo/`** always picks up the built **`dist/`** next to it (no **`npm pack`** tarball).
 
-From the repository root:
+### Demo scripts (run from repo root)
+
+| Script | Purpose |
+|--------|---------|
+| **`npm run demo`** | Clean lib + demo artefacts, build library, install demo deps, compile Handlebars, start Parcel |
+| **`npm run demo:safe`** | Same as **`demo`**, but runs tests before building |
+| **`npm run demo:dev`** | Start Parcel only (after **`demo:prepare`** or a prior **`demo`** run) |
+| **`npm run demo:test`** | Run library Vitest suite |
+| **`npm run demo:prepare`** | **`npm run build`** + **`npm install`** in **`demo/`** |
+| **`npm run demo:build`** | Production Parcel build in **`demo/dist`** |
+| **`npm run demo:link`** | Build, **`npm link`** the library, install demo deps, link **`@tamb/gamegrid`** in the demo |
+| **`npm run demo:link:lib`** | Build + **`npm link`** only (registers **`@tamb/gamegrid`** globally) |
+
+Fresh start:
 
 ```bash
 npm run demo
 ```
 
-That runs **`clean`**, **`npm run build`**, **`npm install` in `demo/`**, then **`npm start` in `demo/`** (Handlebars build + Parcel).
-
-**Strict `npm link` workflow** (optional): register the library globally, then wire the demo to that link:
+Fast iteration after library changes (rebuild **`dist/`**, then reload Parcel):
 
 ```bash
-npm run link:lib          # build + npm link (registers @tamb/gamegrid globally)
-npm run demo:link          # demo npm install + npm link @tamb/gamegrid
-npm start                  # cd demo && npm start
+npm run build && npm run demo:dev
+```
+
+**`npm link` workflow** (optional):
+
+```bash
+npm run demo:link
+npm run demo:dev
 ```
 
 After a change to the library, run **`npm run build`** again so **`dist/`** updates; Parcel will pick it up on reload when using **`file:..`** or a **`npm link`** symlink.
@@ -122,6 +138,11 @@ export interface IOptions {
     onWrap?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onWrapX?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onWrapY?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomSet?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomCleared?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomEdge?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onZoomExit?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onRegionChange?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
 
   /** Cell `type` values you cannot step onto; you stay on the previous cell. */
@@ -133,6 +154,20 @@ export interface IOptions {
    * If omitted or empty, any non-blocked cell is enterable.
    */
   moveOnType?: string[];
+
+  /** Default whether zoom transitions animate. Overridden by per-call `IZoomOptions.animate`. */
+  animateZoom?: boolean;
+  /** When zoom is set, keep movement inside the zoom window (default `true`). */
+  constrainToZoom?: boolean;
+  /** Opt-in region tracking (`2` = quadrants, `3` = ninths). */
+  regionDivisions?: number;
+
+  /** CSS transition duration (ms) for zoom slide. Default: `300`. */
+  zoomSlideDuration?: number;
+  /** When `true` with `regionDivisions`, `ZOOM_EDGE` auto-zooms to the adjacent region. Default: `false`. */
+  slideZoomOnEdge?: boolean;
+  /** Appended to `.gamegrid__viewport` when zoom is active. */
+  zoomViewportClasses?: string[];
 
   activeClasses?: string[];
   cellClasses?: string[];
@@ -154,6 +189,10 @@ Default options (before your `config.options` spread):
   blockOnType: [cellTypeEnum.BARRIER],
   collideOnType: [cellTypeEnum.INTERACTIVE],
   moveOnType: [],
+  animateZoom: false,
+  constrainToZoom: true,
+  zoomSlideDuration: 300,
+  slideZoomOnEdge: false,
 }
 ```
 
@@ -188,6 +227,8 @@ export interface IState {
   moves: number[][];
   rendered?: boolean;
   currentDirection?: string;
+  zoom: IZoomBounds | null;
+  region: IRegionTile | null;
 }
 
 export type StatePatch = Partial<IState> & Record<string, unknown>;
@@ -204,6 +245,8 @@ export const INITIAL_STATE: IState = {
   rendered: false,
   moves: [],
   currentDirection: directionEnum.DOWN,
+  zoom: null,
+  region: null,
 };
 ```
 
@@ -261,6 +304,18 @@ export interface IGameGrid {
   moveRight(): void;
   moveDown(): void;
   moveLeft(): void;
+
+  getZoom(): IZoomBounds | null;
+  setZoom(bounds: IZoomBounds, options?: IZoomOptions): void;
+  clearZoom(options?: IZoomOptions): void;
+  getZoomAround(center: readonly [number, number] | number[], radiusX: number, radiusY?: number): IZoomBounds;
+  getQuadrantZoom(quadrant: ZoomQuadrant): IZoomBounds;
+  getFractionZoom(divisions: number, tileX: number, tileY: number): IZoomBounds;
+  zoomAround(center: readonly [number, number] | number[], radiusX: number, radiusY?: number, options?: IZoomOptions): void;
+  zoomQuadrant(quadrant: ZoomQuadrant, options?: IZoomOptions): void;
+  zoomFraction(divisions: number, tileX: number, tileY: number, options?: IZoomOptions): void;
+  getRegionAt(coords: readonly [number, number] | number[], divisions?: number): IRegionTile;
+  getActiveRegion(): IRegionTile | null;
 }
 ```
 
@@ -311,6 +366,13 @@ export const gridEventsEnum = {
   WRAP_X: "gamegrid:move:wrap:x",
   // Vertical infinite teleport; runs alongside callbacks.onWrapY.
   WRAP_Y: "gamegrid:move:wrap:y",
+
+  // Zoom viewport lifecycle
+  ZOOM_SET: "gamegrid:zoom:set",
+  ZOOM_CLEARED: "gamegrid:zoom:cleared",
+  ZOOM_EDGE: "gamegrid:zoom:edge",
+  ZOOM_EXIT: "gamegrid:zoom:exit",
+  REGION_CHANGE: "gamegrid:region:change",
 };
 ```
 
@@ -339,11 +401,60 @@ window.addEventListener(gridEventsEnum.MOVE_LAND, (e: Event) => {
 
 For a grid created without a container, call **`render(el)`** when you want DOM.
 
+## Zoom
+
+Zoom defines a **viewport window** over the full matrix. Coordinates stay world **`[x, y]`** — zoom does not create a submatrix or remap the origin.
+
+| Term | Meaning |
+|------|---------|
+| **zoom** | Current viewport bounds (`IZoomBounds` on state) |
+| **region** | A tile from partitioning the grid (`regionDivisions`; quadrants when `2`) |
+| **zoom edge** | Active cell tried to move past the zoom window while `constrainToZoom` is enabled |
+| **zoom exit** | Active cell left the zoom window while `constrainToZoom` is disabled |
+| **region change** | Active cell moved from one region tile to another (e.g. SE → SW) |
+| **zoom slide** | Moving the zoom window with `animate: true` (built-in CSS transform on `.gamegrid__viewport`) |
+
+When zoom is active, the grid **renders only cells inside the zoom window** inside a `.gamegrid__viewport` wrapper. Useful CSS hooks:
+
+| Class / attribute | When |
+|-------------------|------|
+| `gamegrid--zoomed` | Container while zoom is set |
+| `gamegrid__viewport` | Viewport wrapper (always after render) |
+| `gamegrid__cell--zoom-edge` | Perimeter cells of the zoom window |
+| `gamegrid--zoom-animating` | During CSS slide transition |
+| `data-gamegrid-zoom` | Viewport; `"minX,minY,maxX,maxY"` |
+| `data-gamegrid-region` | Viewport; quadrant label when `regionDivisions: 2` |
+
+```ts
+import GameGrid, { gridEventsEnum, type ZoomQuadrant } from "@tamb/gamegrid";
+
+const gg = new GameGrid({
+  matrix: largeMap,
+  options: {
+    regionDivisions: 2,
+    animateZoom: true,
+    slideZoomOnEdge: true,
+    constrainToZoom: true,
+    zoomSlideDuration: 300,
+  },
+});
+
+gg.zoomQuadrant("se");
+
+// Manual edge slide (when slideZoomOnEdge is false):
+target.addEventListener(gridEventsEnum.ZOOM_EDGE, (e) => {
+  const { gameGridInstance } = e.detail;
+  gameGridInstance.zoomQuadrant("sw", { animate: true });
+});
+```
+
+With **`slideZoomOnEdge: true`**, the library auto-advances to the adjacent region on `ZOOM_EDGE` — no listener required.
+
 ## Public exports
 
 Besides the **`default`** **`GameGrid`**, the package re-exports:
 
-- Types: **`IConfig`**, **`IOptions`**, **`IState`**, **`IGameGrid`**, **`IGameGridEventDetail`**, **`GameGridDOMEvent`**, **`ICell`**, **`ICellContext`**, **`IRefsObject`**, **`IRow`**, **`IDefaultState`**, **`MiddlewareFn`**, **`StatePatch`**, and deprecated **`IRefs`**
+- Types: **`IConfig`**, **`IOptions`**, **`IState`**, **`IGameGrid`**, **`IGameGridEventDetail`**, **`GameGridDOMEvent`**, **`ICell`**, **`ICellContext`**, **`IRefsObject`**, **`IRow`**, **`IDefaultState`**, **`IZoomBounds`**, **`IZoomOptions`**, **`IRegionTile`**, **`ZoomQuadrant`**, **`MiddlewareFn`**, **`StatePatch`**, and deprecated **`IRefs`**
 - Values: **`gridEventsEnum`**, **`gameGridEventsEnum`**, **`cellTypeEnum`**, **`classesEnum`**, **`directionEnum`**, **`directionClassEnum`**, **`INITIAL_STATE`**, **`keycodeEnum`**
 
 **`cellTypeEnum`** values are constants on an object (**not** an `enum`). **`classesEnum`** and **`directionEnum`** are TypeScript enums. Example:
