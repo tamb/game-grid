@@ -91,4 +91,20 @@ describe('GameGrid class constructor', () => {
     expect(prevCell.current).toBeTruthy();
     expect(prevCell.current?.classList.contains('gamegrid__cell')).toBe(true);
   });
+
+  test('setOptions merges new option values', () => {
+    renderedGrid.setOptions({ wasdControls: true, rewindLimit: 5 });
+    expect(renderedGrid.getOptions().wasdControls).toBe(true);
+    expect(renderedGrid.getOptions().rewindLimit).toBe(5);
+    expect(renderedGrid.getOptions().arrowControls).toBe(true);
+  });
+
+  test('getAllCellsByType returns every matching matrix cell', () => {
+    const interactive = renderedGrid.getAllCellsByType('interactive');
+    const barriers = renderedGrid.getAllCellsByType('barrier');
+    expect(interactive).toHaveLength(1);
+    expect(interactive[0].type).toBe('interactive');
+    expect(barriers).toHaveLength(1);
+    expect(barriers[0].type).toBe('barrier');
+  });
 });

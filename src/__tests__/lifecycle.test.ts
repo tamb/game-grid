@@ -30,6 +30,26 @@ describe('lifecycle', () => {
     expect(active?.getAttribute('data-gamegrid-coords')).toBe('2,1');
   });
 
+  test('refresh throws when render has not been called', () => {
+    const grid = new GameGrid({ matrix });
+    expect(() => grid.refresh()).toThrow(/requires render/);
+    grid.destroy();
+  });
+
+  test('destroy removes custom container classes from the DOM', () => {
+    const el = document.getElementById('root')!;
+    const g = new GameGrid(
+      {
+        matrix,
+        options: { containerClasses: ['stage-extra'] },
+      },
+      el,
+    );
+    expect(el.classList.contains('stage-extra')).toBe(true);
+    g.destroy();
+    expect(el.classList.contains('stage-extra')).toBe(false);
+  });
+
   test('respects options.eventTarget for events', () => {
     const target = new EventTarget();
     let seen = false;
