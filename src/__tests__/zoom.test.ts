@@ -629,6 +629,15 @@ describe('animated zoom transitions', () => {
     grid.destroy();
   });
 
+  test('getActiveRegion returns null when regionDivisions is not configured', () => {
+    const grid = new GameGrid({
+      matrix: makeMatrix(6, 6),
+      state: { activeCoords: [1, 1] },
+    });
+    expect(grid.getActiveRegion()).toBeNull();
+    grid.destroy();
+  });
+
   test('zoomFraction delegates to setZoom bounds', () => {
     const grid = new GameGrid({
       matrix: makeMatrix(6, 6),
