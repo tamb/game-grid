@@ -618,6 +618,36 @@ describe('animated zoom transitions', () => {
     grid.destroy();
   });
 
+  test('animated edge slide does not advance when beyond-edge cell is a barrier', async () => {
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrixWithWestEdgeBarrier(),
+        options: {
+          regionDivisions: 2,
+          slideZoomOnEdge: true,
+          animateZoom: true,
+          zoomSlideDuration: 40,
+          constrainToZoom: true,
+        },
+        state: { activeCoords: [3, 3] },
+      },
+      document.getElementById('zoom-animate-root')!,
+    );
+
+    grid.zoomQuadrant('se', { animate: false });
+    grid.moveLeft();
+
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
+    expect(grid.getState().activeCoords).toEqual([3, 3]);
+    expect(grid.getState().region?.quadrant).toBe('se');
+
+    await flushZoomSlide();
+
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
+    expect(grid.getState().region?.quadrant).toBe('se');
+    grid.destroy();
+  });
+
   test('getActiveRegion derives from activeCoords when state.region is unset', () => {
     const grid = new GameGrid({
       matrix: makeMatrix(6, 6),

@@ -152,4 +152,52 @@ describe('keyboard and pointer input', () => {
     expect(spoofed.getState().activeCoords).toEqual([0, 0]);
     spoofed.destroy();
   });
+
+  test('reserved cellAttributes cannot override data-gamegrid-ref', () => {
+    const spoofed = new GameGrid(
+      {
+        matrix: [
+          [
+            {
+              type: 'open',
+              cellAttributes: [['data-gamegrid-ref', 'not-a-cell']],
+            },
+            { type: 'open' },
+          ],
+          [{ type: 'open' }, { type: 'open' }],
+        ],
+        state: { activeCoords: [1, 1] },
+      },
+      container,
+    );
+    const cell = container.querySelector('[data-gamegrid-coords="0,0"]') as HTMLElement;
+    expect(cell.getAttribute('data-gamegrid-ref')).toBe('cell');
+    cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(spoofed.getState().activeCoords).toEqual([0, 0]);
+    spoofed.destroy();
+  });
+
+  test('reserved cellAttributes cannot override data-gamegrid-cell-type', () => {
+    const spoofed = new GameGrid(
+      {
+        matrix: [
+          [
+            { type: 'open' },
+            {
+              type: 'open',
+              cellAttributes: [['data-gamegrid-cell-type', 'barrier']],
+            },
+          ],
+          [{ type: 'open' }, { type: 'open' }],
+        ],
+        state: { activeCoords: [0, 0] },
+      },
+      container,
+    );
+    const cell = container.querySelector('[data-gamegrid-coords="1,0"]') as HTMLElement;
+    expect(cell.getAttribute('data-gamegrid-cell-type')).toBe('open');
+    spoofed.moveRight();
+    expect(spoofed.getState().activeCoords).toEqual([1, 0]);
+    spoofed.destroy();
+  });
 });
