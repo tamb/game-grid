@@ -301,6 +301,9 @@
 
 /* Grids stay within the viewport; inner cells remain %-based */
 .demo-grid-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
   max-width: min(100%, 520px);
   overflow-x: auto;
@@ -319,60 +322,28 @@
   overflow: auto;
 }
 
-/* Mobile: grid 99vw with 7vw side controls; break out of container padding */
 @media (max-width: 1199.98px) {
   .demo-grid-wrap {
-    display: grid;
-    grid-template-columns: 7vw 85vw 7vw;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      '. up .'
-      'left grid right'
-      '. down .';
-    gap: 0;
-    align-items: stretch;
-    justify-items: stretch;
-    width: 99vw;
-    max-width: 99vw;
-    margin-left: calc(50% - 49.5vw);
-    margin-right: calc(50% - 49.5vw);
-    overflow: visible;
+    width: 100%;
+    max-width: 100%;
   }
 
   .demo-grid-wrap--tall {
-    width: 99vw;
-    max-width: 99vw;
+    max-width: 100%;
     max-height: none;
-    overflow: visible;
   }
 
   .demo-grid-wrap--zoom {
-    width: 99vw;
-    max-width: 99vw;
+    max-width: 100%;
     max-height: none;
-    overflow: visible;
-  }
-
-  .demo-grid-wrap > .demo-grid-mount {
-    grid-area: grid;
-    width: 85vw;
-    max-width: 85vw;
-    min-width: 0;
-    min-height: 0;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .demo-grid-wrap--tall > .demo-grid-mount {
-    max-height: min(70vh, 85vw);
+    max-height: min(70vh, 100%);
   }
 
   .demo-grid-wrap--zoom > .demo-grid-mount {
-    max-height: min(55vh, 85vw);
-  }
-
-  .demo-grid-wrap .gamegrid-touch-controls {
-    display: contents;
+    max-height: min(55vh, 100%);
   }
 }
 
@@ -432,55 +403,41 @@ $zoom-quadrant-se: #f9a8d4;
   min-width: 0;
 }
 
+.demo-grid-mount {
+  min-width: 0;
+  width: 100%;
+}
+
 .gamegrid-touch-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
 .gamegrid-dpad-btn {
+  flex: 1 1 0;
   min-width: 2.75rem;
+  max-width: 4.5rem;
   min-height: 2.75rem;
   font-size: 1.25rem;
   line-height: 1;
   padding: 0.35rem 0.5rem;
+  box-sizing: border-box;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  color: #000;
 }
 
-@media (max-width: 1199.98px) {
-  .gamegrid-dpad-btn {
-    min-width: 0;
-    min-height: 2.75rem;
-    padding: 0.25rem;
-    font-size: 1.15rem;
-  }
-
-  .gamegrid-dpad-btn--up {
-    grid-area: up;
-    justify-self: stretch;
-    width: 85vw;
-    max-width: 85vw;
-  }
-
-  .gamegrid-dpad-btn--left {
-    grid-area: left;
-    align-self: stretch;
-    width: 7vw;
-    max-width: 7vw;
-    height: 100%;
-  }
-
-  .gamegrid-dpad-btn--right {
-    grid-area: right;
-    align-self: stretch;
-    width: 7vw;
-    max-width: 7vw;
-    height: 100%;
-  }
-
-  .gamegrid-dpad-btn--down {
-    grid-area: down;
-    justify-self: stretch;
-    width: 85vw;
-    max-width: 85vw;
-  }
+.site-body--demo .gamegrid-dpad-btn:hover,
+.site-body--demo .gamegrid-dpad-btn:focus-visible,
+.site-body--demo .gamegrid-dpad-btn:active {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #000;
 }
