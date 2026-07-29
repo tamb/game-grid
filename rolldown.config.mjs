@@ -2,11 +2,12 @@ import { defineConfig } from 'rolldown';
 
 export default defineConfig([
   {
-    input: 'src/index.ts',
+    input: 'src/umd-entry.ts',
     output: {
       file: 'dist/main.umd.js',
       format: 'umd',
       name: 'GameGrid',
+      exports: 'default',
       sourcemap: true,
       minify: true,
     },

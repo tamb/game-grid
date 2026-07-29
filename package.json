@@ -1,7 +1,7 @@
 {
   "name": "@tamb/gamegrid",
-  "version": "1.0.0-rc.0",
-  "description": "",
+  "version": "1.0.0",
+  "description": "A 2D HTML grid for creating web games (or other things that could use a 2D matrix)",
   "homepage": "https://tamb.github.io/game-grid/docs/",
   "main": "dist/main.js",
   "source": "src/index.ts",
@@ -15,14 +15,16 @@
     "test:coverage": "vitest run --coverage",
     "test.watch": "vitest",
     "build": "rolldown -c rolldown.config.mjs && tsc -p tsconfig.build.json",
-    "build.safe": "npm run test && npm run build",
+    "build.safe": "npm run test && npm run build && npm run test:dist",
+    "test:dist": "vitest run --config vitest.dist.config.ts",
     "dev": "rolldown -c rolldown.config.mjs -w",
     "lint": "biome check --write",
     "format": "biome format --write .",
     "check": "biome check .",
     "docs": "typedoc",
     "gh-pages": "node scripts/prepare-gh-pages.js && npm run build && npm run demo:install && npm run docs && node scripts/build-demo-gh-pages.js",
-    "safe.publish": "npm run build.safe && npm publish",
+    "safe.publish": "npm run build.safe && npm publish --access public",
+    "publish:prod": "npm run build.safe && npm publish --access public && npm dist-tag add @tamb/gamegrid@$npm_package_version latest",
     "demo:clean": "npm run clean && npm --prefix demo run clean",
     "demo:install": "npm --prefix demo install",
     "demo:compile": "npm --prefix demo run compile",
@@ -38,9 +40,26 @@
     "start": "npm run demo:start",
     "link:lib": "npm run demo:link:lib"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "grid",
+    "game",
+    "2d",
+    "matrix",
+    "typescript",
+    "dom",
+    "html",
+    "web-game",
+    "game-grid"
+  ],
+  "author": "¡Támb!",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tamb/game-grid.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tamb/game-grid/issues"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
     "@types/node": "^25.2.14",
