@@ -293,6 +293,12 @@ export interface IOptions {
   eventTarget?: EventTarget;
   arrowControls?: boolean;
   wasdControls?: boolean;
+  /**
+   * Milliseconds to wait before accepting another directional move.
+   * - `number`: shared cooldown for any direction
+   * - `[Top, Right, Down, Left]`: per-direction cooldowns (UP, RIGHT, DOWN, LEFT)
+   */
+  moveDebounce?: number | [number, number, number, number];
   infiniteX?: boolean;
   infiniteY?: boolean;
   clickable?: boolean;

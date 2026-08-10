@@ -1,4 +1,5 @@
 import { matrix } from '../__mocks__/matrix';
+import { keycodeEnum } from '../enums';
 import GameGrid from '../index';
 
 describe('Move methods', () => {
@@ -149,5 +150,146 @@ describe('Move methods', () => {
     expect(allowOnlyOpen.getState().activeCoords).toEqual([0, 1]);
     allowOnlyOpen.destroy();
     mount.remove();
+  });
+});
+
+describe('moveDebounce', () => {
+  let container: HTMLDivElement;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '<div id="root"></div>';
+    container = document.getElementById('root')!;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  test('scalar debounce blocks rapid moves in any direction', () => {
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: { moveDebounce: 100 },
+        state: { activeCoords: [1, 1] },
+      },
+      container,
+    );
+
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([2, 1]);
+
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([2, 1]);
+
+    vi.advanceTimersByTime(100);
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    grid.destroy();
+  });
+
+  test('per-direction array debounces only configured directions', () => {
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: { moveDebounce: [0, 100, 0, 0] },
+        state: { activeCoords: [0, 1] },
+      },
+      container,
+    );
+
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([0, 1]);
+
+    vi.advanceTimersByTime(100);
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    grid.destroy();
+  });
+
+  test('debounced moves do not invoke onMove', () => {
+    const onMove = vi.fn();
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: {
+          moveDebounce: 100,
+          callbacks: { onMove },
+        },
+        state: { activeCoords: [1, 1] },
+      },
+      container,
+    );
+
+    grid.moveRight();
+    grid.moveRight();
+    expect(onMove).toHaveBeenCalledTimes(1);
+
+    grid.destroy();
+  });
+
+  test('unset moveDebounce allows unrestricted moves', () => {
+    const grid = new GameGrid(
+      {
+        matrix,
+        state: { activeCoords: [0, 1] },
+      },
+      container,
+    );
+
+    grid.moveRight();
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([2, 1]);
+
+    grid.destroy();
+  });
+
+  test('keyboard input respects moveDebounce', () => {
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: { moveDebounce: 100 },
+        state: { activeCoords: [0, 1] },
+      },
+      container,
+    );
+
+    container.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        code: keycodeEnum.ArrowRight,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    container.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        code: keycodeEnum.ArrowRight,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    vi.advanceTimersByTime(100);
+    container.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        code: keycodeEnum.ArrowRight,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    expect(grid.getState().activeCoords).toEqual([2, 1]);
+
+    grid.destroy();
   });
 });

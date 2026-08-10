@@ -108,6 +108,8 @@ class GameGrid implements IGameGrid {
   public refs: IRefsObject;
   private appliedZoomViewportClasses: string[] = [];
   private slideRenderBounds: { from: IZoomBounds; to: IZoomBounds } | null = null;
+  private lastMoveAt = 0;
+  private lastMoveAtByDirection: Partial<Record<directionEnum, number>> = {};
 
   private getEventTarget(): EventTarget {
     return (
@@ -668,8 +670,51 @@ class GameGrid implements IGameGrid {
     return cells;
   }
 
+  private getMoveDebounceDelay(direction: directionEnum): number | undefined {
+    const debounce = this.options.moveDebounce;
+    if (debounce === undefined) {
+      return undefined;
+    }
+    if (typeof debounce === 'number') {
+      return debounce;
+    }
+    const directionIndex: Record<directionEnum, number> = {
+      [directionEnum.UP]: 0,
+      [directionEnum.RIGHT]: 1,
+      [directionEnum.DOWN]: 2,
+      [directionEnum.LEFT]: 3,
+    };
+    return debounce[directionIndex[direction]];
+  }
+
+  private canAcceptMove(direction: directionEnum): boolean {
+    const delay = this.getMoveDebounceDelay(direction);
+    if (delay === undefined) {
+      return true;
+    }
+
+    const now = Date.now();
+    if (typeof this.options.moveDebounce === 'number') {
+      if (now - this.lastMoveAt < delay) {
+        return false;
+      }
+      this.lastMoveAt = now;
+      return true;
+    }
+
+    const lastAt = this.lastMoveAtByDirection[direction] ?? 0;
+    if (now - lastAt < delay) {
+      return false;
+    }
+    this.lastMoveAtByDirection[direction] = now;
+    return true;
+  }
+
   /** @inheritDoc IGameGrid.moveUp */
   public moveUp(): void {
+    if (!this.canAcceptMove(directionEnum.UP)) {
+      return;
+    }
     this.options.callbacks?.onMove?.(this, this.getState());
     this.emit(gridEventsEnum.MOVE_UP);
 
@@ -682,6 +727,9 @@ class GameGrid implements IGameGrid {
 
   /** @inheritDoc IGameGrid.moveRight */
   public moveRight(): void {
+    if (!this.canAcceptMove(directionEnum.RIGHT)) {
+      return;
+    }
     this.options.callbacks?.onMove?.(this, this.getState());
     this.emit(gridEventsEnum.MOVE_RIGHT);
 
@@ -694,6 +742,9 @@ class GameGrid implements IGameGrid {
 
   /** @inheritDoc IGameGrid.moveDown */
   public moveDown(): void {
+    if (!this.canAcceptMove(directionEnum.DOWN)) {
+      return;
+    }
     this.options.callbacks?.onMove?.(this, this.getState());
     this.emit(gridEventsEnum.MOVE_DOWN);
 
@@ -706,6 +757,9 @@ class GameGrid implements IGameGrid {
 
   /** @inheritDoc IGameGrid.moveLeft */
   public moveLeft(): void {
+    if (!this.canAcceptMove(directionEnum.LEFT)) {
+      return;
+    }
     this.options.callbacks?.onMove?.(this, this.getState());
     this.emit(gridEventsEnum.MOVE_LEFT);
 
