@@ -128,6 +128,8 @@ export interface IOptions {
    * Milliseconds to wait before accepting another directional move.
    * - `number`: shared cooldown for any direction
    * - `[Top, Right, Down, Left]`: per-direction cooldowns (UP, RIGHT, DOWN, LEFT)
+   *
+   * Change at runtime with `setOptions({ moveDebounce: … })` — no re-render needed (e.g. speed power-ups).
    */
   moveDebounce?: number | [number, number, number, number];
   infiniteX?: boolean;
