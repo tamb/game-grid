@@ -292,4 +292,33 @@ describe('moveDebounce', () => {
 
     grid.destroy();
   });
+
+  test('setOptions can tighten or relax moveDebounce without re-render', () => {
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: { moveDebounce: 100 },
+        state: { activeCoords: [0, 1] },
+      },
+      container,
+    );
+
+    grid.moveRight();
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    grid.setOptions({ moveDebounce: 0 });
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([2, 1]);
+
+    grid.setOptions({ moveDebounce: 100 });
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([2, 1]);
+
+    vi.advanceTimersByTime(100);
+    grid.moveLeft();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    grid.destroy();
+  });
 });

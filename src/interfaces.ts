@@ -177,7 +177,7 @@ export interface IGameGrid {
    */
   getCell(coords: readonly [number, number] | number[]): ICell;
 
-  /** Shallow-merge behaviours into {@link IGameGrid.options} without swapping the matrix snapshot. */
+  /** Shallow-merge behaviours into {@link IGameGrid.options} without swapping the matrix snapshot or re-rendering. */
   setOptions(newOptions: IOptions): void;
 
   /** Authoritative {@link IState} backing movement callbacks and renders. */
@@ -297,6 +297,9 @@ export interface IOptions {
    * Milliseconds to wait before accepting another directional move.
    * - `number`: shared cooldown for any direction
    * - `[Top, Right, Down, Left]`: per-direction cooldowns (UP, RIGHT, DOWN, LEFT)
+   *
+   * @remarks Update at runtime via {@link GameGrid.setOptions} (no re-render required). Useful for
+   * temporary speed boosts such as power-ups.
    */
   moveDebounce?: number | [number, number, number, number];
   infiniteX?: boolean;
