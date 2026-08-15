@@ -237,7 +237,55 @@ export interface ICellRefresh {
 }
 ```
 
-**`refreshCells(cell | cells)`** writes optional **`cell`** data (same as **`setCell`**) and rebuilds only those nodes. Omit **`cell`** to re-render from the current matrix entry. Headless grids update data only. Off-screen tiles under zoom stay unmounted. Dispatches **`gridEventsEnum.CELLS_REFRESHED`**.
+### Updating cells
+
+`setCell` and `refreshCells` split **data** from **view**. Movement, collision, and `getCell` always read the matrix. The mounted markup changes only when you refresh.
+
+```mermaid
+flowchart LR
+  setCell["setCell(coords, cell)"] --> matrix["matrix[y][x]"]
+  matrix --> rules["move / block / collide"]
+  matrix --> twoStep["refreshCells({ coords })"]
+  twoStep --> nodes["replace those cell nodes"]
+  twoStep --> event["CELLS_REFRESHED"]
+  oneStep["refreshCells({ coords, cell })"] --> matrix
+  oneStep --> nodes
+```
+
+**`setCell([x, y], cell)`** is data-only. It replaces `matrix[y][x]` by reference. It does not patch DOM, `refs.cells`, or emit events. After the write, `getCell` / `getAllCellsByType` / `blockOnType` see the new cell immediately; the painted tile can still show the old `type`.
+
+**`refreshCells({ coords, cell? } | array)`** is the view (plus an optional write). For each item it:
+
+1. Calls `setCell` when `cell` is provided
+2. Replaces that one mounted node from the current matrix entry (`type`, `cellAttributes`, `render`, zoom-edge class) when the tile is on-screen
+3. Restores active-cell classes if the focused tile was rebuilt
+4. Dispatches **`gridEventsEnum.CELLS_REFRESHED`** once, with `detail.cells`
+
+Omit `cell` when you already called `setCell` or mutated the matrix object in place. Headless grids update data only. Off-screen tiles under zoom stay `current: null`.
+
+```ts
+// Two steps: data first, then paint
+grid.setCell([2, 0], { type: cellTypeEnum.OPEN });
+grid.refreshCells({ coords: [2, 0] });
+
+// One step: write + paint
+grid.refreshCells({ coords: [2, 0], cell: { type: cellTypeEnum.OPEN } });
+
+// Several tiles
+grid.refreshCells([
+  { coords: [1, 1], cell: { type: cellTypeEnum.BARRIER } },
+  { coords: [0, 2] },
+]);
+```
+
+Use **`refresh()`** when the grid **shape** changes (`setMatrix` with new dimensions, or a new zoom window). Use **`refreshCells`** when a few tiles change in place.
+
+| | `setCell` | `refreshCells` | `refresh` |
+| --- | --- | --- | --- |
+| Writes matrix | yes | if `cell` is given | no |
+| Patches DOM | no | those tiles only | whole grid |
+| Updates `refs.cells` | no | those tiles | whole grid |
+| Emits | — | `CELLS_REFRESHED` | — |
 
 ### `state: IState`
 

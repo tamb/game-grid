@@ -27,6 +27,14 @@ Browse the full API on the [**exports index**](modules.html):
 
 Movement and state use **`[x, y]`**: column (x), then row (y). The backing matrix is `matrix[row][col]` → `matrix[y][x]`.
 
+## Updating cells
+
+`setCell` writes `matrix[y][x]` only. Movement and `getCell` see the new `type` immediately; the DOM does not.
+
+`refreshCells({ coords, cell? })` (one item or an array) optionally writes, then replaces those mounted nodes and emits [`CELLS_REFRESHED`](variables/gridEventsEnum.html). Omit `cell` after a prior `setCell`. Use [`refresh`](classes/GameGrid.html#refresh) when dimensions or the zoom window change.
+
+See the [README flow](https://github.com/tamb/game-grid#updating-cells) and [`ICellRefresh`](interfaces/ICellRefresh.html).
+
 ## Quick start
 
 ```ts

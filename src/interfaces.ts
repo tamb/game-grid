@@ -141,7 +141,7 @@ export interface IGameGrid {
    * Write optional cell data and rebuild one or more cell nodes from the current matrix.
    *
    * @param cells - A single {@link ICellRefresh} or an array. `cell` is written with {@link GameGrid.setCell} when provided; omit it to re-render the existing matrix entry.
-   * @remarks Headless grids update matrix data only. Off-screen cells under zoom stay `current: null`. Does not rebuild the whole grid. Dispatches {@link gridEventsEnum.CELLS_REFRESHED} once with `detail.cells`.
+   * @remarks **Flow:** {@link GameGrid.setCell} is data-only (movement reads the new `type` immediately; DOM/`refs` stay stale). Call this afterward with `{ coords }` to paint those tiles, or pass `{ coords, cell }` to write and paint in one step. Headless grids update matrix data only. Off-screen cells under zoom stay `current: null`. Does not rebuild the whole grid — use {@link GameGrid.refresh} when dimensions or the zoom window change. Dispatches {@link gridEventsEnum.CELLS_REFRESHED} once with `detail.cells`.
    */
   refreshCells(cells: ICellRefresh | ICellRefresh[]): void;
 
@@ -190,7 +190,7 @@ export interface IGameGrid {
    *
    * @param coords - `[x, y]`.
    * @param cell - Stored by reference, same as {@link GameGrid.setMatrix}.
-   * @remarks Bounds unchecked, matching {@link GameGrid.getCell}. Call {@link GameGrid.refreshCells} for one or more tiles, or {@link GameGrid.refresh} / {@link GameGrid.render} for a full rebuild, when mounted if the view should catch up.
+   * @remarks Bounds unchecked, matching {@link GameGrid.getCell}. Data-only: does not patch DOM, `refs`, or emit events. Movement / `blockOnType` read the new cell immediately. Call {@link GameGrid.refreshCells} with `{ coords }` (or `{ coords, cell }` instead of this method) to update mounted nodes; use {@link GameGrid.refresh} / {@link GameGrid.render} when the grid shape changes.
    */
   setCell(coords: readonly [number, number] | number[], cell: ICell): void;
 
@@ -463,12 +463,13 @@ export interface ICell extends IRef {
 /**
  * One tile for {@link GameGrid.refreshCells}: identity plus optional replacement data.
  *
- * @example Re-render from the current matrix entry
+ * @example Two-step: {@link GameGrid.setCell} then paint
  * ```ts
+ * grid.setCell([1, 2], { type: cellTypeEnum.OPEN });
  * grid.refreshCells({ coords: [1, 2] });
  * ```
  *
- * @example Write data and patch that node
+ * @example One-step write and paint
  * ```ts
  * grid.refreshCells({ coords: [1, 2], cell: { type: cellTypeEnum.OPEN } });
  * ```
