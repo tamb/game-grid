@@ -657,6 +657,13 @@ class GameGrid implements IGameGrid {
     return this.matrix[y][x];
   }
 
+  /** @inheritDoc IGameGrid.setCell */
+  public setCell(coords: readonly [number, number] | number[], cell: ICell): void {
+    const x = coords[0];
+    const y = coords[1];
+    this.matrix[y][x] = cell;
+  }
+
   /** @inheritDoc IGameGrid.getAllCellsByType */
   public getAllCellsByType(type: string): ICell[] {
     const cells: ICell[] = [];

@@ -33,4 +33,38 @@ describe('matrix updates', () => {
     expect(grid.getMatrix()).toBe(replacement);
     grid.destroy();
   });
+
+  test('setCell replaces the logical cell at [x, y] without rendering', () => {
+    const grid = new GameGrid({ matrix }, mount);
+    const next = { type: 'barrier' };
+    const beforeType = mount
+      .querySelector('[data-gamegrid-coords="1,0"]')
+      ?.getAttribute('data-gamegrid-cell-type');
+
+    grid.setCell([1, 0], next);
+
+    expect(grid.getCell([1, 0])).toBe(next);
+    expect(grid.getMatrix()[0][1]).toBe(next);
+    expect(
+      mount.querySelector('[data-gamegrid-coords="1,0"]')?.getAttribute('data-gamegrid-cell-type'),
+    ).toBe(beforeType);
+    expect(grid.refs.cells[0][1]).not.toBe(next);
+
+    grid.refresh();
+
+    expect(
+      mount.querySelector('[data-gamegrid-coords="1,0"]')?.getAttribute('data-gamegrid-cell-type'),
+    ).toBe('barrier');
+    expect(grid.refs.cells[0][1].type).toBe('barrier');
+    grid.destroy();
+  });
+
+  test('setCell works headless and is visible to type queries', () => {
+    const grid = new GameGrid({ matrix });
+    grid.setCell([2, 0], { type: 'interactive' });
+
+    expect(grid.getCell([2, 0]).type).toBe('interactive');
+    expect(grid.getAllCellsByType('interactive')).toHaveLength(2);
+    grid.destroy();
+  });
 });

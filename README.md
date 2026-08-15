@@ -81,7 +81,7 @@ Use **`gh-pages/`** as the site root **`/`**: keep **`index.html`** and **`.noje
 
 ## Coordinates
 
-Movement and state use **`[x, y]`**: **column (x), then row (y)**. The backing matrix is a normal 2D array: **`matrix[row][col]`** i.e. **`matrix[y][x]`**. Methods like **`getCell([x, y])`**, **`setActiveCell(x, y, …)`**, and **`getState().activeCoords`** all follow that convention.
+Movement and state use **`[x, y]`**: **column (x), then row (y)**. The backing matrix is a normal 2D array: **`matrix[row][col]`** i.e. **`matrix[y][x]`**. Methods like **`getCell([x, y])`**, **`setCell([x, y], cell)`**, **`setActiveCell(x, y, …)`**, and **`getState().activeCoords`** all follow that convention.
 
 ## The class
 
@@ -308,6 +308,8 @@ export interface IGameGrid {
   getActiveCell(): ICell;
   getPreviousCell(): ICell;
   getCell(coords: readonly [number, number] | number[]): ICell;
+  /** Replace one logical cell. Does not render; call `refresh()` when mounted if the DOM should catch up. */
+  setCell(coords: readonly [number, number] | number[], cell: ICell): void;
   getAllCellsByType(type: string): ICell[];
   setActiveCell(x: number, y: number, direction?: string): void;
 
