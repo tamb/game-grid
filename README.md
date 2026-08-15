@@ -135,6 +135,10 @@ export interface IOptions {
   infiniteX?: boolean;
   infiniteY?: boolean;
   clickable?: boolean;
+  /**
+   * Max length of `state.moves`. Oldest entries drop first.
+   * Values below `1` are treated as `1` (always keep the current cell). Default: `20`.
+   */
   rewindLimit?: number;
   middlewares?: {
     pre?: MiddlewareFn[];
@@ -157,6 +161,7 @@ export interface IOptions {
     onZoomEdge?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onZoomExit?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onRegionChange?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onRewind?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
 
   /** Cell `type` values you cannot step onto; you stay on the previous cell. */
@@ -293,6 +298,7 @@ Use **`refresh()`** when the grid **shape** changes (`setMatrix` with new dimens
 export interface IState {
   activeCoords: number[];
   prevCoords: number[];
+  /** Oldest-first landed `[x, y]` trail, including the current cell. Capped by `rewindLimit`. */
   moves: number[][];
   rendered?: boolean;
   currentDirection?: string;
@@ -377,6 +383,10 @@ export interface IGameGrid {
   moveRight(): void;
   moveDown(): void;
   moveLeft(): void;
+  /** Step back `steps` entries in `state.moves` (default 1). Extra steps clamp to the oldest. */
+  rewind(steps?: number): void;
+  /** Jump to `index` in `state.moves` (`0` = oldest). Truncates later entries. */
+  rewindTo(index: number): void;
 
   getZoom(): IZoomBounds | null;
   setZoom(bounds: IZoomBounds, options?: IZoomOptions): void;
@@ -393,6 +403,8 @@ export interface IGameGrid {
 ```
 
 The **`GameGrid`** class implements **`IGameGrid`**. The mounted root element is **`refs.container`** after **`render`**; it stays **`null`** on headless constructions until **`render`** runs.
+
+**`rewind(steps?)`** and **`rewindTo(index)`** walk **`state.moves`**, an oldest-first trail of landed cells (including the current one) capped by **`rewindLimit`**. Blocked attempts are not recorded. Extra `rewind` steps clamp to the oldest remaining entry. These calls emit **`gamegrid:move:rewind`** then **`MOVE_LAND`**, and they ignore **`moveDebounce`**.
 
 ## Events
 
@@ -427,6 +439,8 @@ export const gridEventsEnum = {
   MOVE_DETTACH: "gamegrid:move:dettach",
   // Finished block/collide/boundary/wrap resolution; mirrors callbacks.onLand.
   MOVE_LAND: "gamegrid:move:land",
+  // After rewind() / rewindTo(); detail.steps + detail.index; then MOVE_LAND.
+  REWIND: "gamegrid:move:rewind",
 
   // Aggregate finite-edge clamp — axis BOUNDARY_X / BOUNDARY_Y first when relevant.
   BOUNDARY: "gamegrid:move:boundary",

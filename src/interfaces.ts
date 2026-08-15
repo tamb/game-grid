@@ -50,7 +50,11 @@ export interface IState {
   activeCoords: number[];
   /** Last position before `activeCoords` updated. */
   prevCoords: number[];
-  /** History of `[x,y]` coords; length capped by {@link IOptions.rewindLimit}. */
+  /**
+   * Chronological trail of landed `[x, y]` coords, oldest first.
+   * Includes the current cell. Length is capped by {@link IOptions.rewindLimit}.
+   * Blocked attempts are not recorded. Use {@link GameGrid.rewind} / {@link GameGrid.rewindTo}.
+   */
   moves: number[][];
   /** `true` after {@link GameGrid.render}. */
   rendered?: boolean;
@@ -227,6 +231,23 @@ export interface IGameGrid {
    */
   moveLeft(): void;
 
+  /**
+   * Step back `steps` entries in {@link IState.moves} (default `1`).
+   *
+   * @remarks No-op when there is no earlier position, or `steps` is not a positive finite number.
+   * Extra steps clamp to the oldest remaining entry. Not rate-limited by {@link IOptions.moveDebounce}.
+   * Dispatches {@link gridEventsEnum.REWIND} (with `detail.steps` / `detail.index`) then {@link gridEventsEnum.MOVE_LAND}.
+   */
+  rewind(steps?: number): void;
+
+  /**
+   * Jump to `index` in {@link IState.moves} (`0` = oldest remaining).
+   *
+   * @remarks No-op when `index` is not an integer in range, or it is already the current (last) entry.
+   * Truncates history after the chosen index. Same events as {@link GameGrid.rewind}.
+   */
+  rewindTo(index: number): void;
+
   /** Current zoom bounds or `null` when no zoom is active. */
   getZoom(): IZoomBounds | null;
 
@@ -322,6 +343,10 @@ export interface IOptions {
   infiniteX?: boolean;
   infiniteY?: boolean;
   clickable?: boolean;
+  /**
+   * Max length of {@link IState.moves}. Oldest entries drop first.
+   * Values below `1` are treated as `1` (always keep the current cell). Default: `20`.
+   */
   rewindLimit?: number;
   middlewares?: {
     /** Invoked synchronously **before** the patch merges into {@link IState} (see {@link MiddlewareFn}). */
@@ -346,6 +371,7 @@ export interface IOptions {
     onZoomEdge?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onZoomExit?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onRegionChange?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onRewind?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
 
   /** Default whether zoom transitions animate. Overridden by {@link IZoomOptions.animate}. Default: `false`. */
