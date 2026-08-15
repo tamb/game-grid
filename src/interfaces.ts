@@ -177,6 +177,15 @@ export interface IGameGrid {
    */
   getCell(coords: readonly [number, number] | number[]): ICell;
 
+  /**
+   * Replace the logical cell at `coords` (`matrix[y][x]`). Does not render, refresh, or patch DOM/`refs`.
+   *
+   * @param coords - `[x, y]`.
+   * @param cell - Stored by reference, same as {@link GameGrid.setMatrix}.
+   * @remarks Bounds unchecked, matching {@link GameGrid.getCell}. Call {@link GameGrid.refresh} or {@link GameGrid.render} when mounted if the view should catch up.
+   */
+  setCell(coords: readonly [number, number] | number[], cell: ICell): void;
+
   /** Shallow-merge behaviours into {@link IGameGrid.options} without swapping the matrix snapshot or re-rendering. */
   setOptions(newOptions: IOptions): void;
 
