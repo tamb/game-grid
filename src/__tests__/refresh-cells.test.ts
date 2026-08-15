@@ -1,6 +1,10 @@
 import { matrix } from '../__mocks__/matrix';
 import GameGrid, { gridEventsEnum } from '../index';
-import type { GameGridDOMEvent, ICellRefresh } from '../interfaces';
+import type { GameGridDOMEvent, ICell, ICellRefresh } from '../interfaces';
+
+function cloneMatrix(): ICell[][] {
+  return matrix.map((row) => row.map((cell) => ({ ...cell })));
+}
 
 describe('refreshCells', () => {
   let mount: HTMLDivElement;
@@ -16,7 +20,7 @@ describe('refreshCells', () => {
   });
 
   test('writes cell data and patches that node without rebuilding the grid', () => {
-    const grid = new GameGrid({ matrix }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix() }, mount);
     const untouched = mount.querySelector('[data-gamegrid-coords="0,0"]');
     const target = mount.querySelector('[data-gamegrid-coords="2,0"]');
 
@@ -34,7 +38,7 @@ describe('refreshCells', () => {
   });
 
   test('accepts an array and updates each cell', () => {
-    const grid = new GameGrid({ matrix }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix() }, mount);
 
     grid.refreshCells([
       { coords: [2, 0], cell: { type: 'open' } },
@@ -53,7 +57,7 @@ describe('refreshCells', () => {
   });
 
   test('omitting cell re-renders from current matrix data', () => {
-    const grid = new GameGrid({ matrix }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix() }, mount);
     const next = {
       type: 'barrier',
       render() {
@@ -81,7 +85,7 @@ describe('refreshCells', () => {
   test('keeps active highlighting when the active cell is refreshed', () => {
     const grid = new GameGrid(
       {
-        matrix,
+        matrix: cloneMatrix(),
         options: { activeClasses: ['extra-active'] },
         state: { activeCoords: [1, 1] },
       },
@@ -97,7 +101,7 @@ describe('refreshCells', () => {
   });
 
   test('makes a former barrier walkable after the matrix write', () => {
-    const grid = new GameGrid({ matrix, state: { activeCoords: [1, 0] } }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix(), state: { activeCoords: [1, 0] } }, mount);
     grid.moveRight();
     expect(grid.getState().activeCoords).toEqual([1, 0]);
 
@@ -109,7 +113,7 @@ describe('refreshCells', () => {
   });
 
   test('updates matrix headless and does not throw', () => {
-    const grid = new GameGrid({ matrix });
+    const grid = new GameGrid({ matrix: cloneMatrix() });
     grid.refreshCells({ coords: [2, 0], cell: { type: 'open' } });
     expect(grid.getCell([2, 0]).type).toBe('open');
     grid.destroy();
@@ -122,7 +126,7 @@ describe('refreshCells', () => {
       const detail = (event as GameGridDOMEvent).detail;
       seen.push(detail.cells as ICellRefresh[]);
     });
-    const grid = new GameGrid({ matrix, options: { eventTarget: target } }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix(), options: { eventTarget: target } }, mount);
     const next = { type: 'open' };
 
     grid.refreshCells({ coords: [2, 0], cell: next });
@@ -133,7 +137,7 @@ describe('refreshCells', () => {
   });
 
   test('skips DOM for cells outside the zoom window', () => {
-    const grid = new GameGrid({ matrix, state: { activeCoords: [0, 0] } }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix(), state: { activeCoords: [0, 0] } }, mount);
     grid.setZoom({ minX: 0, minY: 0, maxX: 1, maxY: 1 }, { animate: false });
     expect(mount.querySelector('[data-gamegrid-coords="2,2"]')).toBeNull();
 
