@@ -1,5 +1,10 @@
 import { matrix } from '../__mocks__/matrix';
 import GameGrid from '../index';
+import type { ICell } from '../interfaces';
+
+function cloneMatrix(): ICell[][] {
+  return matrix.map((row) => row.map((cell) => ({ ...cell })));
+}
 
 describe('matrix updates', () => {
   let mount: HTMLDivElement;
@@ -15,7 +20,7 @@ describe('matrix updates', () => {
   });
 
   test('refresh rebuilds DOM after setMatrix changes dimensions', () => {
-    const grid = new GameGrid({ matrix }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix() }, mount);
     expect(mount.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(9);
 
     grid.setMatrix([[{ type: 'open' }, { type: 'open' }]]);
@@ -28,14 +33,14 @@ describe('matrix updates', () => {
 
   test('getMatrix returns the matrix reference set by setMatrix', () => {
     const replacement = [[{ type: 'open' }]];
-    const grid = new GameGrid({ matrix }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix() }, mount);
     grid.setMatrix(replacement);
     expect(grid.getMatrix()).toBe(replacement);
     grid.destroy();
   });
 
   test('setCell replaces the logical cell at [x, y] without rendering', () => {
-    const grid = new GameGrid({ matrix }, mount);
+    const grid = new GameGrid({ matrix: cloneMatrix() }, mount);
     const next = { type: 'barrier' };
     const beforeType = mount
       .querySelector('[data-gamegrid-coords="1,0"]')
@@ -60,7 +65,7 @@ describe('matrix updates', () => {
   });
 
   test('setCell works headless and is visible to type queries', () => {
-    const grid = new GameGrid({ matrix });
+    const grid = new GameGrid({ matrix: cloneMatrix() });
     grid.setCell([2, 0], { type: 'interactive' });
 
     expect(grid.getCell([2, 0]).type).toBe('interactive');

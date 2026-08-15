@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`setCell([x, y], cell)`**: replace one logical matrix cell by reference. Data-only, same contract as `setMatrix` — does not render or refresh the DOM.
 - **`refreshCells(cell | cells)`**: write optional cell data and rebuild one or more cell nodes without wiping the grid. Accepts `{ coords, cell? }` or an array of those. Emits `gamegrid:cells:refreshed` with `detail.cells`.
+- README / TypeDoc notes for the `setCell` (data) → `refreshCells` (view) flow.
 
 ## [1.1.1] - 2026-08-13
 
