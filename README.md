@@ -81,7 +81,7 @@ Use **`gh-pages/`** as the site root **`/`**: keep **`index.html`** and **`.noje
 
 ## Coordinates
 
-Movement and state use **`[x, y]`**: **column (x), then row (y)**. The backing matrix is a normal 2D array: **`matrix[row][col]`** i.e. **`matrix[y][x]`**. Methods like **`getCell([x, y])`**, **`setCell([x, y], cell)`**, **`setActiveCell(x, y, …)`**, and **`getState().activeCoords`** all follow that convention.
+Movement and state use **`[x, y]`**: **column (x), then row (y)**. The backing matrix is a normal 2D array: **`matrix[row][col]`** i.e. **`matrix[y][x]`**. Methods like **`getCell([x, y])`**, **`setCell([x, y], cell)`**, **`refreshCells({ coords, cell })`**, **`setActiveCell(x, y, …)`**, and **`getState().activeCoords`** all follow that convention.
 
 ## The class
 
@@ -230,7 +230,14 @@ interface ICellContext {
   cell: ICell;
   gamegrid: IGameGrid;
 }
+
+export interface ICellRefresh {
+  coords: readonly [number, number] | number[];
+  cell?: ICell;
+}
 ```
+
+**`refreshCells(cell | cells)`** writes optional **`cell`** data (same as **`setCell`**) and rebuilds only those nodes. Omit **`cell`** to re-render from the current matrix entry. Headless grids update data only. Off-screen tiles under zoom stay unmounted. Dispatches **`gridEventsEnum.CELLS_REFRESHED`**.
 
 ### `state: IState`
 
@@ -297,6 +304,8 @@ export interface IGameGrid {
   render(container: HTMLElement): void;
   /** Rebuild DOM from current `matrix` and re-apply active cell UI. Requires a prior render. */
   refresh(): void;
+  /** Write optional cell data and rebuild one or more cell nodes. Emits CELLS_REFRESHED. */
+  refreshCells(cells: ICellRefresh | ICellRefresh[]): void;
   /** Tear down listeners and DOM when rendered; always emits DESTROYED. */
   destroy(): void;
   getOptions(): IOptions;
@@ -308,7 +317,7 @@ export interface IGameGrid {
   getActiveCell(): ICell;
   getPreviousCell(): ICell;
   getCell(coords: readonly [number, number] | number[]): ICell;
-  /** Replace one logical cell. Does not render; call `refresh()` when mounted if the DOM should catch up. */
+  /** Replace one logical cell. Does not render; call `refreshCells()` or `refresh()` when mounted if the DOM should catch up. */
   setCell(coords: readonly [number, number] | number[], cell: ICell): void;
   getAllCellsByType(type: string): ICell[];
   setActiveCell(x: number, y: number, direction?: string): void;
@@ -353,6 +362,8 @@ export const gridEventsEnum = {
   CREATED: "gamegrid:grid:created",
   // Dispatched from GameGrid.destroy; fires even if the grid stayed headless / unmounted.
   DESTROYED: "gamegrid:grid:destroyed",
+  // After refreshCells writes optional data and patches those nodes (`detail.cells`).
+  CELLS_REFRESHED: "gamegrid:cells:refreshed",
 
   // Keyboard / pointer path: onMove already ran; these fire before setActiveCell.
   MOVE_LEFT: "gamegrid:move:left",

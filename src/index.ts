@@ -16,6 +16,7 @@ import {
 } from './enums';
 import type {
   ICell,
+  ICellRefresh,
   IConfig,
   IGameGrid,
   IOptions,
@@ -55,6 +56,7 @@ export type {
   GameGridDOMEvent,
   ICell,
   ICellContext,
+  ICellRefresh,
   IConfig,
   IDefaultState,
   IGameGrid,
@@ -206,6 +208,97 @@ class GameGrid implements IGameGrid {
     }
     this.rebuildDom();
     this.syncActiveDom(this.state.currentDirection);
+  }
+
+  /** @inheritDoc IGameGrid.refreshCells */
+  public refreshCells(cells: ICellRefresh | ICellRefresh[]): void {
+    const items = Array.isArray(cells) ? cells : [cells];
+    const refreshed: ICellRefresh[] = [];
+
+    for (const item of items) {
+      const x = item.coords[0];
+      const y = item.coords[1];
+      if (item.cell) {
+        this.setCell([x, y], item.cell);
+      }
+      this.patchCellDom(x, y);
+      refreshed.push({
+        coords: [x, y],
+        cell: this.matrix[y]?.[x],
+      });
+    }
+
+    this.emit(gridEventsEnum.CELLS_REFRESHED, { cells: refreshed });
+  }
+
+  private patchCellDom(x: number, y: number): void {
+    const cellData = this.matrix[y]?.[x];
+    if (!cellData) {
+      return;
+    }
+
+    const rendered = Boolean(this.state.rendered && this.refs.container);
+    const zoom = this.state.zoom;
+    const slide = this.slideRenderBounds;
+    const renderBounds = slide ? this.unionSlideBounds(slide.from, slide.to) : zoom;
+    const visible = !renderBounds || isInsideZoom([x, y], renderBounds);
+
+    if (!rendered || !visible) {
+      this.syncCellRef(x, y, cellData, null);
+      return;
+    }
+
+    const colCount = zoom ? zoom.maxX - zoom.minX + 1 : (this.matrix[y]?.length ?? 1);
+    const isZoomEdge = Boolean(zoom && !slide && this.isZoomEdgeCell(x, y, zoom));
+    const nextEl = this.renderCell(y, x, cellData, colCount, isZoomEdge);
+    const prevEl = this.refs.cells[y]?.[x]?.current ?? null;
+
+    if (prevEl?.parentNode) {
+      prevEl.replaceWith(nextEl);
+    } else {
+      const rowEl = this.refs.rows.find((row) => row.index === y)?.current;
+      if (!rowEl) {
+        this.syncCellRef(x, y, cellData, null);
+        return;
+      }
+      this.insertCellInRow(rowEl, nextEl, x);
+    }
+
+    this.syncCellRef(x, y, cellData, nextEl);
+    this.restoreActiveCellClasses(x, y, nextEl);
+  }
+
+  private syncCellRef(x: number, y: number, cellData: ICell, current: HTMLDivElement | null): void {
+    if (!this.refs.cells[y] || this.refs.cells === this.matrix) {
+      return;
+    }
+    this.refs.cells[y][x] = {
+      ...cellData,
+      current,
+      coords: [x, y],
+    };
+  }
+
+  private insertCellInRow(rowEl: HTMLElement, cellEl: HTMLDivElement, x: number): void {
+    const children = Array.from(rowEl.children) as HTMLElement[];
+    const next = children.find((child) => {
+      const coords = getCoordsFromElement(child);
+      return coords != null && coords[0] > x;
+    });
+    if (next) {
+      rowEl.insertBefore(cellEl, next);
+    } else {
+      rowEl.appendChild(cellEl);
+    }
+  }
+
+  private restoreActiveCellClasses(x: number, y: number, el: HTMLDivElement): void {
+    const [ax, ay] = this.state.activeCoords ?? [];
+    if (ax !== x || ay !== y) {
+      return;
+    }
+    el.classList.add(classesEnum.ACTIVE_CELL);
+    this.options.activeClasses?.forEach((c) => el.classList.add(c));
   }
 
   private rebuildDom(): void {

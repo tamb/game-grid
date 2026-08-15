@@ -138,6 +138,14 @@ export interface IGameGrid {
   refresh(): void;
 
   /**
+   * Write optional cell data and rebuild one or more cell nodes from the current matrix.
+   *
+   * @param cells - A single {@link ICellRefresh} or an array. `cell` is written with {@link GameGrid.setCell} when provided; omit it to re-render the existing matrix entry.
+   * @remarks Headless grids update matrix data only. Off-screen cells under zoom stay `current: null`. Does not rebuild the whole grid. Dispatches {@link gridEventsEnum.CELLS_REFRESHED} once with `detail.cells`.
+   */
+  refreshCells(cells: ICellRefresh | ICellRefresh[]): void;
+
+  /**
    * Detach listeners when rendered and clear injected structure; resets `rendered` in state.
    *
    * @remarks Idempotent-friendly: always dispatches {@link gridEventsEnum.DESTROYED} whether or not DOM was present.
@@ -182,7 +190,7 @@ export interface IGameGrid {
    *
    * @param coords - `[x, y]`.
    * @param cell - Stored by reference, same as {@link GameGrid.setMatrix}.
-   * @remarks Bounds unchecked, matching {@link GameGrid.getCell}. Call {@link GameGrid.refresh} or {@link GameGrid.render} when mounted if the view should catch up.
+   * @remarks Bounds unchecked, matching {@link GameGrid.getCell}. Call {@link GameGrid.refreshCells} for one or more tiles, or {@link GameGrid.refresh} / {@link GameGrid.render} for a full rebuild, when mounted if the view should catch up.
    */
   setCell(coords: readonly [number, number] | number[], cell: ICell): void;
 
@@ -450,6 +458,28 @@ export interface ICell extends IRef {
     onExit: string;
   };
   coords?: number[];
+}
+
+/**
+ * One tile for {@link GameGrid.refreshCells}: identity plus optional replacement data.
+ *
+ * @example Re-render from the current matrix entry
+ * ```ts
+ * grid.refreshCells({ coords: [1, 2] });
+ * ```
+ *
+ * @example Write data and patch that node
+ * ```ts
+ * grid.refreshCells({ coords: [1, 2], cell: { type: cellTypeEnum.OPEN } });
+ * ```
+ *
+ * @category Data model
+ */
+export interface ICellRefresh {
+  /** World `[x, y]` — same order as {@link GameGrid.setCell}. */
+  coords: readonly [number, number] | number[];
+  /** When provided, stored on the matrix before the cell node is rebuilt. */
+  cell?: ICell;
 }
 
 /**

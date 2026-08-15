@@ -14,7 +14,7 @@ Browse the full API on the [**exports index**](modules.html):
 | [Grid contract](modules.html#grid-contract) | [`IGameGrid`](interfaces/IGameGrid.html) |
 | [Configuration](modules.html#configuration) | [`IConfig`](interfaces/IConfig.html), [`IOptions`](interfaces/IOptions.html), [`MiddlewareFn`](types/MiddlewareFn.html) |
 | [State](modules.html#state) | [`IState`](interfaces/IState.html), [`StatePatch`](types/StatePatch.html), [`IDefaultState`](interfaces/IDefaultState.html), [`INITIAL_STATE`](variables/INITIAL_STATE.html) |
-| [Data model](modules.html#data-model) | [`ICell`](interfaces/ICell.html), [`ICellContext`](interfaces/ICellContext.html) |
+| [Data model](modules.html#data-model) | [`ICell`](interfaces/ICell.html), [`ICellContext`](interfaces/ICellContext.html), [`ICellRefresh`](interfaces/ICellRefresh.html) |
 | [Events](modules.html#events) | [`gridEventsEnum`](variables/gridEventsEnum.html), [`gameGridEventsEnum`](variables/gameGridEventsEnum.html), [`IGameGridEventDetail`](interfaces/IGameGridEventDetail.html), [`GameGridDOMEvent`](types/GameGridDOMEvent.html) |
 | [Zoom](modules.html#zoom) | [`IZoomBounds`](interfaces/IZoomBounds.html), [`IZoomOptions`](interfaces/IZoomOptions.html), [`IRegionTile`](interfaces/IRegionTile.html), [`ZoomQuadrant`](types/ZoomQuadrant.html) |
 | [References](modules.html#references) | [`IRefsObject`](interfaces/IRefsObject.html), [`IRow`](interfaces/IRow.html) |
