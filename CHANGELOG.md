@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`rewind(steps?)` / `rewindTo(index)`**: step back through `state.moves` or jump to a history index (`0` = oldest). Emits `gamegrid:move:rewind` (`detail.steps`, `detail.index`) then `MOVE_LAND`. Optional `callbacks.onRewind`. Not rate-limited by `moveDebounce`.
 - **`setCell([x, y], cell)`**: replace one logical matrix cell by reference. Data-only, same contract as `setMatrix` — does not render or refresh the DOM.
 - **`refreshCells(cell | cells)`**: write optional cell data and rebuild one or more cell nodes without wiping the grid. Accepts `{ coords, cell? }` or an array of those. Emits `gamegrid:cells:refreshed` with `detail.cells`.
 - README / TypeDoc notes for the `setCell` (data) → `refreshCells` (view) flow.
+
+### Fixed
+
+- **`state.moves` overflow dropped the newest coord** (`unshift` + `shift`). History is now oldest-first, capped by `rewindLimit` (oldest dropped first). Blocked attempts are not recorded. `setOptions({ rewindLimit })` trims an over-long trail.
 
 ## [1.1.1] - 2026-08-13
 

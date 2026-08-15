@@ -27,6 +27,20 @@ Browse the full API on the [**exports index**](modules.html):
 
 Movement and state use **`[x, y]`**: column (x), then row (y). The backing matrix is `matrix[row][col]` → `matrix[y][x]`.
 
+## Rewind
+
+`state.moves` is an oldest-first trail of landed `[x, y]` cells, including the current cell. `rewindLimit` (default `20`) caps its length; the oldest entry drops first. Blocked attempts are not recorded.
+
+```ts
+grid.moveDown();
+grid.moveRight();
+grid.rewind();      // back one step
+grid.rewind(2);     // back two steps (clamps to the oldest remaining)
+grid.rewindTo(0);   // jump to the oldest remaining index
+```
+
+`rewind` / `rewindTo` emit [`REWIND`](variables/gridEventsEnum.html) (`detail.steps`, `detail.index`) then [`MOVE_LAND`](variables/gridEventsEnum.html). They are not rate-limited by `moveDebounce`.
+
 ## Updating cells
 
 `setCell` writes `matrix[y][x]` only. Movement and `getCell` see the new `type` immediately; the DOM does not.

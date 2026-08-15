@@ -45,6 +45,11 @@ export const gridEventsEnum = {
   MOVE_DETTACH: 'gamegrid:move:dettach',
   /** Finished resolving block/collide boundary/wrap choreography; mirrors the **onLand** callback in {@link IOptions.callbacks}. */
   MOVE_LAND: 'gamegrid:move:land',
+  /**
+   * Dispatched from {@link GameGrid.rewind} / {@link GameGrid.rewindTo} after state updates and before {@link gridEventsEnum.MOVE_LAND}.
+   * Extra `detail` keys: `steps` — how many history entries were dropped; `index` — the landing {@link IState.moves} index.
+   */
+  REWIND: 'gamegrid:move:rewind',
 
   /** Aggregate finite-edge clamp fired after axis-specific {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}. */
   BOUNDARY: 'gamegrid:move:boundary',

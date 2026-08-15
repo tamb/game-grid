@@ -33,23 +33,41 @@ describe('Move methods', () => {
   test('move is added to moves', () => {
     renderedGrid.moveRight();
     renderedGrid.moveDown();
-    expect(renderedGrid.getState().moves?.length).toBe(3);
+    expect(renderedGrid.getState().moves).toEqual([
+      [1, 1],
+      [2, 1],
+      [2, 2],
+    ]);
   });
 
-  test('move length doesnt pass rewind limit', () => {
+  test('move history drops the oldest entry at rewindLimit', () => {
     const x = new GameGrid(
       {
         matrix,
         options: { rewindLimit: 2 },
         state: {
-          activeCoords: [1, 0],
+          activeCoords: [0, 0],
         },
       },
       document.getElementById('root')!,
     );
-    x.moveRight();
-    x.moveRight();
-    expect(x.getState().moves?.length).toBe(2);
+    x.moveDown();
+    x.moveDown();
+    expect(x.getState().moves).toEqual([
+      [0, 1],
+      [0, 2],
+    ]);
+    x.destroy();
+  });
+
+  test('blocked moves do not append history', () => {
+    renderedGrid.moveUp();
+    renderedGrid.moveRight();
+    expect(renderedGrid.getState().activeCoords).toEqual([1, 0]);
+    expect(renderedGrid.getState().moves).toEqual([
+      [1, 1],
+      [1, 0],
+    ]);
   });
 
   test('moveLeft moves left', () => {
