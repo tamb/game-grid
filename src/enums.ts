@@ -25,6 +25,11 @@ export const gridEventsEnum = {
   CREATED: 'gamegrid:grid:created',
   /** Dispatched from {@link GameGrid.destroy}; always fired even if the grid stayed headless or unmounted. */
   DESTROYED: 'gamegrid:grid:destroyed',
+  /**
+   * Dispatched after {@link GameGrid.refreshCells} writes optional cell data and patches those nodes.
+   * Extra `detail` keys: `cells` — the normalized `{ coords, cell }` list that was processed.
+   */
+  CELLS_REFRESHED: 'gamegrid:cells:refreshed',
 
   /** `onMove` already ran; precedes {@link GameGrid.setActiveCell} for keyboard/pointer navigation. */
   MOVE_LEFT: 'gamegrid:move:left',
