@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-08-16
+
 ### Added
 
 - **`rewind(steps?)` / `rewindTo(index)`**: step back through `state.moves` or jump to a history index (`0` = oldest). Emits `gamegrid:move:rewind` (`detail.steps`, `detail.index`) then `MOVE_LAND`. Optional `callbacks.onRewind`. Not rate-limited by `moveDebounce`.
@@ -85,7 +87,8 @@ Release candidate with zoom viewport API, toolchain modernization, and expanded 
 
 Last beta before the zoom and toolchain work above. See git history between `v1.0.0-beta.6` and `v1.0.0-rc.0` for incremental beta releases (beta.7–beta.16 on npm).
 
-[Unreleased]: https://github.com/tamb/game-grid/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/tamb/game-grid/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/tamb/game-grid/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/tamb/game-grid/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/tamb/game-grid/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/tamb/game-grid/compare/v1.0.0-rc.0...v1.0.0
