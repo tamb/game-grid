@@ -5,6 +5,10 @@ describe('GameGrid rendering', () => {
   let renderedGrid: GameGrid;
   let withClasses: GameGrid;
 
+  const stripInjectedStyles = (): void => {
+    document.head.querySelectorAll('style[data-gamegrid-styles]').forEach((el) => el.remove());
+  };
+
   beforeAll(() => {
     document.body.insertAdjacentHTML('afterbegin', '<div id="root"></div>');
     document.body.insertAdjacentHTML('afterbegin', '<div id="root2"></div>');
@@ -151,5 +155,25 @@ describe('GameGrid rendering', () => {
   test('move direction class is added to Grid', () => {
     renderedGrid.moveUp();
     expect(renderedGrid.refs.container?.classList.contains('gamegrid__direction--up')).toBeTruthy();
+  });
+
+  test('render injects stylesheet by default', () => {
+    stripInjectedStyles();
+    const grid = new GameGrid({ matrix }, document.getElementById('root3')!);
+    expect(document.head.querySelector('style[data-gamegrid-styles]')).toBeTruthy();
+    grid.destroy();
+  });
+
+  test('injectStyles: false skips stylesheet injection on render and refresh', () => {
+    stripInjectedStyles();
+    const grid = new GameGrid(
+      { matrix, options: { injectStyles: false } },
+      document.getElementById('root3')!,
+    );
+    expect(document.head.querySelector('style[data-gamegrid-styles]')).toBeNull();
+    grid.refresh();
+    expect(document.head.querySelector('style[data-gamegrid-styles]')).toBeNull();
+    expect(grid.refs.container?.classList.contains('gamegrid')).toBe(true);
+    grid.destroy();
   });
 });

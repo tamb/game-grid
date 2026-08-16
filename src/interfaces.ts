@@ -169,7 +169,7 @@ export interface IGameGrid {
   /**
    * Mount markup into `container`, wire keyboard/pointer handlers, and highlight the current active cell.
    *
-   * @remarks Clears/rebuilds refs for this mount. Prefer {@link GameGrid.refresh} after the first paint when rebuilding from the same host. Dispatches {@link gridEventsEnum.RENDERED} once the container is patched and listeners attach. Does **not** call {@link GameGrid.setActiveCell} — no move / collide / land / {@link ICell.eventTypes} events, and `currentDirection` is left as-is.
+   * @remarks Clears/rebuilds refs for this mount. Prefer {@link GameGrid.refresh} after the first paint when rebuilding from the same host. Dispatches {@link gridEventsEnum.RENDERED} once the container is patched and listeners attach. Does **not** call {@link GameGrid.setActiveCell} — no move / collide / land / {@link ICell.eventTypes} events, and `currentDirection` is left as-is. Skips stylesheet injection when {@link IOptions.injectStyles} is `false`.
    * @group View
    */
   render(container: HTMLElement): void;
@@ -178,7 +178,7 @@ export interface IGameGrid {
    * Tear down handlers, wipe `container`, rebuild rows/cells from {@link GameGrid.getMatrix}, reattach handlers.
    *
    * @throws When {@link IRefsObject.container} is missing (never rendered successfully).
-   * @remarks Does not dispatch {@link gridEventsEnum.RENDERED}; that event is emitted from {@link GameGrid.render}.
+   * @remarks Does not dispatch {@link gridEventsEnum.RENDERED}; that event is emitted from {@link GameGrid.render}. Honors {@link IOptions.injectStyles} the same way as {@link GameGrid.render}.
    * @group View
    */
   refresh(): void;
@@ -512,6 +512,13 @@ export interface IOptions {
 
   /** Appended to `.gamegrid__viewport` whenever zoom is active. */
   zoomViewportClasses?: string[];
+
+  /**
+   * When `true` (default), {@link GameGrid.render} and {@link GameGrid.refresh} inject bundled
+   * layout CSS into `document.head` once (guarded by `style[data-gamegrid-styles]`).
+   * Set `false` to skip injection and style `.gamegrid` yourself.
+   */
+  injectStyles?: boolean;
 
   /** Cell `type` values that cannot be entered; movement snaps back to the previous cell. */
   blockOnType?: string[];
