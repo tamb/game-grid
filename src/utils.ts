@@ -32,6 +32,12 @@ export function renderAttributes(el: HTMLElement, tuples: [string, string][]): v
  * @param el - Candidate cell {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement | HTMLElement}.
  * @returns `[x,y]` tuple or `undefined` when attribute missing or invalid.
  *
+ * @example
+ * ```ts
+ * const coords = getCoordsFromElement(cellEl);
+ * if (coords) grid.setActiveCell(coords[0], coords[1]);
+ * ```
+ *
  * @category DOM helpers
  */
 export function getCoordsFromElement(el: HTMLElement): [number, number] | undefined {
@@ -82,6 +88,13 @@ const GAMEGRID_STYLE_ATTR = 'data-gamegrid-styles';
  *
  * @remarks Safe across multiple grids/instances — subsequent calls bail early.
  * {@link GameGrid} skips this when {@link IOptions.injectStyles} is `false`.
+ *
+ * @example
+ * ```ts
+ * // GameGrid.render calls this when injectStyles is true.
+ * // Call it yourself only if you opted out and still want the bundled CSS.
+ * insertStyles();
+ * ```
  *
  * @category DOM helpers
  */
