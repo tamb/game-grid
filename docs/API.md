@@ -23,6 +23,21 @@ Browse the full API on the [**exports index**](modules.html):
 | [Inputs](modules.html#inputs) | [`keycodeEnum`](enums/keycodeEnum.html) |
 | [Presentation](modules.html#presentation) | [`classesEnum`](enums/classesEnum.html), [`directionClassEnum`](variables/directionClassEnum.html) |
 
+## Instance jobs
+
+[`GameGrid`](classes/GameGrid.html) / [`IGameGrid`](interfaces/IGameGrid.html) methods stay **flat on the instance**. TypeDoc groups them by **job** (not DOM vs data):
+
+| Job | What it does | Members |
+| --- | --- | --- |
+| [Matrix](classes/GameGrid.html#matrix) | Logical cells. Writes do not paint. | `getMatrix`, `setMatrix`, `getCell`, `setCell`, `getAllCellsByType`, `getActiveCell`, `getPreviousCell` |
+| [Movement](classes/GameGrid.html#movement) | Focus and history. Updates state and events; highlights when mounted. | `setActiveCell`, `moveUp` / `moveRight` / `moveDown` / `moveLeft`, `rewind`, `rewindTo` |
+| [View](classes/GameGrid.html#view) | Optional markup. Omit `render` for headless use. | `refs`, `render`, `refresh`, `refreshCells`, `destroy` |
+| [State](classes/GameGrid.html#state) | Authoritative [`IState`](interfaces/IState.html). Middleware, no grid `CustomEvent`s. | `getState`, `setStateSync` |
+| [Options](classes/GameGrid.html#options) | Runtime toggles. Does not swap the matrix or re-render. | `options`, `getOptions`, `setOptions` |
+| [Zoom](classes/GameGrid.html#zoom) | Viewport window and region tiles. | `getZoom`, `setZoom`, `clearZoom`, `getZoomAround`, `getQuadrantZoom`, `getFractionZoom`, `zoomAround`, `zoomQuadrant`, `zoomFraction`, `getRegionAt`, `getActiveRegion` |
+
+`setCell` / `setMatrix` write the matrix only. `refreshCells` / `refresh` / `render` paint. `refreshCells` also writes when you pass `cell`.
+
 ## Coordinates
 
 Movement and state use **`[x, y]`**: column (x), then row (y). The backing matrix is `matrix[row][col]` → `matrix[y][x]`.

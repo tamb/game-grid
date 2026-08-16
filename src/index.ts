@@ -86,8 +86,35 @@ export const gameGridEventsEnum = gridEventsEnum;
  *
  * @remarks
  * - Implements {@link IGameGrid}. Coordinates are **column-major** tuples `[x,y]` (`matrix[y][x]`).
+ * - Methods stay flat. Docs group them by **job**: Matrix, Movement, View, State, Options, Zoom — not DOM vs data.
+ * - {@link GameGrid.setCell} / {@link GameGrid.setMatrix} write the matrix only; {@link GameGrid.refreshCells} / {@link GameGrid.refresh} / {@link GameGrid.render} paint.
  * - DOM notification uses bubbling `CustomEvent`s; {@link IGameGridEventDetail} describes `detail`. Event names live on {@link gridEventsEnum}.
  *
+ * @groupDescription Matrix
+ * Logical grid data. {@link GameGrid.setCell} and {@link GameGrid.setMatrix} do not paint.
+ * Call a View method when mounted nodes should catch up. {@link GameGrid.getActiveCell} /
+ * {@link GameGrid.getPreviousCell} read matrix fields immediately and overlay `current` from refs.
+ *
+ * @groupDescription Movement
+ * Focus and history. Updates {@link IState}, fires callbacks and {@link gridEventsEnum} events,
+ * and highlights the active cell when rendered. Not a matrix write.
+ *
+ * @groupDescription View
+ * Mount, paint, and tear down markup. Optional — omit the constructor container and skip
+ * {@link GameGrid.render} for headless use. {@link GameGrid.refreshCells} also writes the matrix
+ * when `cell` is provided.
+ *
+ * @groupDescription State
+ * Authoritative {@link IState}. {@link GameGrid.setStateSync} runs middleware and does not emit
+ * grid `CustomEvent`s.
+ *
+ * @groupDescription Options
+ * Runtime behaviour toggles. {@link GameGrid.setOptions} does not swap the matrix or re-render.
+ *
+ * @groupDescription Zoom
+ * Viewport window and region tiles. Applying zoom rebuilds the visible window when mounted.
+ *
+ * @showGroups
  * @category Grid runtime
  *
  * @example Render + keyboard handlers

@@ -116,20 +116,61 @@ export interface IDefaultState {
 /**
  * Public contract implemented by {@link GameGrid}.
  *
- * @remarks For DOM events emitted by the grid (`CustomEvent`s), see {@link IGameGridEventDetail} and {@link gridEventsEnum}.
+ * @remarks
+ * Methods stay flat on the instance. Docs group them by **job** (not DOM vs data):
+ * **Matrix** (logical cells), **Movement** (focus and history), **View** (optional markup),
+ * **State**, **Options**, and **Zoom**.
  *
+ * {@link GameGrid.setCell} / {@link GameGrid.setMatrix} write the matrix only.
+ * {@link GameGrid.refreshCells} / {@link GameGrid.refresh} / {@link GameGrid.render} paint.
+ * Movement updates state and events; it highlights when mounted.
+ *
+ * For DOM events (`CustomEvent`s), see {@link IGameGridEventDetail} and {@link gridEventsEnum}.
+ *
+ * @groupDescription Matrix
+ * Logical grid data. {@link GameGrid.setCell} and {@link GameGrid.setMatrix} do not paint.
+ * Call a View method when mounted nodes should catch up. {@link GameGrid.getActiveCell} /
+ * {@link GameGrid.getPreviousCell} read matrix fields immediately and overlay `current` from refs.
+ *
+ * @groupDescription Movement
+ * Focus and history. Updates {@link IState}, fires callbacks and {@link gridEventsEnum} events,
+ * and highlights the active cell when rendered. Not a matrix write.
+ *
+ * @groupDescription View
+ * Mount, paint, and tear down markup. Optional — omit the constructor container and skip
+ * {@link GameGrid.render} for headless use. {@link GameGrid.refreshCells} also writes the matrix
+ * when `cell` is provided.
+ *
+ * @groupDescription State
+ * Authoritative {@link IState}. {@link GameGrid.setStateSync} runs middleware and does not emit
+ * grid `CustomEvent`s.
+ *
+ * @groupDescription Options
+ * Runtime behaviour toggles. {@link GameGrid.setOptions} does not swap the matrix or re-render.
+ *
+ * @groupDescription Zoom
+ * Viewport window and region tiles. Applying zoom rebuilds the visible window when mounted.
+ *
+ * @showGroups
  * @category Grid contract
  */
 export interface IGameGrid {
-  /** After {@link GameGrid.render}, hydrated rows/cells and `container`. Headless grids mirror `cells` onto the logical matrix until mount. */
+  /**
+   * After {@link GameGrid.render}, hydrated rows/cells and `container`. Headless grids mirror `cells` onto the logical matrix until mount.
+   * @group View
+   */
   refs: IRefsObject;
-  /** Runtime toggles: input, collisions, middleware, callbacks, styling. Merged from ctor defaults and {@link GameGrid.setOptions}. */
+  /**
+   * Runtime toggles: input, collisions, middleware, callbacks, styling. Merged from ctor defaults and {@link GameGrid.setOptions}.
+   * @group Options
+   */
   options: IOptions;
 
   /**
    * Mount markup into `container`, wire keyboard/pointer handlers, and highlight the current active cell.
    *
    * @remarks Clears/rebuilds refs for this mount. Prefer {@link GameGrid.refresh} after the first paint when rebuilding from the same host. Dispatches {@link gridEventsEnum.RENDERED} once the container is patched and listeners attach. Does **not** call {@link GameGrid.setActiveCell} — no move / collide / land / {@link ICell.eventTypes} events, and `currentDirection` is left as-is.
+   * @group View
    */
   render(container: HTMLElement): void;
 
@@ -138,6 +179,7 @@ export interface IGameGrid {
    *
    * @throws When {@link IRefsObject.container} is missing (never rendered successfully).
    * @remarks Does not dispatch {@link gridEventsEnum.RENDERED}; that event is emitted from {@link GameGrid.render}.
+   * @group View
    */
   refresh(): void;
 
@@ -146,6 +188,7 @@ export interface IGameGrid {
    *
    * @param cells - A single {@link ICellRefresh} or an array. `cell` is written with {@link GameGrid.setCell} when provided; omit it to re-render the existing matrix entry.
    * @remarks **Flow:** {@link GameGrid.setCell} is data-only (movement reads the new `type` immediately; DOM/`refs` stay stale). Call this afterward with `{ coords }` to paint those tiles, or pass `{ coords, cell }` to write and paint in one step. Headless grids update matrix data only. Off-screen cells under zoom stay `current: null`. Does not rebuild the whole grid — use {@link GameGrid.refresh} when dimensions or the zoom window change. Dispatches {@link gridEventsEnum.CELLS_REFRESHED} once with `detail.cells`.
+   * @group View
    */
   refreshCells(cells: ICellRefresh | ICellRefresh[]): void;
 
@@ -153,14 +196,19 @@ export interface IGameGrid {
    * Detach listeners when rendered and clear injected structure; resets `rendered` in state via {@link GameGrid.setStateSync}.
    *
    * @remarks Idempotent-friendly: always dispatches {@link gridEventsEnum.DESTROYED} whether or not DOM was present. Middleware `pre` / `post` run for the `rendered: false` patch.
+   * @group View
    */
   destroy(): void;
 
-  /** Snapshot merged {@link IOptions} — updates after {@link GameGrid.setOptions}. */
+  /**
+   * Snapshot merged {@link IOptions} — updates after {@link GameGrid.setOptions}.
+   * @group Options
+   */
   getOptions(): IOptions;
 
   /**
    * Cell at {@link IState.prevCoords}: matrix data (same source as {@link GameGrid.getCell}) plus mounted `current` / `coords` from refs when rendered.
+   * @group Matrix
    */
   getPreviousCell(): ICell;
 
@@ -168,6 +216,7 @@ export interface IGameGrid {
    * Cell at {@link IState.activeCoords}: matrix data (same source as {@link GameGrid.getCell}) plus mounted `current` / `coords` from refs when rendered.
    *
    * @remarks After {@link GameGrid.setCell}, `type` and other data fields match the matrix immediately. The painted node on `current` stays stale until {@link GameGrid.refreshCells} / {@link GameGrid.refresh}.
+   * @group Matrix
    */
   getActiveCell(): ICell;
 
@@ -175,27 +224,34 @@ export interface IGameGrid {
    * Move focus `(x,y)` when {@link IOptions.blockOnType}, {@link IOptions.collideOnType}, {@link IOptions.moveOnType}, and bounds/wrap rules allow.
    *
    * @remarks **Dispatch order (subset may apply):** {@link gridEventsEnum.MOVE_BLOCKED} if blocked; {@link gridEventsEnum.MOVE_COLLISION} when entering a collide-type cell; {@link gridEventsEnum.MOVE_DETTACH} when leaving a collide-type cell for a non-collide cell; {@link ICell.eventTypes} `onExit` then `onEnter` when the active cell changes; axis {@link gridEventsEnum.WRAP_X} / {@link gridEventsEnum.WRAP_Y} / {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}; aggregate {@link gridEventsEnum.WRAP} / {@link gridEventsEnum.BOUNDARY}; finally {@link gridEventsEnum.MOVE_LAND} (pairs with the `onLand` member of {@link IOptions.callbacks}) only when the active cell actually changes. {@link GameGrid.render} does not call this method.
+   * @group Movement
    */
   setActiveCell(x: number, y: number, direction?: string): void;
 
   /**
    * Accumulate every {@link ICell.type} matching `type` scanning row-major from {@link GameGrid.getMatrix}.
+   * @group Matrix
    */
   getAllCellsByType(type: string): ICell[];
 
-  /** Logical matrix backing the grid (`matrix[row][column]` ⇒ `matrix[y][x]`). */
+  /**
+   * Logical matrix backing the grid (`matrix[row][column]` ⇒ `matrix[y][x]`).
+   * @group Matrix
+   */
   getMatrix(): ICell[][];
 
   /**
    * Replace logical matrix reference; callers must {@link GameGrid.refresh} or {@link GameGrid.render} to reconcile DOM when mounted.
    *
    * @remarks Headless grids also alias {@link IRefsObject.cells} to the new matrix so {@link GameGrid.getActiveCell} stays in sync.
+   * @group Matrix
    */
   setMatrix(matrix: ICell[][]): void;
 
   /**
    * Logical cell from {@link GameGrid.getMatrix}: `matrix[coords[1]][coords[0]]` — raw matrix lookup (bounds unchecked).
    * @param coords - `[x, y]`.
+   * @group Matrix
    */
   getCell(coords: readonly [number, number] | number[]): ICell;
 
@@ -205,39 +261,51 @@ export interface IGameGrid {
    * @param coords - `[x, y]`.
    * @param cell - Stored by reference, same as {@link GameGrid.setMatrix}.
    * @remarks Bounds unchecked, matching {@link GameGrid.getCell}. Data-only: does not patch DOM, `refs`, or emit events. Movement / `blockOnType` read the new cell immediately. Call {@link GameGrid.refreshCells} with `{ coords }` (or `{ coords, cell }` instead of this method) to update mounted nodes; use {@link GameGrid.refresh} / {@link GameGrid.render} when the grid shape changes.
+   * @group Matrix
    */
   setCell(coords: readonly [number, number] | number[], cell: ICell): void;
 
-  /** Shallow-merge behaviours into {@link IGameGrid.options} without swapping the matrix snapshot or re-rendering. */
+  /**
+   * Shallow-merge behaviours into {@link IGameGrid.options} without swapping the matrix snapshot or re-rendering.
+   * @group Options
+   */
   setOptions(newOptions: IOptions): void;
 
-  /** Authoritative {@link IState} backing movement callbacks and renders. */
+  /**
+   * Authoritative {@link IState} backing movement callbacks and renders.
+   * @group State
+   */
   getState(): IState;
 
   /**
    * Apply partial state with {@link MiddlewareFn} **`pre`** (mutate patch) → merge → **`post`**.
    *
    * @remarks Middleware runs around the merge inside this call; does not emit grid `CustomEvent`s.
+   * @group State
    */
   setStateSync(obj: StatePatch): void;
 
   /**
    * Directional move: invokes the `onMove` member of {@link IOptions.callbacks} → dispatches {@link gridEventsEnum.MOVE_UP} → {@link GameGrid.setActiveCell}.
+   * @group Movement
    */
   moveUp(): void;
 
   /**
    * @remarks Dispatches {@link gridEventsEnum.MOVE_RIGHT} before {@link GameGrid.setActiveCell}.
+   * @group Movement
    */
   moveRight(): void;
 
   /**
    * @remarks Dispatches {@link gridEventsEnum.MOVE_DOWN} before {@link GameGrid.setActiveCell}.
+   * @group Movement
    */
   moveDown(): void;
 
   /**
    * @remarks Dispatches {@link gridEventsEnum.MOVE_LEFT} before {@link GameGrid.setActiveCell}.
+   * @group Movement
    */
   moveLeft(): void;
 
@@ -247,6 +315,7 @@ export interface IGameGrid {
    * @remarks No-op when there is no earlier position, or `steps` is not a positive finite number.
    * Extra steps clamp to the oldest remaining entry. Not rate-limited by {@link IOptions.moveDebounce}.
    * Dispatches {@link gridEventsEnum.REWIND} (with `detail.steps` / `detail.index`) then {@link gridEventsEnum.MOVE_LAND}.
+   * @group Movement
    */
   rewind(steps?: number): void;
 
@@ -255,36 +324,56 @@ export interface IGameGrid {
    *
    * @remarks No-op when `index` is not an integer in range, or it is already the current (last) entry.
    * Truncates history after the chosen index. Same events as {@link GameGrid.rewind}.
+   * @group Movement
    */
   rewindTo(index: number): void;
 
-  /** Current zoom bounds or `null` when no zoom is active. */
+  /**
+   * Current zoom bounds or `null` when no zoom is active.
+   * @group Zoom
+   */
   getZoom(): IZoomBounds | null;
 
   /**
    * Apply a zoom window in world coordinates.
    *
    * @remarks Clamps `activeCoords` into bounds when outside. Dispatches {@link gridEventsEnum.ZOOM_SET}.
+   * @group Zoom
    */
   setZoom(bounds: IZoomBounds, options?: IZoomOptions): void;
 
-  /** Clear the zoom window. Dispatches {@link gridEventsEnum.ZOOM_CLEARED}. */
+  /**
+   * Clear the zoom window. Dispatches {@link gridEventsEnum.ZOOM_CLEARED}.
+   * @group Zoom
+   */
   clearZoom(options?: IZoomOptions): void;
 
-  /** Compute zoom bounds around a center cell ± radii, clipped to the matrix. */
+  /**
+   * Compute zoom bounds around a center cell ± radii, clipped to the matrix.
+   * @group Zoom
+   */
   getZoomAround(
     center: readonly [number, number] | number[],
     radiusX: number,
     radiusY?: number,
   ): IZoomBounds;
 
-  /** Compute zoom bounds for a quadrant (`divisions === 2`). */
+  /**
+   * Compute zoom bounds for a quadrant (`divisions === 2`).
+   * @group Zoom
+   */
   getQuadrantZoom(quadrant: ZoomQuadrant): IZoomBounds;
 
-  /** Compute zoom bounds for a fraction tile (`divisions×divisions` grid). */
+  /**
+   * Compute zoom bounds for a fraction tile (`divisions×divisions` grid).
+   * @group Zoom
+   */
   getFractionZoom(divisions: number, tileX: number, tileY: number): IZoomBounds;
 
-  /** Compute bounds then {@link GameGrid.setZoom}. */
+  /**
+   * Compute bounds then {@link GameGrid.setZoom}.
+   * @group Zoom
+   */
   zoomAround(
     center: readonly [number, number] | number[],
     radiusX: number,
@@ -292,16 +381,28 @@ export interface IGameGrid {
     options?: IZoomOptions,
   ): void;
 
-  /** Compute quadrant bounds then {@link GameGrid.setZoom}. */
+  /**
+   * Compute quadrant bounds then {@link GameGrid.setZoom}.
+   * @group Zoom
+   */
   zoomQuadrant(quadrant: ZoomQuadrant, options?: IZoomOptions): void;
 
-  /** Compute fraction bounds then {@link GameGrid.setZoom}. */
+  /**
+   * Compute fraction bounds then {@link GameGrid.setZoom}.
+   * @group Zoom
+   */
   zoomFraction(divisions: number, tileX: number, tileY: number, options?: IZoomOptions): void;
 
-  /** Region tile for `coords`; `divisions` defaults to {@link IOptions.regionDivisions}. */
+  /**
+   * Region tile for `coords`; `divisions` defaults to {@link IOptions.regionDivisions}.
+   * @group Zoom
+   */
   getRegionAt(coords: readonly [number, number] | number[], divisions?: number): IRegionTile;
 
-  /** {@link IState.region} or computed from the active cell when region tracking is enabled. */
+  /**
+   * {@link IState.region} or computed from the active cell when region tracking is enabled.
+   * @group Zoom
+   */
   getActiveRegion(): IRegionTile | null;
 }
 
