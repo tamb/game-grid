@@ -31,31 +31,38 @@ export const gridEventsEnum = {
    */
   CELLS_REFRESHED: 'gamegrid:cells:refreshed',
 
-  /** `onMove` already ran; precedes {@link GameGrid.setActiveCell} for keyboard/pointer navigation. */
+  /** `onMove` already ran; precedes {@link GameGrid.setActiveCell} for keyboard/pointer navigation. Extra `detail` matches {@link IMoveEventDetail}. */
   MOVE_LEFT: 'gamegrid:move:left',
   MOVE_RIGHT: 'gamegrid:move:right',
   MOVE_UP: 'gamegrid:move:up',
   MOVE_DOWN: 'gamegrid:move:down',
 
-  /** Target rejected by {@link IOptions.blockOnType} or {@link IOptions.moveOnType} allow-list; coords roll back. */
+  /** Target rejected by {@link IOptions.blockOnType} or {@link IOptions.moveOnType} allow-list; coords roll back. Extra `detail` matches {@link IMoveEventDetail} (`blocked: true`; `to` is the rejected cell). */
   MOVE_BLOCKED: 'gamegrid:move:blocked',
-  /** Avatar entered an {@link IOptions.collideOnType} cell. Fires only when the active cell actually changes. */
+  /** Avatar entered an {@link IOptions.collideOnType} cell. Fires only when the active cell actually changes. Extra `detail` matches {@link IMoveEventDetail}. */
   MOVE_COLLISION: 'gamegrid:move:collide',
   /**
    * Avatar left a collide-type cell ({@link IOptions.collideOnType}) for a non-collide cell.
    * Does not fire when staying put (blocked / boundary) or when moving collide → collide.
+   * Extra `detail` matches {@link IMoveEventDetail}.
    */
   MOVE_DETTACH: 'gamegrid:move:dettach',
   /**
    * Finished resolving block/collide boundary/wrap choreography; mirrors the **onLand** callback in {@link IOptions.callbacks}.
    * Fires only when the active cell actually changes — not on blocked stays, edge bumps, or {@link GameGrid.render}.
+   * Extra `detail` matches {@link IMoveEventDetail}.
    */
   MOVE_LAND: 'gamegrid:move:land',
   /**
    * Dispatched from {@link GameGrid.rewind} / {@link GameGrid.rewindTo} after state updates and before {@link gridEventsEnum.MOVE_LAND}.
-   * Extra `detail` keys: `steps` — how many history entries were dropped; `index` — the landing {@link IState.moves} index.
+   * Extra `detail` keys: `steps` — how many history entries were dropped; `index` — the landing {@link IState.moves} index; plus {@link IMoveEventDetail}.
    */
   REWIND: 'gamegrid:move:rewind',
+  /**
+   * Dispatched from {@link GameGrid.unrewind} / {@link GameGrid.unrewindTo} after state updates and before {@link gridEventsEnum.MOVE_LAND}.
+   * Extra `detail` keys: `steps` — how many future entries were restored; `index` — the landing {@link IState.moves} index; plus {@link IMoveEventDetail}.
+   */
+  UNREWIND: 'gamegrid:move:unrewind',
 
   /** Aggregate finite-edge clamp fired after axis-specific {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}. */
   BOUNDARY: 'gamegrid:move:boundary',
@@ -134,6 +141,7 @@ export const INITIAL_STATE: IState = {
   prevCoords: [0, 0],
   rendered: false,
   moves: [],
+  future: [],
   currentDirection: directionEnum.DOWN,
   zoom: null,
   region: null,

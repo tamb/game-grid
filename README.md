@@ -168,6 +168,7 @@ export interface IOptions {
     onZoomExit?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onRegionChange?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onRewind?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onUnrewind?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
 
   /** Cell `type` values you cannot step onto; you stay on the previous cell. */
@@ -319,6 +320,8 @@ export interface IState {
   prevCoords: number[];
   /** Oldest-first landed `[x, y]` trail, including the current cell. Capped by `rewindLimit`. */
   moves: number[][];
+  /** Oldest-first coords undone by `rewind` / `rewindTo`. Replayed by `unrewind` / `unrewindTo`. */
+  future: number[][];
   rendered?: boolean;
   currentDirection?: string;
   zoom: IZoomBounds | null;
@@ -338,6 +341,7 @@ export const INITIAL_STATE: IState = {
   prevCoords: [0, 0],
   rendered: false,
   moves: [],
+  future: [],
   currentDirection: directionEnum.DOWN,
   zoom: null,
   region: null,
@@ -403,10 +407,16 @@ export interface IGameGrid {
   moveRight(): void;
   moveDown(): void;
   moveLeft(): void;
-  /** Step back `steps` entries in `state.moves` (default 1). Extra steps clamp to the oldest. */
+  /** Walk to one `[x, y]` or along an explicit path through setActiveCell. Stops on a blocked / missed step. */
+  moveTo(coordsOrPath: readonly [number, number] | number[] | Array<readonly [number, number] | number[]>): void;
+  /** Step back `steps` entries in `state.moves` (default 1). Extra steps clamp to the oldest. Dropped coords go to `state.future`. */
   rewind(steps?: number): void;
-  /** Jump to `index` in `state.moves` (`0` = oldest). Truncates later entries. */
+  /** Jump to `index` in `state.moves` (`0` = oldest). Later entries move to `state.future`. */
   rewindTo(index: number): void;
+  /** Replay `steps` entries from `state.future` (default 1). Redo after rewind. */
+  unrewind(steps?: number): void;
+  /** Jump forward to `index` in the combined trail (`moves` then `future`). */
+  unrewindTo(index: number): void;
 
   getZoom(): IZoomBounds | null;
   setZoom(bounds: IZoomBounds, options?: IZoomOptions): void;
@@ -424,11 +434,26 @@ export interface IGameGrid {
 
 The **`GameGrid`** class implements **`IGameGrid`**. The mounted root element is **`refs.container`** after **`render`**; it stays **`null`** on headless constructions until **`render`** runs.
 
-**`rewind(steps?)`** and **`rewindTo(index)`** walk **`state.moves`**, an oldest-first trail of landed cells (including the current one) capped by **`rewindLimit`**. Blocked attempts are not recorded. Extra `rewind` steps clamp to the oldest remaining entry. These calls emit **`gamegrid:move:rewind`** then **`MOVE_LAND`**, and they ignore **`moveDebounce`**.
+**`rewind(steps?)`** and **`rewindTo(index)`** walk **`state.moves`**, an oldest-first trail of landed cells (including the current one) capped by **`rewindLimit`**. Blocked attempts are not recorded. Extra `rewind` steps clamp to the oldest remaining entry. Dropped coords go onto **`state.future`**. These calls emit **`gamegrid:move:rewind`** then **`MOVE_LAND`**, and they ignore **`moveDebounce`**.
+
+**`unrewind(steps?)`** and **`unrewindTo(index)`** replay **`state.future`**. A new landed cell (move, click, or **`moveTo`**) clears the forward stack; a blocked stay does not. Same debounce exception. Emits **`gamegrid:move:unrewind`** then **`MOVE_LAND`**.
+
+**`moveTo(coords)`** walks one cell or an explicit list of **`[x, y]`** steps through **`setActiveCell`** (block / collide / wrap / zoom-edge). It does not pathfind. The walk stops when a step does not land on the requested cell.
+
+```ts
+grid.moveTo([2, 1]);
+grid.moveTo([
+  [0, 1],
+  [0, 2],
+  [1, 2],
+]);
+grid.rewind();
+grid.unrewind();
+```
 
 ## Events
 
-Events are bubbling **`CustomEvent`s**. Their **`detail`** objects implement **`IGameGridEventDetail`**: at minimum `{ gameGridInstance: IGameGrid }` (plus any extra keys you pass if you call **`fireGameGridEvent`** yourself). For typing listeners, use **`GameGridDOMEvent`** (`CustomEvent<IGameGridEventDetail>`).
+Events are bubbling **`CustomEvent`s**. Their **`detail`** objects implement **`IGameGridEventDetail`**: at minimum `{ gameGridInstance: IGameGrid }` (plus any extra keys you pass if you call **`fireGameGridEvent`** yourself). **`MOVE_*`**, wrap, and boundary events also include **`IMoveEventDetail`**: **`from`**, **`to`** (candidate cell after wrap/clamp), **`direction`**, and **`blocked`**. For typing listeners, use **`GameGridDOMEvent`** (`CustomEvent<IGameGridEventDetail>`).
 
 By default the grid dispatches on **`window`**. Set **`options.eventTarget`** (for example a dedicated **`EventTarget`**) so multiple grids do not all share the global bus.
 
@@ -446,12 +471,14 @@ export const gridEventsEnum = {
   CELLS_REFRESHED: "gamegrid:cells:refreshed",
 
   // Keyboard / pointer path: onMove already ran; these fire before setActiveCell.
+  // Extra detail: from, to, direction, blocked (IMoveEventDetail).
   MOVE_LEFT: "gamegrid:move:left",
   MOVE_RIGHT: "gamegrid:move:right",
   MOVE_UP: "gamegrid:move:up",
   MOVE_DOWN: "gamegrid:move:down",
 
   // Target rejected by blockOnType or moveOnType allow-list; coords roll back.
+  // blocked: true; to is the rejected cell.
   MOVE_BLOCKED: "gamegrid:move:blocked",
   // Entered a collideOnType cell. Only when the active cell actually changes.
   MOVE_COLLISION: "gamegrid:move:collide",
@@ -460,8 +487,10 @@ export const gridEventsEnum = {
   // Finished block/collide/boundary/wrap resolution; mirrors callbacks.onLand.
   // Only when the active cell actually changes — not on blocked stays, edge bumps, or render().
   MOVE_LAND: "gamegrid:move:land",
-  // After rewind() / rewindTo(); detail.steps + detail.index; then MOVE_LAND.
+  // After rewind() / rewindTo(); detail.steps + detail.index + move detail; then MOVE_LAND.
   REWIND: "gamegrid:move:rewind",
+  // After unrewind() / unrewindTo(); detail.steps + detail.index + move detail; then MOVE_LAND.
+  UNREWIND: "gamegrid:move:unrewind",
 
   // Aggregate finite-edge clamp — axis BOUNDARY_X / BOUNDARY_Y first when relevant.
   BOUNDARY: "gamegrid:move:boundary",
@@ -564,7 +593,7 @@ With **`slideZoomOnEdge: true`**, the library auto-advances to the adjacent regi
 
 Besides the **`default`** **`GameGrid`**, the package re-exports:
 
-- Types: **`IConfig`**, **`IOptions`**, **`IState`**, **`IGameGrid`**, **`IGameGridEventDetail`**, **`GameGridDOMEvent`**, **`ICell`**, **`ICellContext`**, **`IRefsObject`**, **`IRow`**, **`IDefaultState`**, **`IZoomBounds`**, **`IZoomOptions`**, **`IRegionTile`**, **`ZoomQuadrant`**, **`MiddlewareFn`**, **`StatePatch`**, and deprecated **`IRefs`**
+- Types: **`IConfig`**, **`IOptions`**, **`IState`**, **`IGameGrid`**, **`IGameGridEventDetail`**, **`IMoveEventDetail`**, **`GameGridDOMEvent`**, **`ICell`**, **`ICellContext`**, **`IRefsObject`**, **`IRow`**, **`IDefaultState`**, **`IZoomBounds`**, **`IZoomOptions`**, **`IRegionTile`**, **`ZoomQuadrant`**, **`MiddlewareFn`**, **`StatePatch`**, and deprecated **`IRefs`**
 - Values: **`gridEventsEnum`**, **`gameGridEventsEnum`**, **`cellTypeEnum`**, **`classesEnum`**, **`directionEnum`**, **`directionClassEnum`**, **`INITIAL_STATE`**, **`keycodeEnum`**
 
 **`cellTypeEnum`** values are constants on an object (**not** an `enum`). **`classesEnum`** and **`directionEnum`** are TypeScript enums. Example:
