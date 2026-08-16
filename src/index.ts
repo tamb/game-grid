@@ -129,11 +129,17 @@ export const gameGridEventsEnum = gridEventsEnum;
  * ```
  */
 class GameGrid implements IGameGrid {
-  /** @inheritDoc IGameGrid.options */
+  /**
+   * @inheritDoc IGameGrid.options
+   * @group Options
+   */
   public options: IOptions;
   private matrix: ICell[][];
   private state: IState = INITIAL_STATE;
-  /** @inheritDoc IGameGrid.refs */
+  /**
+   * @inheritDoc IGameGrid.refs
+   * @group View
+   */
   public refs: IRefsObject;
   private appliedZoomViewportClasses: string[] = [];
   private slideRenderBounds: { from: IZoomBounds; to: IZoomBounds } | null = null;
@@ -201,7 +207,10 @@ class GameGrid implements IGameGrid {
     const newState: IState = { ...this.state, ...obj };
     this.state = newState;
   }
-  /** @inheritDoc IGameGrid.setStateSync */
+  /**
+   * @inheritDoc IGameGrid.setStateSync
+   * @group State
+   */
   public setStateSync(obj: StatePatch): void {
     if (this.options.middlewares?.pre?.length) {
       for (const fn of this.options.middlewares.pre) {
@@ -215,7 +224,10 @@ class GameGrid implements IGameGrid {
       }
     }
   }
-  /** @inheritDoc IGameGrid.getState */
+  /**
+   * @inheritDoc IGameGrid.getState
+   * @group State
+   */
   public getState(): IState {
     return this.state;
   }
@@ -230,7 +242,10 @@ class GameGrid implements IGameGrid {
     };
   }
 
-  /** @inheritDoc IGameGrid.refresh */
+  /**
+   * @inheritDoc IGameGrid.refresh
+   * @group View
+   */
   public refresh(): void {
     const container = this.refs.container;
     if (!container) {
@@ -240,7 +255,10 @@ class GameGrid implements IGameGrid {
     this.syncActiveDom(this.state.currentDirection);
   }
 
-  /** @inheritDoc IGameGrid.refreshCells */
+  /**
+   * @inheritDoc IGameGrid.refreshCells
+   * @group View
+   */
   public refreshCells(cells: ICellRefresh | ICellRefresh[]): void {
     const items = Array.isArray(cells) ? cells : [cells];
     const refreshed: ICellRefresh[] = [];
@@ -346,7 +364,10 @@ class GameGrid implements IGameGrid {
     this.attachHandlers();
   }
 
-  /** @inheritDoc IGameGrid.render */
+  /**
+   * @inheritDoc IGameGrid.render
+   * @group View
+   */
   public render(container: HTMLElement): void {
     insertStyles();
     this.refs.container = container;
@@ -570,7 +591,10 @@ class GameGrid implements IGameGrid {
     return cell;
   }
 
-  /** @inheritDoc IGameGrid.setActiveCell */
+  /**
+   * @inheritDoc IGameGrid.setActiveCell
+   * @group Movement
+   */
   public setActiveCell(x: number, y: number, direction?: string): void {
     const requestedX = x;
     const requestedY = y;
@@ -748,12 +772,18 @@ class GameGrid implements IGameGrid {
     }
   };
 
-  /** @inheritDoc IGameGrid.getActiveCell */
+  /**
+   * @inheritDoc IGameGrid.getActiveCell
+   * @group Matrix
+   */
   public getActiveCell(): ICell {
     return this.cellAt(this.state.activeCoords);
   }
 
-  /** @inheritDoc IGameGrid.getPreviousCell */
+  /**
+   * @inheritDoc IGameGrid.getPreviousCell
+   * @group Matrix
+   */
   public getPreviousCell(): ICell {
     return this.cellAt(this.state.prevCoords);
   }
@@ -778,21 +808,30 @@ class GameGrid implements IGameGrid {
     };
   }
 
-  /** @inheritDoc IGameGrid.getCell */
+  /**
+   * @inheritDoc IGameGrid.getCell
+   * @group Matrix
+   */
   public getCell(coords: readonly [number, number] | number[]): ICell {
     const x = coords[0];
     const y = coords[1];
     return this.matrix[y][x];
   }
 
-  /** @inheritDoc IGameGrid.setCell */
+  /**
+   * @inheritDoc IGameGrid.setCell
+   * @group Matrix
+   */
   public setCell(coords: readonly [number, number] | number[], cell: ICell): void {
     const x = coords[0];
     const y = coords[1];
     this.matrix[y][x] = cell;
   }
 
-  /** @inheritDoc IGameGrid.getAllCellsByType */
+  /**
+   * @inheritDoc IGameGrid.getAllCellsByType
+   * @group Matrix
+   */
   public getAllCellsByType(type: string): ICell[] {
     const cells: ICell[] = [];
     this.matrix.forEach((row: ICell[], rI: number) => {
@@ -845,7 +884,10 @@ class GameGrid implements IGameGrid {
     return true;
   }
 
-  /** @inheritDoc IGameGrid.moveUp */
+  /**
+   * @inheritDoc IGameGrid.moveUp
+   * @group Movement
+   */
   public moveUp(): void {
     if (!this.canAcceptMove(directionEnum.UP)) {
       return;
@@ -860,7 +902,10 @@ class GameGrid implements IGameGrid {
     );
   }
 
-  /** @inheritDoc IGameGrid.moveRight */
+  /**
+   * @inheritDoc IGameGrid.moveRight
+   * @group Movement
+   */
   public moveRight(): void {
     if (!this.canAcceptMove(directionEnum.RIGHT)) {
       return;
@@ -875,7 +920,10 @@ class GameGrid implements IGameGrid {
     );
   }
 
-  /** @inheritDoc IGameGrid.moveDown */
+  /**
+   * @inheritDoc IGameGrid.moveDown
+   * @group Movement
+   */
   public moveDown(): void {
     if (!this.canAcceptMove(directionEnum.DOWN)) {
       return;
@@ -890,7 +938,10 @@ class GameGrid implements IGameGrid {
     );
   }
 
-  /** @inheritDoc IGameGrid.moveLeft */
+  /**
+   * @inheritDoc IGameGrid.moveLeft
+   * @group Movement
+   */
   public moveLeft(): void {
     if (!this.canAcceptMove(directionEnum.LEFT)) {
       return;
@@ -905,7 +956,10 @@ class GameGrid implements IGameGrid {
     );
   }
 
-  /** @inheritDoc IGameGrid.rewind */
+  /**
+   * @inheritDoc IGameGrid.rewind
+   * @group Movement
+   */
   public rewind(steps = 1): void {
     if (!Number.isFinite(steps) || steps <= 0) {
       return;
@@ -918,7 +972,10 @@ class GameGrid implements IGameGrid {
     this.applyRewindToIndex(moves.length - 1 - clampedSteps, clampedSteps);
   }
 
-  /** @inheritDoc IGameGrid.rewindTo */
+  /**
+   * @inheritDoc IGameGrid.rewindTo
+   * @group Movement
+   */
   public rewindTo(index: number): void {
     if (!Number.isInteger(index)) {
       return;
@@ -1275,11 +1332,17 @@ class GameGrid implements IGameGrid {
     this.setActiveCell(coords[0], coords[1]);
   };
 
-  /** @inheritDoc IGameGrid.getOptions */
+  /**
+   * @inheritDoc IGameGrid.getOptions
+   * @group Options
+   */
   public getOptions(): IOptions {
     return this.options;
   }
-  /** @inheritDoc IGameGrid.setOptions */
+  /**
+   * @inheritDoc IGameGrid.setOptions
+   * @group Options
+   */
   public setOptions(newOptions: IOptions): void {
     this.options = { ...this.options, ...newOptions };
     if (newOptions.rewindLimit !== undefined) {
@@ -1289,7 +1352,10 @@ class GameGrid implements IGameGrid {
       }
     }
   }
-  /** @inheritDoc IGameGrid.destroy */
+  /**
+   * @inheritDoc IGameGrid.destroy
+   * @group View
+   */
   public destroy(): void {
     const rendered = this.state.rendered;
     const container = this.refs.container;
@@ -1307,7 +1373,10 @@ class GameGrid implements IGameGrid {
     this.emit(gridEventsEnum.DESTROYED);
   }
 
-  /** @inheritDoc IGameGrid.setMatrix */
+  /**
+   * @inheritDoc IGameGrid.setMatrix
+   * @group Matrix
+   */
   public setMatrix(m: ICell[][]): void {
     this.matrix = m;
     if (!this.state.rendered) {
@@ -1315,17 +1384,26 @@ class GameGrid implements IGameGrid {
     }
   }
 
-  /** @inheritDoc IGameGrid.getMatrix */
+  /**
+   * @inheritDoc IGameGrid.getMatrix
+   * @group Matrix
+   */
   public getMatrix(): ICell[][] {
     return this.matrix;
   }
 
-  /** @inheritDoc IGameGrid.getZoom */
+  /**
+   * @inheritDoc IGameGrid.getZoom
+   * @group Zoom
+   */
   public getZoom(): IZoomBounds | null {
     return this.state.zoom;
   }
 
-  /** @inheritDoc IGameGrid.setZoom */
+  /**
+   * @inheritDoc IGameGrid.setZoom
+   * @group Zoom
+   */
   public setZoom(bounds: IZoomBounds, options?: IZoomOptions): void {
     const fromZoom = this.state.zoom;
     const normalized = normalizeZoomBounds(bounds, this.matrix);
@@ -1381,7 +1459,10 @@ class GameGrid implements IGameGrid {
     this.syncActiveDom(this.state.currentDirection);
   }
 
-  /** @inheritDoc IGameGrid.clearZoom */
+  /**
+   * @inheritDoc IGameGrid.clearZoom
+   * @group Zoom
+   */
   public clearZoom(options?: IZoomOptions): void {
     const fromZoom = this.state.zoom;
     const animate = resolveAnimate(options, this.options.animateZoom);
@@ -1427,7 +1508,10 @@ class GameGrid implements IGameGrid {
     this.options.callbacks?.onZoomCleared?.(this, this.getState());
   }
 
-  /** @inheritDoc IGameGrid.getZoomAround */
+  /**
+   * @inheritDoc IGameGrid.getZoomAround
+   * @group Zoom
+   */
   public getZoomAround(
     center: readonly [number, number] | number[],
     radiusX: number,
@@ -1436,17 +1520,26 @@ class GameGrid implements IGameGrid {
     return computeZoomAround(this.matrix, center, radiusX, radiusY);
   }
 
-  /** @inheritDoc IGameGrid.getQuadrantZoom */
+  /**
+   * @inheritDoc IGameGrid.getQuadrantZoom
+   * @group Zoom
+   */
   public getQuadrantZoom(quadrant: ZoomQuadrant): IZoomBounds {
     return getQuadrantZoom(this.matrix, quadrant);
   }
 
-  /** @inheritDoc IGameGrid.getFractionZoom */
+  /**
+   * @inheritDoc IGameGrid.getFractionZoom
+   * @group Zoom
+   */
   public getFractionZoom(divisions: number, tileX: number, tileY: number): IZoomBounds {
     return getFractionZoom(this.matrix, divisions, tileX, tileY);
   }
 
-  /** @inheritDoc IGameGrid.zoomAround */
+  /**
+   * @inheritDoc IGameGrid.zoomAround
+   * @group Zoom
+   */
   public zoomAround(
     center: readonly [number, number] | number[],
     radiusX: number,
@@ -1456,12 +1549,18 @@ class GameGrid implements IGameGrid {
     this.setZoom(this.getZoomAround(center, radiusX, radiusY), options);
   }
 
-  /** @inheritDoc IGameGrid.zoomQuadrant */
+  /**
+   * @inheritDoc IGameGrid.zoomQuadrant
+   * @group Zoom
+   */
   public zoomQuadrant(quadrant: ZoomQuadrant, options?: IZoomOptions): void {
     this.setZoom(this.getQuadrantZoom(quadrant), options);
   }
 
-  /** @inheritDoc IGameGrid.zoomFraction */
+  /**
+   * @inheritDoc IGameGrid.zoomFraction
+   * @group Zoom
+   */
   public zoomFraction(
     divisions: number,
     tileX: number,
@@ -1471,7 +1570,10 @@ class GameGrid implements IGameGrid {
     this.setZoom(this.getFractionZoom(divisions, tileX, tileY), options);
   }
 
-  /** @inheritDoc IGameGrid.getRegionAt */
+  /**
+   * @inheritDoc IGameGrid.getRegionAt
+   * @group Zoom
+   */
   public getRegionAt(
     coords: readonly [number, number] | number[],
     divisions?: number,
@@ -1483,7 +1585,10 @@ class GameGrid implements IGameGrid {
     return computeRegionAt(this.matrix, coords, resolvedDivisions);
   }
 
-  /** @inheritDoc IGameGrid.getActiveRegion */
+  /**
+   * @inheritDoc IGameGrid.getActiveRegion
+   * @group Zoom
+   */
   public getActiveRegion(): IRegionTile | null {
     if (this.state.region) {
       return this.state.region;

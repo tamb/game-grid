@@ -33,7 +33,7 @@ Browse the full API on the [**exports index**](modules.html):
 | [Movement](classes/GameGrid.html#movement) | Focus and history. Updates state and events; highlights when mounted. | `setActiveCell`, `moveUp` / `moveRight` / `moveDown` / `moveLeft`, `rewind`, `rewindTo` |
 | [View](classes/GameGrid.html#view) | Optional markup. Omit `render` for headless use. | `refs`, `render`, `refresh`, `refreshCells`, `destroy` |
 | [State](classes/GameGrid.html#state) | Authoritative [`IState`](interfaces/IState.html). Middleware, no grid `CustomEvent`s. | `getState`, `setStateSync` |
-| [Options](classes/GameGrid.html#options) | Runtime toggles. Does not swap the matrix or re-render. | `options`, `getOptions`, `setOptions` |
+| [Options](classes/GameGrid.html#options-1) | Runtime toggles. Does not swap the matrix or re-render. | `options`, `getOptions`, `setOptions` |
 | [Zoom](classes/GameGrid.html#zoom) | Viewport window and region tiles. | `getZoom`, `setZoom`, `clearZoom`, `getZoomAround`, `getQuadrantZoom`, `getFractionZoom`, `zoomAround`, `zoomQuadrant`, `zoomFraction`, `getRegionAt`, `getActiveRegion` |
 
 `setCell` / `setMatrix` write the matrix only. `refreshCells` / `refresh` / `render` paint. `refreshCells` also writes when you pass `cell`.
