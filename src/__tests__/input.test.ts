@@ -104,6 +104,19 @@ describe('keyboard and pointer input', () => {
     rendered.destroy();
   });
 
+  test('clicking the container or a row is a no-op', () => {
+    expect(() => {
+      container.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }).not.toThrow();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+
+    const row = container.querySelector('[data-gamegrid-row-index="1"]') as HTMLElement;
+    expect(() => {
+      row.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }).not.toThrow();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+  });
+
   test('clicking is ignored when clickable is false', () => {
     grid.setOptions({ clickable: false });
     const target = container.querySelector('[data-gamegrid-coords="2,2"]') as HTMLElement;

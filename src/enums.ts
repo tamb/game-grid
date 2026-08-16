@@ -39,11 +39,17 @@ export const gridEventsEnum = {
 
   /** Target rejected by {@link IOptions.blockOnType} or {@link IOptions.moveOnType} allow-list; coords roll back. */
   MOVE_BLOCKED: 'gamegrid:move:blocked',
-  /** Avatar entered an {@link IOptions.collideOnType} cell (movement may still succeed). */
+  /** Avatar entered an {@link IOptions.collideOnType} cell. Fires only when the active cell actually changes. */
   MOVE_COLLISION: 'gamegrid:move:collide',
-  /** Avatar left a collide-type cell ({@link IOptions.collideOnType}) from the square it occupied before this move attempt. */
+  /**
+   * Avatar left a collide-type cell ({@link IOptions.collideOnType}) for a non-collide cell.
+   * Does not fire when staying put (blocked / boundary) or when moving collide → collide.
+   */
   MOVE_DETTACH: 'gamegrid:move:dettach',
-  /** Finished resolving block/collide boundary/wrap choreography; mirrors the **onLand** callback in {@link IOptions.callbacks}. */
+  /**
+   * Finished resolving block/collide boundary/wrap choreography; mirrors the **onLand** callback in {@link IOptions.callbacks}.
+   * Fires only when the active cell actually changes — not on blocked stays, edge bumps, or {@link GameGrid.render}.
+   */
   MOVE_LAND: 'gamegrid:move:land',
   /**
    * Dispatched from {@link GameGrid.rewind} / {@link GameGrid.rewindTo} after state updates and before {@link gridEventsEnum.MOVE_LAND}.

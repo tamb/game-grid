@@ -127,9 +127,9 @@ export interface IGameGrid {
   options: IOptions;
 
   /**
-   * Mount markup into `container`, wire keyboard/pointer handlers, activate initial cell.
+   * Mount markup into `container`, wire keyboard/pointer handlers, and highlight the current active cell.
    *
-   * @remarks Clears/rebuilds refs for this mount. Prefer {@link GameGrid.refresh} after the first paint when rebuilding from the same host. Dispatches {@link gridEventsEnum.RENDERED} once the container is patched and listeners attach.
+   * @remarks Clears/rebuilds refs for this mount. Prefer {@link GameGrid.refresh} after the first paint when rebuilding from the same host. Dispatches {@link gridEventsEnum.RENDERED} once the container is patched and listeners attach. Does **not** call {@link GameGrid.setActiveCell} — no move / collide / land / {@link ICell.eventTypes} events, and `currentDirection` is left as-is.
    */
   render(container: HTMLElement): void;
 
@@ -150,25 +150,31 @@ export interface IGameGrid {
   refreshCells(cells: ICellRefresh | ICellRefresh[]): void;
 
   /**
-   * Detach listeners when rendered and clear injected structure; resets `rendered` in state.
+   * Detach listeners when rendered and clear injected structure; resets `rendered` in state via {@link GameGrid.setStateSync}.
    *
-   * @remarks Idempotent-friendly: always dispatches {@link gridEventsEnum.DESTROYED} whether or not DOM was present.
+   * @remarks Idempotent-friendly: always dispatches {@link gridEventsEnum.DESTROYED} whether or not DOM was present. Middleware `pre` / `post` run for the `rendered: false` patch.
    */
   destroy(): void;
 
   /** Snapshot merged {@link IOptions} — updates after {@link GameGrid.setOptions}. */
   getOptions(): IOptions;
 
-  /** Shallow-cloned cell snapshot for {@link IState.prevCoords}: `refs.cells[prevCoords[1]][prevCoords[0]]` after {@link GameGrid.render}. */
+  /**
+   * Cell at {@link IState.prevCoords}: matrix data (same source as {@link GameGrid.getCell}) plus mounted `current` / `coords` from refs when rendered.
+   */
   getPreviousCell(): ICell;
 
-  /** Hydrated cell at {@link IState.activeCoords} (`refs.cells[y][x]`); refs must cover those indices after render. */
+  /**
+   * Cell at {@link IState.activeCoords}: matrix data (same source as {@link GameGrid.getCell}) plus mounted `current` / `coords` from refs when rendered.
+   *
+   * @remarks After {@link GameGrid.setCell}, `type` and other data fields match the matrix immediately. The painted node on `current` stays stale until {@link GameGrid.refreshCells} / {@link GameGrid.refresh}.
+   */
   getActiveCell(): ICell;
 
   /**
    * Move focus `(x,y)` when {@link IOptions.blockOnType}, {@link IOptions.collideOnType}, {@link IOptions.moveOnType}, and bounds/wrap rules allow.
    *
-   * @remarks **Dispatch order (subset may apply):** {@link gridEventsEnum.MOVE_BLOCKED} if blocked; {@link gridEventsEnum.MOVE_COLLISION} / {@link gridEventsEnum.MOVE_DETTACH} for collide enter/exit; axis {@link gridEventsEnum.WRAP_X} / {@link gridEventsEnum.WRAP_Y} / {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}; aggregate {@link gridEventsEnum.WRAP} / {@link gridEventsEnum.BOUNDARY}; finally {@link gridEventsEnum.MOVE_LAND} (pairs with the `onLand` member of {@link IOptions.callbacks}).
+   * @remarks **Dispatch order (subset may apply):** {@link gridEventsEnum.MOVE_BLOCKED} if blocked; {@link gridEventsEnum.MOVE_COLLISION} when entering a collide-type cell; {@link gridEventsEnum.MOVE_DETTACH} when leaving a collide-type cell for a non-collide cell; {@link ICell.eventTypes} `onExit` then `onEnter` when the active cell changes; axis {@link gridEventsEnum.WRAP_X} / {@link gridEventsEnum.WRAP_Y} / {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}; aggregate {@link gridEventsEnum.WRAP} / {@link gridEventsEnum.BOUNDARY}; finally {@link gridEventsEnum.MOVE_LAND} (pairs with the `onLand` member of {@link IOptions.callbacks}) only when the active cell actually changes. {@link GameGrid.render} does not call this method.
    */
   setActiveCell(x: number, y: number, direction?: string): void;
 
@@ -180,7 +186,11 @@ export interface IGameGrid {
   /** Logical matrix backing the grid (`matrix[row][column]` ⇒ `matrix[y][x]`). */
   getMatrix(): ICell[][];
 
-  /** Replace logical matrix reference; callers must {@link GameGrid.refresh} or {@link GameGrid.render} to reconcile DOM when mounted. */
+  /**
+   * Replace logical matrix reference; callers must {@link GameGrid.refresh} or {@link GameGrid.render} to reconcile DOM when mounted.
+   *
+   * @remarks Headless grids also alias {@link IRefsObject.cells} to the new matrix so {@link GameGrid.getActiveCell} stays in sync.
+   */
   setMatrix(matrix: ICell[][]): void;
 
   /**
@@ -479,11 +489,18 @@ export interface ICell extends IRef {
   type: string;
   render?: (context: ICellContext) => HTMLElement;
   cellAttributes?: string[][];
+  /**
+   * Custom event names dispatched on {@link IOptions.eventTarget} when the active cell **changes**.
+   * `onExit` fires for the previous cell, then `onEnter` for the landed cell.
+   * Extra `detail` keys: `coords`, `cell`. Blocked stays and {@link GameGrid.render} do not fire these.
+   */
   eventTypes?: {
     onEnter: string;
     onExit: string;
   };
   coords?: number[];
+  /** App-specific fields (coins, metadata, …) are allowed and survive {@link GameGrid.getActiveCell} / {@link GameGrid.getCell}. */
+  [key: string]: unknown;
 }
 
 /**

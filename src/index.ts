@@ -330,11 +330,7 @@ class GameGrid implements IGameGrid {
     this.setStateSync({ rendered: true });
     this.emit(gridEventsEnum.RENDERED);
     this.attachHandlers();
-    this.setActiveCell(
-      this.state.activeCoords![0],
-      this.state.activeCoords![1],
-      directionEnum.DOWN,
-    );
+    this.syncActiveDom(this.state.currentDirection);
   }
 
   private renderGrid(): DocumentFragment {
@@ -567,8 +563,6 @@ class GameGrid implements IGameGrid {
     ) {
       hitsBlock = true;
     }
-    const wasAttached = this.isCollidingCell(currentX, currentY);
-    const hitsCollide = this.isCollidingCell(x, y);
 
     const nextCoords = hitsBlock ? [...this.state.activeCoords] : [x, y];
     this.setStateSync({
@@ -582,14 +576,9 @@ class GameGrid implements IGameGrid {
       this.emit(gridEventsEnum.MOVE_BLOCKED);
       this.options.callbacks?.onBlock?.(this, this.getState());
     }
-    if (hitsCollide) {
-      this.emit(gridEventsEnum.MOVE_COLLISION);
-      this.options.callbacks?.onCollide?.(this, this.getState());
-    }
-    if (wasAttached) {
-      this.emit(gridEventsEnum.MOVE_DETTACH);
-      this.options.callbacks?.onDettach?.(this, this.getState());
-    }
+
+    this.emitCollideAndDettach(prevCoords, nextCoords);
+    this.emitCellEventTypes(prevCoords, nextCoords);
 
     if (boundaryCheckData.eventName) {
       this.emit(boundaryCheckData.eventName);
@@ -621,10 +610,9 @@ class GameGrid implements IGameGrid {
       }
     }
 
-    this.emit(gridEventsEnum.MOVE_LAND);
-    this.options.callbacks?.onLand?.(this, this.getState());
+    this.emitLand(prevCoords, nextCoords);
 
-    if (!hitsBlock) {
+    if (!this.coordsEqual(prevCoords, nextCoords)) {
       this.handleZoomExit(prevCoords, direction);
       this.handleRegionChange(prevCoords);
     }
@@ -735,15 +723,31 @@ class GameGrid implements IGameGrid {
 
   /** @inheritDoc IGameGrid.getActiveCell */
   public getActiveCell(): ICell {
-    return this.refs.cells[this.state.activeCoords![1]][this.state.activeCoords![0]];
+    return this.cellAt(this.state.activeCoords);
   }
 
   /** @inheritDoc IGameGrid.getPreviousCell */
   public getPreviousCell(): ICell {
-    const x = this.state.prevCoords![0];
-    const y = this.state.prevCoords![1];
+    return this.cellAt(this.state.prevCoords);
+  }
+
+  /**
+   * Logical matrix cell at `coords`, with mounted `current` / `coords` from refs when present.
+   * After {@link GameGrid.setCell}, data fields match {@link GameGrid.getCell}; the painted node
+   * stays on `current` until {@link GameGrid.refreshCells} / {@link GameGrid.refresh}.
+   */
+  private cellAt(coords: readonly [number, number] | number[]): ICell {
+    const x = coords[0];
+    const y = coords[1];
+    const data = this.matrix[y][x];
+    if (this.refs.cells === this.matrix) {
+      return data;
+    }
+    const ref = this.refs.cells[y]?.[x];
     return {
-      ...this.refs.cells[y][x],
+      ...data,
+      current: ref?.current ?? data.current,
+      coords: ref?.coords ?? data.coords ?? [x, y],
     };
   }
 
@@ -955,9 +959,6 @@ class GameGrid implements IGameGrid {
     const nextCoords = [...target];
     const direction = this.directionBetween(prevCoords, nextCoords);
 
-    const wasAttached = this.isCollidingCell(currentX, currentY);
-    const hitsCollide = this.isCollidingCell(nextCoords[0], nextCoords[1]);
-
     this.setStateSync({
       activeCoords: nextCoords,
       prevCoords,
@@ -965,24 +966,55 @@ class GameGrid implements IGameGrid {
       currentDirection: direction,
     });
 
-    if (hitsCollide) {
-      this.emit(gridEventsEnum.MOVE_COLLISION);
-      this.options.callbacks?.onCollide?.(this, this.getState());
-    }
-    if (wasAttached) {
-      this.emit(gridEventsEnum.MOVE_DETTACH);
-      this.options.callbacks?.onDettach?.(this, this.getState());
-    }
+    this.emitCollideAndDettach(prevCoords, nextCoords);
+    this.emitCellEventTypes(prevCoords, nextCoords);
 
     this.emit(gridEventsEnum.REWIND, { steps, index });
     this.options.callbacks?.onRewind?.(this, this.getState());
 
-    this.emit(gridEventsEnum.MOVE_LAND);
-    this.options.callbacks?.onLand?.(this, this.getState());
+    this.emitLand(prevCoords, nextCoords);
 
     this.handleZoomExit(prevCoords, direction);
     this.handleRegionChange(prevCoords);
     this.syncActiveDom(direction);
+  }
+
+  private emitCollideAndDettach(from: number[], to: number[]): void {
+    if (this.coordsEqual(from, to)) {
+      return;
+    }
+    const wasAttached = this.isCollidingCell(from[0], from[1]);
+    const landedCollide = this.isCollidingCell(to[0], to[1]);
+    if (landedCollide) {
+      this.emit(gridEventsEnum.MOVE_COLLISION);
+      this.options.callbacks?.onCollide?.(this, this.getState());
+    }
+    if (wasAttached && !landedCollide) {
+      this.emit(gridEventsEnum.MOVE_DETTACH);
+      this.options.callbacks?.onDettach?.(this, this.getState());
+    }
+  }
+
+  private emitCellEventTypes(from: number[], to: number[]): void {
+    if (this.coordsEqual(from, to)) {
+      return;
+    }
+    const leaving = this.getCell(from);
+    const entering = this.getCell(to);
+    if (leaving?.eventTypes?.onExit) {
+      this.emit(leaving.eventTypes.onExit, { coords: [...from], cell: leaving });
+    }
+    if (entering?.eventTypes?.onEnter) {
+      this.emit(entering.eventTypes.onEnter, { coords: [...to], cell: entering });
+    }
+  }
+
+  private emitLand(from: number[], to: number[]): void {
+    if (this.coordsEqual(from, to)) {
+      return;
+    }
+    this.emit(gridEventsEnum.MOVE_LAND);
+    this.options.callbacks?.onLand?.(this, this.getState());
   }
 
   private getValidXandY(
@@ -1197,26 +1229,21 @@ class GameGrid implements IGameGrid {
   };
 
   private handleCellClick = (event: MouseEvent): void => {
-    try {
-      if (this.getOptions().clickable) {
-        if (event.target instanceof HTMLElement) {
-          const cellEl = event.target.closest('[data-gamegrid-ref="cell"]');
-          if (cellEl instanceof HTMLElement) {
-            const coords = getCoordsFromElement(cellEl);
-            if (coords) {
-              this.setActiveCell(coords[0], coords[1]);
-            } else {
-              throw new Error('No cell found');
-            }
-          } else {
-            throw new Error('No cell found');
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      throw new Error('Error handling cell click. You possibly have missing attributes');
+    if (!this.getOptions().clickable) {
+      return;
     }
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    const cellEl = event.target.closest('[data-gamegrid-ref="cell"]');
+    if (!(cellEl instanceof HTMLElement)) {
+      return;
+    }
+    const coords = getCoordsFromElement(cellEl);
+    if (!coords) {
+      return;
+    }
+    this.setActiveCell(coords[0], coords[1]);
   };
 
   /** @inheritDoc IGameGrid.getOptions */
@@ -1247,13 +1274,16 @@ class GameGrid implements IGameGrid {
       this.refs.rows = [];
       this.refs.cells = [];
     }
-    this.updateState({ rendered: false });
+    this.setStateSync({ rendered: false });
     this.emit(gridEventsEnum.DESTROYED);
   }
 
   /** @inheritDoc IGameGrid.setMatrix */
   public setMatrix(m: ICell[][]): void {
     this.matrix = m;
+    if (!this.state.rendered) {
+      this.refs.cells = m;
+    }
   }
 
   /** @inheritDoc IGameGrid.getMatrix */

@@ -100,6 +100,10 @@ const memory: IGameGrid = new GameGrid(config);
 
 When you pass a **`container`** in the constructor, **`render(container)`** runs immediately. Otherwise call **`render(element)`** later. Headless mode sets **`refs.cells`** to your matrix reference and **`state.rendered`** to **`false`**.
 
+**`render`** paints the current active cell and emits **`RENDERED`**. It does **not** call **`setActiveCell`**, so construction / remount will not fire land, collide, dettach, or **`ICell.eventTypes`**.
+
+Per-cell **`eventTypes.onEnter` / `onExit`** are custom event name strings. When the active cell changes, the grid dispatches **`onExit`** for the previous cell, then **`onEnter`** for the landed cell, on **`options.eventTarget`** (same bus as built-in events). Extra **`detail`**: **`coords`**, **`cell`**.
+
 ### `config: IConfig`
 
 ```ts
@@ -226,8 +230,14 @@ export interface ICell extends IRef {
   type: string;
   render?: (context: ICellContext) => HTMLElement;
   cellAttributes?: string[][];
+  /**
+   * Custom event names on the grid `eventTarget` when the active cell changes.
+   * `onExit` of the previous cell, then `onEnter` of the landed cell.
+   * Extra `detail`: `coords`, `cell`. Not fired on blocked stays or `render()`.
+   */
   eventTypes?: { onEnter: string; onExit: string };
   coords?: number[];
+  [key: string]: unknown;
 }
 
 interface ICellContext {
@@ -257,7 +267,7 @@ flowchart LR
   oneStep --> nodes
 ```
 
-**`setCell([x, y], cell)`** is data-only. It replaces `matrix[y][x]` by reference. It does not patch DOM, `refs.cells`, or emit events. After the write, `getCell` / `getAllCellsByType` / `blockOnType` see the new cell immediately; the painted tile can still show the old `type`.
+**`setCell([x, y], cell)`** is data-only. It replaces `matrix[y][x]` by reference. It does not patch DOM, `refs.cells`, or emit events. After the write, `getCell` / `getActiveCell` / `getPreviousCell` / `getAllCellsByType` / `blockOnType` see the new cell data immediately; the painted tile (`current`) can still show the old `type` until **`refreshCells`**.
 
 **`refreshCells({ coords, cell? } | array)`** is the view (plus an optional write). For each item it:
 
@@ -368,6 +378,7 @@ export interface IGameGrid {
   getState(): IState;
   setStateSync(obj: StatePatch): void;
 
+  /** Matrix cell at `activeCoords`, plus mounted `current` / `coords` when rendered. */
   getActiveCell(): ICell;
   getPreviousCell(): ICell;
   getCell(coords: readonly [number, number] | number[]): ICell;
@@ -433,11 +444,12 @@ export const gridEventsEnum = {
 
   // Target rejected by blockOnType or moveOnType allow-list; coords roll back.
   MOVE_BLOCKED: "gamegrid:move:blocked",
-  // Entered a collideOnType cell (movement may still succeed).
+  // Entered a collideOnType cell. Only when the active cell actually changes.
   MOVE_COLLISION: "gamegrid:move:collide",
-  // Left a collide-type cell from the square occupied before this move attempt.
+  // Left a collide-type cell for a non-collide cell. Not on blocked stays or collide → collide.
   MOVE_DETTACH: "gamegrid:move:dettach",
   // Finished block/collide/boundary/wrap resolution; mirrors callbacks.onLand.
+  // Only when the active cell actually changes — not on blocked stays, edge bumps, or render().
   MOVE_LAND: "gamegrid:move:land",
   // After rewind() / rewindTo(); detail.steps + detail.index; then MOVE_LAND.
   REWIND: "gamegrid:move:rewind",

@@ -43,7 +43,9 @@ grid.rewindTo(0);   // jump to the oldest remaining index
 
 ## Updating cells
 
-`setCell` writes `matrix[y][x]` only. Movement and `getCell` see the new `type` immediately; the DOM does not.
+`setCell` writes `matrix[y][x]` only. Movement, `getCell`, `getActiveCell`, and `getPreviousCell` see the new `type` immediately; the DOM (`current`) does not.
+
+`ICell.eventTypes.onEnter` / `onExit` are custom event names dispatched when the active cell changes (`detail.coords`, `detail.cell`). `onLand` / `MOVE_LAND` also require a real coord change. `onDettach` fires only when leaving a collide-type cell for a non-collide cell. `render()` does not run move choreography.
 
 `refreshCells({ coords, cell? })` (one item or an array) optionally writes, then replaces those mounted nodes and emits [`CELLS_REFRESHED`](variables/gridEventsEnum.html). Omit `cell` after a prior `setCell`. Use [`refresh`](classes/GameGrid.html#refresh) when dimensions or the zoom window change.
 

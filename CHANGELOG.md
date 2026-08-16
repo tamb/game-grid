@@ -13,10 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`setCell([x, y], cell)`**: replace one logical matrix cell by reference. Data-only, same contract as `setMatrix` — does not render or refresh the DOM.
 - **`refreshCells(cell | cells)`**: write optional cell data and rebuild one or more cell nodes without wiping the grid. Accepts `{ coords, cell? }` or an array of those. Emits `gamegrid:cells:refreshed` with `detail.cells`.
 - README / TypeDoc notes for the `setCell` (data) → `refreshCells` (view) flow.
+- **`ICell.eventTypes`**: `onEnter` / `onExit` custom event names fire on the grid `eventTarget` when the active cell changes (`detail.coords`, `detail.cell`).
 
 ### Fixed
 
 - **`state.moves` overflow dropped the newest coord** (`unshift` + `shift`). History is now oldest-first, capped by `rewindLimit` (oldest dropped first). Blocked attempts are not recorded. `setOptions({ rewindLimit })` trims an over-long trail.
+- **`onLand` / `MOVE_LAND` fired when the active cell did not change** (blocked stays, edge bumps, and the initial `render()`). Land now fires only after a real coord change ([#33](https://github.com/tamb/game-grid/pull/33)).
+- **`onDettach` / `MOVE_DETTACH` fired whenever the previous cell was collide-type**, including blocked stays and collide → collide. It now means “left a collide cell for a non-collide cell.”
+- **`render()` called `setActiveCell`**, which forced `currentDirection` to `DOWN` and emitted collide / dettach / land (and would have fired `eventTypes`) on first paint. Render only highlights the current cell.
+- **Cell clicks on the container, a row, or padding threw.** Non-cell targets now no-op.
+- **`getActiveCell` / `getPreviousCell` ignored `setCell`** and kept reading the stale `refs.cells` snapshot. They now read matrix data and overlay the mounted node from refs.
+- **`destroy()` skipped middleware** by writing `rendered: false` through `updateState`. It now uses `setStateSync`.
+- **`setMatrix` on a headless grid left `refs.cells` aliased to the old matrix.**
+- **`ICell` had no index signature**, so extra cell fields used by demos/tests (`foo`, `foo2`, …) were untyped.
 
 ## [1.1.1] - 2026-08-13
 
