@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- TypeDoc groups `GameGrid` / `IGameGrid` members by **job** (Matrix, Movement, View, State, Options, Zoom) instead of a flat Methods list. Docs landing page has a matching table.
+
 ## [1.2.0] - 2026-08-16
 
 ### Added

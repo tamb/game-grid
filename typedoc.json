@@ -27,6 +27,18 @@
     "Presentation",
     "*"
   ],
+  "groupOrder": [
+    "Matrix",
+    "Movement",
+    "View",
+    "State",
+    "Options",
+    "Zoom",
+    "Constructors",
+    "Properties",
+    "Methods",
+    "*"
+  ],
   "navigation": {
     "includeCategories": true
   },
