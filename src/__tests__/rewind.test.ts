@@ -370,9 +370,10 @@ describe('unrewind()', () => {
     });
     debounced.moveDown();
     debounced.moveDown();
+    expect(debounced.getState().activeCoords).toEqual([0, 1]);
     debounced.rewind();
     debounced.unrewind();
-    expect(debounced.getState().activeCoords).toEqual([0, 2]);
+    expect(debounced.getState().activeCoords).toEqual([0, 1]);
     debounced.destroy();
     vi.useRealTimers();
   });
