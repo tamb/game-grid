@@ -4,6 +4,14 @@ Follow-up to the post-1.0 audit of `@tamb/gamegrid`. The library stays a **2D ma
 
 Shipped work below landed in **[1.2.0](CHANGELOG.md#120---2026-08-16)** ([#61](https://github.com/tamb/game-grid/pull/61)).
 
+## Unreleased
+
+Movement events, path walking, and a real history API.
+
+- [x] **Richer `MOVE_*` `detail`** — `from`, `to`, `direction`, and whether the attempt blocked. Zoom events already pass `direction` / `zoom` / coords; move events now match.
+- [x] **`moveTo(coords)` / step along a path** — walk a list of cells through the existing block / collide / wrap rules. Keep it dumb (no A*).
+- [x] **Unrewind / redo** — `state.moves` is a real trail; `state.future` is the forward stack. `unrewind` / `unrewindTo` replay it.
+
 ## Done in 1.2.0
 
 Lifecycle contracts, dead APIs, and versioning from the “fix first” list.
@@ -30,17 +38,6 @@ Suggested order. Do not add a second state API or a separate hooks layer.
 - [ ] **`GameGrid<TState extends IState>`** (or `getState(): TState`) so extra fields are not `unknown`.
 - [ ] **`protected` hooks** around move / render so subclassing is possible without forking privates.
 - [ ] **Short “extend vs compose” note** — extra state via `setStateSync` is enough; subclass only for behavior. Close #16. Do **not** add a second `setState`.
-
-### Richer events
-
-Zoom events already pass `direction` / `zoom` / coords. Move events should match.
-
-- [ ] **Richer `MOVE_*` `detail`** — `from`, `to`, `direction`, and whether the attempt blocked.
-
-### Movement
-
-- [ ] **`moveTo(coords)` / step along a path** — walk a list of cells through the existing block / collide / wrap rules. Keep it dumb (no A*).
-- [ ] **Unrewind / redo** — `state.moves` is a real trail; rewind without a forward stack is half a history API.
 
 ### Input
 

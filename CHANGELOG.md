@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Richer `MOVE_*` `detail`**: directional, blocked, collide, dettach, land, wrap, and boundary events include `from`, `to`, `direction`, and `blocked` (`IMoveEventDetail`). `to` is the candidate cell after wrap/clamp; `blocked` is true only when `blockOnType` / `moveOnType` rejected that cell.
+- **`moveTo(coords | path)`**: walk one cell or an explicit list through `setActiveCell` (block / collide / wrap rules). Stops when a step does not land on the requested cell. No pathfinding. Not rate-limited by `moveDebounce`.
+- **`unrewind(steps?)` / `unrewindTo(index)`**: redo after `rewind`. Dropped coords live on `state.future` until a new cell lands. Emits `gamegrid:move:unrewind` (`detail.steps`, `detail.index`, plus move detail) then `MOVE_LAND`. Optional `callbacks.onUnrewind`.
+
 ### Changed
 
 - TypeDoc groups `GameGrid` / `IGameGrid` members by **job** (Matrix, Movement, View, State, Options, Zoom) instead of a flat Methods list. Docs landing page has a matching table.
+- `rewind` / `rewindTo` keep undone coords on `state.future` instead of discarding them.
 
 ## [1.2.0] - 2026-08-16
 

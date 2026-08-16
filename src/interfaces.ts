@@ -56,6 +56,13 @@ export interface IState {
    * Blocked attempts are not recorded. Use {@link GameGrid.rewind} / {@link GameGrid.rewindTo}.
    */
   moves: number[][];
+  /**
+   * Oldest-first coords undone by {@link GameGrid.rewind} / {@link GameGrid.rewindTo}.
+   * {@link GameGrid.unrewind} / {@link GameGrid.unrewindTo} replay this stack.
+   * Cleared when a new cell lands (a real move, click, or {@link GameGrid.moveTo} step).
+   * Blocked stays do not clear it.
+   */
+  future: number[][];
   /** `true` after {@link GameGrid.render}. */
   rendered?: boolean;
   /** Last cardinal direction string (`directionEnum.UP`, `directionEnum.DOWN`, ...). */
@@ -80,13 +87,33 @@ export interface IState {
 export type StatePatch = Partial<IState> & Record<string, unknown>;
 
 /**
- * `CustomEvent.detail` for every bubbling grid DOM event constructed by the internal `fireGameGridEvent` helper used in {@link GameGrid}.
+ * Extra `detail` keys on {@link gridEventsEnum} `MOVE_*` events (and wrap / boundary events from the same attempt).
  *
- * @remarks All built-in emits pass only `gameGridInstance`; the index signature reserves space for callers who forward extra fields via that helper's `data` argument.
+ * @remarks
+ * - `from` is the active cell before the attempt.
+ * - `to` is the candidate cell after wrap / clamp — the tile the attempt tried to occupy.
+ *   On a successful land this matches {@link IState.activeCoords}. On a block it is the rejected cell
+ *   (active coords stay at `from`). On a finite-edge bump `to` equals `from`.
+ * - `blocked` is `true` only when {@link IOptions.blockOnType} / {@link IOptions.moveOnType} rejected the candidate.
  *
  * @category Events
  */
-export interface IGameGridEventDetail extends Record<string, unknown> {
+export interface IMoveEventDetail {
+  from: number[];
+  to: number[];
+  direction?: string;
+  blocked: boolean;
+  [key: string]: unknown;
+}
+
+/**
+ * `CustomEvent.detail` for every bubbling grid DOM event constructed by the internal `fireGameGridEvent` helper used in {@link GameGrid}.
+ *
+ * @remarks `gameGridInstance` is always present. {@link IMoveEventDetail} fields are set on `MOVE_*` (and wrap / boundary) events. The index signature reserves space for callers who forward extra fields via that helper's `data` argument.
+ *
+ * @category Events
+ */
+export interface IGameGridEventDetail extends Partial<IMoveEventDetail>, Record<string, unknown> {
   /** The emitting grid (`this` inside {@link GameGrid}). */
   gameGridInstance: IGameGrid;
 }
@@ -108,6 +135,7 @@ export interface IDefaultState {
   prevCoords?: number[];
   currentDirection?: string;
   moves?: number[][];
+  future?: number[][];
   rendered?: boolean;
   zoom?: IZoomBounds | null;
   region?: IRegionTile | null;
@@ -223,7 +251,7 @@ export interface IGameGrid {
   /**
    * Move focus `(x,y)` when {@link IOptions.blockOnType}, {@link IOptions.collideOnType}, {@link IOptions.moveOnType}, and bounds/wrap rules allow.
    *
-   * @remarks **Dispatch order (subset may apply):** {@link gridEventsEnum.MOVE_BLOCKED} if blocked; {@link gridEventsEnum.MOVE_COLLISION} when entering a collide-type cell; {@link gridEventsEnum.MOVE_DETTACH} when leaving a collide-type cell for a non-collide cell; {@link ICell.eventTypes} `onExit` then `onEnter` when the active cell changes; axis {@link gridEventsEnum.WRAP_X} / {@link gridEventsEnum.WRAP_Y} / {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}; aggregate {@link gridEventsEnum.WRAP} / {@link gridEventsEnum.BOUNDARY}; finally {@link gridEventsEnum.MOVE_LAND} (pairs with the `onLand` member of {@link IOptions.callbacks}) only when the active cell actually changes. {@link GameGrid.render} does not call this method.
+   * @remarks **Dispatch order (subset may apply):** {@link gridEventsEnum.MOVE_BLOCKED} if blocked; {@link gridEventsEnum.MOVE_COLLISION} when entering a collide-type cell; {@link gridEventsEnum.MOVE_DETTACH} when leaving a collide-type cell for a non-collide cell; {@link ICell.eventTypes} `onExit` then `onEnter` when the active cell changes; axis {@link gridEventsEnum.WRAP_X} / {@link gridEventsEnum.WRAP_Y} / {@link gridEventsEnum.BOUNDARY_X} / {@link gridEventsEnum.BOUNDARY_Y}; aggregate {@link gridEventsEnum.WRAP} / {@link gridEventsEnum.BOUNDARY}; finally {@link gridEventsEnum.MOVE_LAND} (pairs with the `onLand` member of {@link IOptions.callbacks}) only when the active cell actually changes. Move events carry {@link IMoveEventDetail} (`from`, `to`, `direction`, `blocked`). {@link GameGrid.render} does not call this method.
    * @group Movement
    */
   setActiveCell(x: number, y: number, direction?: string): void;
@@ -286,35 +314,50 @@ export interface IGameGrid {
   setStateSync(obj: StatePatch): void;
 
   /**
-   * Directional move: invokes the `onMove` member of {@link IOptions.callbacks} → dispatches {@link gridEventsEnum.MOVE_UP} → {@link GameGrid.setActiveCell}.
+   * Directional move: invokes the `onMove` member of {@link IOptions.callbacks} → dispatches {@link gridEventsEnum.MOVE_UP} (with {@link IMoveEventDetail}) → {@link GameGrid.setActiveCell}.
    * @group Movement
    */
   moveUp(): void;
 
   /**
-   * @remarks Dispatches {@link gridEventsEnum.MOVE_RIGHT} before {@link GameGrid.setActiveCell}.
+   * @remarks Dispatches {@link gridEventsEnum.MOVE_RIGHT} (with {@link IMoveEventDetail}) before {@link GameGrid.setActiveCell}.
    * @group Movement
    */
   moveRight(): void;
 
   /**
-   * @remarks Dispatches {@link gridEventsEnum.MOVE_DOWN} before {@link GameGrid.setActiveCell}.
+   * @remarks Dispatches {@link gridEventsEnum.MOVE_DOWN} (with {@link IMoveEventDetail}) before {@link GameGrid.setActiveCell}.
    * @group Movement
    */
   moveDown(): void;
 
   /**
-   * @remarks Dispatches {@link gridEventsEnum.MOVE_LEFT} before {@link GameGrid.setActiveCell}.
+   * @remarks Dispatches {@link gridEventsEnum.MOVE_LEFT} (with {@link IMoveEventDetail}) before {@link GameGrid.setActiveCell}.
    * @group Movement
    */
   moveLeft(): void;
+
+  /**
+   * Walk to one cell, or along an explicit list of cells, through {@link GameGrid.setActiveCell}.
+   *
+   * @param coordsOrPath - A single `[x, y]` or an array of `[x, y]` steps. Not pathfinding (no A*): gaps teleport.
+   * @remarks Each step uses the existing block / collide / wrap / zoom-edge rules. Stops when a step does not land on the requested cell (blocked, finite-edge clamp, or wrap to a different cell). Skips steps that are already the active cell. Not rate-limited by {@link IOptions.moveDebounce}. Does not dispatch directional {@link gridEventsEnum.MOVE_UP} / `MOVE_RIGHT` / `MOVE_DOWN` / `MOVE_LEFT` (same as a cell click).
+   * @group Movement
+   */
+  moveTo(
+    coordsOrPath:
+      | readonly [number, number]
+      | number[]
+      | Array<readonly [number, number] | number[]>,
+  ): void;
 
   /**
    * Step back `steps` entries in {@link IState.moves} (default `1`).
    *
    * @remarks No-op when there is no earlier position, or `steps` is not a positive finite number.
    * Extra steps clamp to the oldest remaining entry. Not rate-limited by {@link IOptions.moveDebounce}.
-   * Dispatches {@link gridEventsEnum.REWIND} (with `detail.steps` / `detail.index`) then {@link gridEventsEnum.MOVE_LAND}.
+   * Dispatches {@link gridEventsEnum.REWIND} (with `detail.steps` / `detail.index` plus {@link IMoveEventDetail}) then {@link gridEventsEnum.MOVE_LAND}.
+   * Dropped coords are pushed onto {@link IState.future} so {@link GameGrid.unrewind} can replay them.
    * @group Movement
    */
   rewind(steps?: number): void;
@@ -323,10 +366,30 @@ export interface IGameGrid {
    * Jump to `index` in {@link IState.moves} (`0` = oldest remaining).
    *
    * @remarks No-op when `index` is not an integer in range, or it is already the current (last) entry.
-   * Truncates history after the chosen index. Same events as {@link GameGrid.rewind}.
+   * Truncates history after the chosen index (later entries move to {@link IState.future}). Same events as {@link GameGrid.rewind}.
    * @group Movement
    */
   rewindTo(index: number): void;
+
+  /**
+   * Replay `steps` entries from {@link IState.future} (default `1`). Redo after {@link GameGrid.rewind}.
+   *
+   * @remarks No-op when the forward stack is empty, or `steps` is not a positive finite number.
+   * Extra steps clamp to the newest remaining future entry. Not rate-limited by {@link IOptions.moveDebounce}.
+   * Dispatches {@link gridEventsEnum.UNREWIND} (with `detail.steps` / `detail.index` plus {@link IMoveEventDetail}) then {@link gridEventsEnum.MOVE_LAND}.
+   * @group Movement
+   */
+  unrewind(steps?: number): void;
+
+  /**
+   * Jump forward to `index` in the combined trail (`moves` then `future`).
+   *
+   * @remarks `index` is counted from the oldest remaining {@link IState.moves} entry (`0`), through the current cell, into {@link IState.future}.
+   * No-op when `index` is not an integer strictly ahead of the current entry, or past the newest future coord.
+   * Same events as {@link GameGrid.unrewind}.
+   * @group Movement
+   */
+  unrewindTo(index: number): void;
 
   /**
    * Current zoom bounds or `null` when no zoom is active.
@@ -483,6 +546,7 @@ export interface IOptions {
     onZoomExit?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onRegionChange?: (gamegridInstance: IGameGrid, newState: IState) => void;
     onRewind?: (gamegridInstance: IGameGrid, newState: IState) => void;
+    onUnrewind?: (gamegridInstance: IGameGrid, newState: IState) => void;
   };
 
   /** Default whether zoom transitions animate. Overridden by {@link IZoomOptions.animate}. Default: `false`. */

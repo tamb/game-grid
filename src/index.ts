@@ -19,6 +19,7 @@ import type {
   ICellRefresh,
   IConfig,
   IGameGrid,
+  IMoveEventDetail,
   IOptions,
   IRefsObject,
   IRegionTile,
@@ -61,6 +62,7 @@ export type {
   IDefaultState,
   IGameGrid,
   IGameGridEventDetail,
+  IMoveEventDetail,
   IOptions,
   IRefs,
   IRefsObject,
@@ -191,6 +193,9 @@ class GameGrid implements IGameGrid {
     };
     if (this.state.moves.length === 0) {
       this.state.moves = [[...this.state.activeCoords]];
+    }
+    if (!this.state.future) {
+      this.state.future = [];
     }
 
     if (container) {
@@ -596,72 +601,61 @@ class GameGrid implements IGameGrid {
    * @group Movement
    */
   public setActiveCell(x: number, y: number, direction?: string): void {
-    const requestedX = x;
-    const requestedY = y;
-    const boundaryCheckData = this.getValidXandY(x, y);
+    const attempt = this.resolveMoveAttempt(x, y, direction);
+    const { from, to, blocked, boundaryCheckData, detail } = attempt;
+    const prevCoords: [number, number] = [from[0], from[1]];
+    const nextCoords = blocked ? [...this.state.activeCoords] : [...to];
+    const last = this.state.moves[this.state.moves.length - 1];
+    const landedNew = !last || !this.coordsEqual(last, nextCoords);
 
-    x = boundaryCheckData.x;
-    y = boundaryCheckData.y;
-
-    const [currentX, currentY] = this.getState().activeCoords!;
-    const prevCoords: [number, number] = [currentX, currentY];
-
-    let hitsBlock = this.isBlockingCell(x, y);
-    if (
-      boundaryCheckData.zoomEdge &&
-      (requestedX !== x || requestedY !== y) &&
-      this.isBlockingCell(requestedX, requestedY)
-    ) {
-      hitsBlock = true;
-    }
-
-    const nextCoords = hitsBlock ? [...this.state.activeCoords] : [x, y];
     this.setStateSync({
       activeCoords: nextCoords,
       prevCoords: this.state.activeCoords,
       moves: this.createNewMovesArray(nextCoords),
       currentDirection: direction,
+      ...(landedNew && (this.state.future?.length ?? 0) > 0 ? { future: [] } : {}),
     });
 
-    if (hitsBlock) {
-      this.emit(gridEventsEnum.MOVE_BLOCKED);
+    if (blocked) {
+      this.emit(gridEventsEnum.MOVE_BLOCKED, detail);
       this.options.callbacks?.onBlock?.(this, this.getState());
     }
 
-    this.emitCollideAndDettach(prevCoords, nextCoords);
+    this.emitCollideAndDettach(prevCoords, nextCoords, detail);
     this.emitCellEventTypes(prevCoords, nextCoords);
 
     if (boundaryCheckData.eventName) {
-      this.emit(boundaryCheckData.eventName);
+      this.emit(boundaryCheckData.eventName, detail);
     }
     if (boundaryCheckData.callbackFunction) {
       boundaryCheckData.callbackFunction(this, this.getState());
     }
     if (boundaryCheckData.wrapped) {
       this.options.callbacks?.onWrap?.(this, this.getState());
-      this.emit(gridEventsEnum.WRAP);
+      this.emit(gridEventsEnum.WRAP, detail);
     }
 
     if (boundaryCheckData.bounded) {
       this.options.callbacks?.onBoundary?.(this, this.getState());
-      this.emit(gridEventsEnum.BOUNDARY);
+      this.emit(gridEventsEnum.BOUNDARY, detail);
     }
 
     let deferredActiveSync = false;
     if (boundaryCheckData.zoomEdge) {
       const zoom = this.state.zoom!;
       this.emit(gridEventsEnum.ZOOM_EDGE, {
+        ...detail,
         direction,
         zoom,
         activeCoords: [...this.getState().activeCoords!],
       });
       this.options.callbacks?.onZoomEdge?.(this, this.getState());
-      if (!hitsBlock) {
+      if (!blocked) {
         deferredActiveSync = this.handleSlideZoomOnEdge(direction);
       }
     }
 
-    this.emitLand(prevCoords, nextCoords);
+    this.emitLand(prevCoords, nextCoords, detail);
 
     if (!this.coordsEqual(prevCoords, nextCoords)) {
       this.handleZoomExit(prevCoords, direction);
@@ -893,13 +887,10 @@ class GameGrid implements IGameGrid {
       return;
     }
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.emit(gridEventsEnum.MOVE_UP);
+    const [x, y] = this.state.activeCoords!;
+    this.emit(gridEventsEnum.MOVE_UP, this.resolveMoveAttempt(x, y - 1, directionEnum.UP).detail);
 
-    this.setActiveCell(
-      this.state.activeCoords![0],
-      this.state.activeCoords![1] - 1,
-      directionEnum.UP,
-    );
+    this.setActiveCell(x, y - 1, directionEnum.UP);
   }
 
   /**
@@ -911,13 +902,13 @@ class GameGrid implements IGameGrid {
       return;
     }
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.emit(gridEventsEnum.MOVE_RIGHT);
-
-    this.setActiveCell(
-      this.state.activeCoords![0] + 1,
-      this.state.activeCoords![1],
-      directionEnum.RIGHT,
+    const [x, y] = this.state.activeCoords!;
+    this.emit(
+      gridEventsEnum.MOVE_RIGHT,
+      this.resolveMoveAttempt(x + 1, y, directionEnum.RIGHT).detail,
     );
+
+    this.setActiveCell(x + 1, y, directionEnum.RIGHT);
   }
 
   /**
@@ -929,13 +920,13 @@ class GameGrid implements IGameGrid {
       return;
     }
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.emit(gridEventsEnum.MOVE_DOWN);
-
-    this.setActiveCell(
-      this.state.activeCoords![0],
-      this.state.activeCoords![1] + 1,
-      directionEnum.DOWN,
+    const [x, y] = this.state.activeCoords!;
+    this.emit(
+      gridEventsEnum.MOVE_DOWN,
+      this.resolveMoveAttempt(x, y + 1, directionEnum.DOWN).detail,
     );
+
+    this.setActiveCell(x, y + 1, directionEnum.DOWN);
   }
 
   /**
@@ -947,13 +938,37 @@ class GameGrid implements IGameGrid {
       return;
     }
     this.options.callbacks?.onMove?.(this, this.getState());
-    this.emit(gridEventsEnum.MOVE_LEFT);
-
-    this.setActiveCell(
-      this.state.activeCoords![0] - 1,
-      this.state.activeCoords![1],
-      directionEnum.LEFT,
+    const [x, y] = this.state.activeCoords!;
+    this.emit(
+      gridEventsEnum.MOVE_LEFT,
+      this.resolveMoveAttempt(x - 1, y, directionEnum.LEFT).detail,
     );
+
+    this.setActiveCell(x - 1, y, directionEnum.LEFT);
+  }
+
+  /**
+   * @inheritDoc IGameGrid.moveTo
+   * @group Movement
+   */
+  public moveTo(
+    coordsOrPath:
+      | readonly [number, number]
+      | number[]
+      | Array<readonly [number, number] | number[]>,
+  ): void {
+    const path = this.normalizeMovePath(coordsOrPath);
+    for (const coords of path) {
+      const from = this.getState().activeCoords!;
+      if (this.coordsEqual(from, coords)) {
+        continue;
+      }
+      const direction = this.directionBetween(from, coords);
+      this.setActiveCell(coords[0], coords[1], direction);
+      if (!this.coordsEqual(this.getState().activeCoords!, coords)) {
+        break;
+      }
+    }
   }
 
   /**
@@ -987,6 +1002,40 @@ class GameGrid implements IGameGrid {
     this.applyRewindToIndex(index, moves.length - 1 - index);
   }
 
+  /**
+   * @inheritDoc IGameGrid.unrewind
+   * @group Movement
+   */
+  public unrewind(steps = 1): void {
+    if (!Number.isFinite(steps) || steps <= 0) {
+      return;
+    }
+    const future = this.getState().future ?? [];
+    if (future.length === 0) {
+      return;
+    }
+    const clampedSteps = Math.min(Math.floor(steps), future.length);
+    this.applyUnrewindSteps(clampedSteps);
+  }
+
+  /**
+   * @inheritDoc IGameGrid.unrewindTo
+   * @group Movement
+   */
+  public unrewindTo(index: number): void {
+    if (!Number.isInteger(index)) {
+      return;
+    }
+    const moves = this.getState().moves;
+    const future = this.getState().future ?? [];
+    const currentIndex = moves.length - 1;
+    const newestIndex = currentIndex + future.length;
+    if (index <= currentIndex || index > newestIndex) {
+      return;
+    }
+    this.applyUnrewindSteps(index - currentIndex);
+  }
+
   /// MOVEMENT HELPERS
   private getRewindLimit(): number {
     const limit = this.options.rewindLimit;
@@ -1016,6 +1065,79 @@ class GameGrid implements IGameGrid {
     return moves.map((coords) => [...coords]);
   }
 
+  private moveEventDetail(
+    from: number[],
+    to: number[],
+    direction: string | undefined,
+    blocked: boolean,
+  ): IMoveEventDetail {
+    return {
+      from: [...from],
+      to: [...to],
+      direction,
+      blocked,
+    };
+  }
+
+  private resolveMoveAttempt(
+    requestedX: number,
+    requestedY: number,
+    direction?: string,
+  ): {
+    from: number[];
+    to: number[];
+    blocked: boolean;
+    direction?: string;
+    boundaryCheckData: ReturnType<GameGrid['getValidXandY']>;
+    detail: IMoveEventDetail;
+  } {
+    const from = [...this.getState().activeCoords!];
+    const boundaryCheckData = this.getValidXandY(requestedX, requestedY);
+    const x = boundaryCheckData.x;
+    const y = boundaryCheckData.y;
+    let blocked = this.isBlockingCell(x, y);
+    if (
+      boundaryCheckData.zoomEdge &&
+      (requestedX !== x || requestedY !== y) &&
+      this.isBlockingCell(requestedX, requestedY)
+    ) {
+      blocked = true;
+    }
+    const to = [x, y];
+    return {
+      from,
+      to,
+      blocked,
+      direction,
+      boundaryCheckData,
+      detail: this.moveEventDetail(from, to, direction, blocked),
+    };
+  }
+
+  private isSingleCoord(
+    coordsOrPath:
+      | readonly [number, number]
+      | number[]
+      | Array<readonly [number, number] | number[]>,
+  ): coordsOrPath is readonly [number, number] | number[] {
+    return typeof coordsOrPath[0] === 'number';
+  }
+
+  private normalizeMovePath(
+    coordsOrPath:
+      | readonly [number, number]
+      | number[]
+      | Array<readonly [number, number] | number[]>,
+  ): number[][] {
+    if (coordsOrPath.length === 0) {
+      return [];
+    }
+    if (this.isSingleCoord(coordsOrPath)) {
+      return [[coordsOrPath[0], coordsOrPath[1]]];
+    }
+    return coordsOrPath.map((coords) => [...coords]);
+  }
+
   private trimMovesToLimit(moves: number[][] = this.getState().moves): number[][] {
     const cloned = this.cloneMoves(moves);
     const limit = this.getRewindLimit();
@@ -1037,44 +1159,83 @@ class GameGrid implements IGameGrid {
 
   private applyRewindToIndex(index: number, steps: number): void {
     const moves = this.getState().moves;
+    const future = this.getState().future ?? [];
+    const dropped = this.cloneMoves(moves.slice(index + 1));
     const target = moves[index];
     const [currentX, currentY] = this.getState().activeCoords;
     const prevCoords: [number, number] = [currentX, currentY];
     const nextCoords = [...target];
     const direction = this.directionBetween(prevCoords, nextCoords);
+    const detail = this.moveEventDetail(prevCoords, nextCoords, direction, false);
 
     this.setStateSync({
       activeCoords: nextCoords,
       prevCoords,
       moves: this.cloneMoves(moves.slice(0, index + 1)),
+      future: [...dropped, ...this.cloneMoves(future)],
       currentDirection: direction,
     });
 
-    this.emitCollideAndDettach(prevCoords, nextCoords);
+    this.emitCollideAndDettach(prevCoords, nextCoords, detail);
     this.emitCellEventTypes(prevCoords, nextCoords);
 
-    this.emit(gridEventsEnum.REWIND, { steps, index });
+    this.emit(gridEventsEnum.REWIND, { ...detail, steps, index });
     this.options.callbacks?.onRewind?.(this, this.getState());
 
-    this.emitLand(prevCoords, nextCoords);
+    this.emitLand(prevCoords, nextCoords, detail);
 
     this.handleZoomExit(prevCoords, direction);
     this.handleRegionChange(prevCoords);
     this.syncActiveDom(direction);
   }
 
-  private emitCollideAndDettach(from: number[], to: number[]): void {
+  private applyUnrewindSteps(steps: number): void {
+    const moves = this.getState().moves;
+    const future = this.getState().future ?? [];
+    const restored = this.cloneMoves(future.slice(0, steps));
+    const remaining = this.cloneMoves(future.slice(steps));
+    const nextMoves = this.trimMovesToLimit([...this.cloneMoves(moves), ...restored]);
+    const target = nextMoves[nextMoves.length - 1];
+    const [currentX, currentY] = this.getState().activeCoords;
+    const prevCoords: [number, number] = [currentX, currentY];
+    const nextCoords = [...target];
+    const direction = this.directionBetween(prevCoords, nextCoords);
+    const detail = this.moveEventDetail(prevCoords, nextCoords, direction, false);
+    const index = nextMoves.length - 1;
+
+    this.setStateSync({
+      activeCoords: nextCoords,
+      prevCoords,
+      moves: nextMoves,
+      future: remaining,
+      currentDirection: direction,
+    });
+
+    this.emitCollideAndDettach(prevCoords, nextCoords, detail);
+    this.emitCellEventTypes(prevCoords, nextCoords);
+
+    this.emit(gridEventsEnum.UNREWIND, { ...detail, steps, index });
+    this.options.callbacks?.onUnrewind?.(this, this.getState());
+
+    this.emitLand(prevCoords, nextCoords, detail);
+
+    this.handleZoomExit(prevCoords, direction);
+    this.handleRegionChange(prevCoords);
+    this.syncActiveDom(direction);
+  }
+
+  private emitCollideAndDettach(from: number[], to: number[], detail?: IMoveEventDetail): void {
     if (this.coordsEqual(from, to)) {
       return;
     }
     const wasAttached = this.isCollidingCell(from[0], from[1]);
     const landedCollide = this.isCollidingCell(to[0], to[1]);
     if (landedCollide) {
-      this.emit(gridEventsEnum.MOVE_COLLISION);
+      this.emit(gridEventsEnum.MOVE_COLLISION, detail);
       this.options.callbacks?.onCollide?.(this, this.getState());
     }
     if (wasAttached && !landedCollide) {
-      this.emit(gridEventsEnum.MOVE_DETTACH);
+      this.emit(gridEventsEnum.MOVE_DETTACH, detail);
       this.options.callbacks?.onDettach?.(this, this.getState());
     }
   }
@@ -1093,11 +1254,11 @@ class GameGrid implements IGameGrid {
     }
   }
 
-  private emitLand(from: number[], to: number[]): void {
+  private emitLand(from: number[], to: number[], detail?: IMoveEventDetail): void {
     if (this.coordsEqual(from, to)) {
       return;
     }
-    this.emit(gridEventsEnum.MOVE_LAND);
+    this.emit(gridEventsEnum.MOVE_LAND, detail);
     this.options.callbacks?.onLand?.(this, this.getState());
   }
 
