@@ -49,7 +49,7 @@ Suggested order. Do not add a second state API or a separate hooks layer.
 
 ### Presentation
 
-- [ ] **Opt-out of injected CSS** — `insertStyles()` always injects a 10px red active ring. `options.injectStyles: false` (or a thinner default) for real games.
+- [x] **Opt-out of injected CSS** — `options.injectStyles: false` skips `insertStyles()`. Default active highlight is a 2px `currentColor` inset ring (was 10px red).
 
 ### Hardening
 
