@@ -6,6 +6,8 @@
 
 **Docs & demo (GitHub Pages):** [site home](https://tamb.github.io/game-grid/) · [API reference](https://tamb.github.io/game-grid/docs/) · [interactive demo](https://tamb.github.io/game-grid/demo/output.html)
 
+**v1 follow-ups:** [ROADMAP.md](ROADMAP.md)
+
 ## Goals
 
 - 2D grid in memory with coordinates and movement rules
