@@ -109,6 +109,11 @@ export const cellTypeEnum = {
 /**
  * Canonical facing flags bound to directional CSS classes from {@link directionClassEnum}.
  *
+ * @example
+ * ```ts
+ * grid.setActiveCell(1, 0, directionEnum.RIGHT);
+ * ```
+ *
  * @category Movement
  */
 export enum directionEnum {
@@ -120,6 +125,11 @@ export enum directionEnum {
 
 /**
  * Applies to the rendered grid container to reflect the last move direction (`gamegrid__direction--*`).
+ *
+ * @example
+ * ```ts
+ * container.classList.contains(directionClassEnum.DOWN);
+ * ```
  *
  * @category Presentation
  */
@@ -133,6 +143,12 @@ export const directionClassEnum: { [ket: string]: string } = {
 /**
  * Default {@link IState} seeded before {@link IConfig.state} merges.
  * Shipped as a named runtime export from the package barrel.
+ *
+ * @example
+ * ```ts
+ * const state = { ...INITIAL_STATE, activeCoords: [2, 0] };
+ * const grid = new GameGrid({ matrix, state });
+ * ```
  *
  * @category State
  */
@@ -149,6 +165,12 @@ export const INITIAL_STATE: IState = {
 
 /**
  * BEM-aligned class hooks used when {@link GameGrid.render} builds the markup.
+ *
+ * @example
+ * ```ts
+ * root.classList.contains(classesEnum.GRID);
+ * root.classList.contains(classesEnum.GRID_ZOOMED);
+ * ```
  *
  * @category Presentation
  */

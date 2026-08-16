@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.
+
 - **Richer `MOVE_*` `detail`**: directional, blocked, collide, dettach, land, wrap, and boundary events include `from`, `to`, `direction`, and `blocked` (`IMoveEventDetail`). `to` is the candidate cell after wrap/clamp; `blocked` is true only when `blockOnType` / `moveOnType` rejected that cell.
 - **`moveTo(coords | path)`**: walk one cell or an explicit list through `setActiveCell` (block / collide / wrap rules). Stops when a step does not land on the requested cell. No pathfinding. Not rate-limited by `moveDebounce`.
 - **`unrewind(steps?)` / `unrewindTo(index)`**: redo after `rewind`. Dropped coords live on `state.future` until a new cell lands. Emits `gamegrid:move:unrewind` (`detail.steps`, `detail.index`, plus move detail) then `MOVE_LAND`. Optional `callbacks.onUnrewind`.

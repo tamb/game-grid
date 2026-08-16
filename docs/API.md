@@ -85,6 +85,10 @@ grid.moveTo([
 
 See the [README flow](https://github.com/tamb/game-grid#updating-cells) and [`ICellRefresh`](interfaces/ICellRefresh.html).
 
+## Usage examples
+
+Each symbol page in this TypeDoc site includes a **Usage** / example block from the source comments. Start with [`GameGrid`](classes/GameGrid.html) and [`IGameGrid`](interfaces/IGameGrid.html).
+
 ## Quick start
 
 ```ts

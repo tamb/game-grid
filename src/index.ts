@@ -3,6 +3,24 @@
  *
  * @packageDocumentation
  * @remarks The {@link GameGrid} class is the default export. Custom grid events use {@link IGameGridEventDetail} / {@link GameGridDOMEvent} with string names from {@link gridEventsEnum}.
+ *
+ * @example
+ * ```ts
+ * import GameGrid, { cellTypeEnum, gridEventsEnum } from "@tamb/gamegrid";
+ *
+ * const grid = new GameGrid(
+ *   {
+ *     matrix: [[{ type: cellTypeEnum.OPEN }, { type: cellTypeEnum.OPEN }]],
+ *     options: { wasdControls: true },
+ *   },
+ *   document.querySelector("#root")!,
+ * );
+ *
+ * grid.moveRight();
+ * window.addEventListener(gridEventsEnum.MOVE_LAND, () => {
+ *   console.log(grid.getState().activeCoords);
+ * });
+ * ```
  */
 
 import {
@@ -79,6 +97,11 @@ export type {
 /**
  * Compatibility alias exporting the identical object references as {@link gridEventsEnum}.
  *
+ * @example
+ * ```ts
+ * window.addEventListener(gameGridEventsEnum.MOVE_LAND, handler);
+ * ```
+ *
  * @category Events
  */
 export const gameGridEventsEnum = gridEventsEnum;
@@ -121,19 +144,35 @@ export const gameGridEventsEnum = gridEventsEnum;
  *
  * @example Render + keyboard handlers
  * ```ts
- * const grid = new GameGrid({ matrix, options: { wasdControls: true } }, document.querySelector('#stage')!);
+ * import GameGrid, { gridEventsEnum, type GameGridDOMEvent } from "@tamb/gamegrid";
+ *
+ * const grid = new GameGrid(
+ *   { matrix, options: { wasdControls: true } },
+ *   document.querySelector("#stage")!,
+ * );
+ *
+ * window.addEventListener(gridEventsEnum.MOVE_LAND, (e: Event) => {
+ *   const { gameGridInstance } = (e as GameGridDOMEvent).detail;
+ *   console.log(gameGridInstance.getState().activeCoords);
+ * });
  * ```
  *
  * @example Headless state machine without calling render
  * ```ts
  * const grid = new GameGrid({ matrix });
  * grid.moveRight(); // mutates internal state without touching the DOM
+ * grid.render(document.querySelector("#stage")!); // mount later
  * ```
  */
 class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.options
    * @group Options
+   * @example
+   * ```ts
+   * grid.options.wasdControls;
+   * grid.setOptions({ wasdControls: true });
+   * ```
    */
   public options: IOptions;
   private matrix: ICell[][];
@@ -141,6 +180,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.refs
    * @group View
+   * @example
+   * ```ts
+   * const root = grid.refs.container; // HTMLElement after render, null while headless
+   * ```
    */
   public refs: IRefsObject;
   private appliedZoomViewportClasses: string[] = [];
@@ -164,6 +207,18 @@ class GameGrid implements IGameGrid {
    *
    * @param config - Logical matrix plus optional {@link IConfig.options} / {@link IConfig.state}.
    * @param container - When provided, behaves like invoking {@link GameGrid.render} synchronously afterward.
+   *
+   * @example Immediate render
+   * ```ts
+   * const grid = new GameGrid({ matrix, options: { wasdControls: true } }, root);
+   * ```
+   *
+   * @example Headless, then mount
+   * ```ts
+   * const grid = new GameGrid({ matrix, state: { activeCoords: [1, 0] } });
+   * grid.moveDown();
+   * grid.render(root);
+   * ```
    */
   constructor(config: IConfig, container?: HTMLElement) {
     this.options = {
@@ -216,6 +271,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.setStateSync
    * @group State
+   * @example
+   * ```ts
+   * grid.setStateSync({ activeCoords: [1, 0], myScore: 3 });
+   * ```
    */
   public setStateSync(obj: StatePatch): void {
     if (this.options.middlewares?.pre?.length) {
@@ -233,6 +292,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getState
    * @group State
+   * @example
+   * ```ts
+   * const { activeCoords, moves, future } = grid.getState();
+   * ```
    */
   public getState(): IState {
     return this.state;
@@ -251,6 +314,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.refresh
    * @group View
+   * @example After swapping the matrix
+   * ```ts
+   * grid.setMatrix(nextRows);
+   * grid.refresh();
+   * ```
    */
   public refresh(): void {
     const container = this.refs.container;
@@ -264,6 +332,15 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.refreshCells
    * @group View
+   * @example Two-step write then paint
+   * ```ts
+   * grid.setCell([2, 0], { type: cellTypeEnum.OPEN });
+   * grid.refreshCells({ coords: [2, 0] });
+   * ```
+   * @example One-step write and paint
+   * ```ts
+   * grid.refreshCells({ coords: [1, 1], cell: { type: cellTypeEnum.BARRIER } });
+   * ```
    */
   public refreshCells(cells: ICellRefresh | ICellRefresh[]): void {
     const items = Array.isArray(cells) ? cells : [cells];
@@ -378,6 +455,12 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.render
    * @group View
+   * @example Headless first, then mount
+   * ```ts
+   * const grid = new GameGrid({ matrix });
+   * grid.moveRight();
+   * grid.render(document.querySelector("#stage")!);
+   * ```
    */
   public render(container: HTMLElement): void {
     this.applyInjectedStyles();
@@ -605,6 +688,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.setActiveCell
    * @group Movement
+   * @example
+   * ```ts
+   * grid.setActiveCell(2, 1, directionEnum.RIGHT);
+   * ```
    */
   public setActiveCell(x: number, y: number, direction?: string): void {
     const attempt = this.resolveMoveAttempt(x, y, direction);
@@ -775,6 +862,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getActiveCell
    * @group Matrix
+   * @example
+   * ```ts
+   * const tile = grid.getActiveCell();
+   * console.log(tile.type, tile.current);
+   * ```
    */
   public getActiveCell(): ICell {
     return this.cellAt(this.state.activeCoords);
@@ -783,6 +875,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getPreviousCell
    * @group Matrix
+   * @example
+   * ```ts
+   * const prev = grid.getPreviousCell();
+   * console.log(prev.type, prev.coords);
+   * ```
    */
   public getPreviousCell(): ICell {
     return this.cellAt(this.state.prevCoords);
@@ -811,6 +908,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getCell
    * @group Matrix
+   * @example
+   * ```ts
+   * const cell = grid.getCell([2, 1]); // column 2, row 1
+   * ```
    */
   public getCell(coords: readonly [number, number] | number[]): ICell {
     const x = coords[0];
@@ -821,6 +922,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.setCell
    * @group Matrix
+   * @example
+   * ```ts
+   * grid.setCell([2, 1], { type: cellTypeEnum.INTERACTIVE });
+   * grid.refreshCells({ coords: [2, 1] });
+   * ```
    */
   public setCell(coords: readonly [number, number] | number[], cell: ICell): void {
     const x = coords[0];
@@ -831,6 +937,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getAllCellsByType
    * @group Matrix
+   * @example
+   * ```ts
+   * const barriers = grid.getAllCellsByType(cellTypeEnum.BARRIER);
+   * ```
    */
   public getAllCellsByType(type: string): ICell[] {
     const cells: ICell[] = [];
@@ -887,6 +997,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.moveUp
    * @group Movement
+   * @example
+   * ```ts
+   * grid.moveUp();
+   * ```
    */
   public moveUp(): void {
     if (!this.canAcceptMove(directionEnum.UP)) {
@@ -902,6 +1016,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.moveRight
    * @group Movement
+   * @example
+   * ```ts
+   * grid.moveRight();
+   * ```
    */
   public moveRight(): void {
     if (!this.canAcceptMove(directionEnum.RIGHT)) {
@@ -920,6 +1038,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.moveDown
    * @group Movement
+   * @example
+   * ```ts
+   * grid.moveDown();
+   * ```
    */
   public moveDown(): void {
     if (!this.canAcceptMove(directionEnum.DOWN)) {
@@ -938,6 +1060,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.moveLeft
    * @group Movement
+   * @example
+   * ```ts
+   * grid.moveLeft();
+   * ```
    */
   public moveLeft(): void {
     if (!this.canAcceptMove(directionEnum.LEFT)) {
@@ -956,6 +1082,18 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.moveTo
    * @group Movement
+   * @example One cell
+   * ```ts
+   * grid.moveTo([2, 1]);
+   * ```
+   * @example Explicit path
+   * ```ts
+   * grid.moveTo([
+   *   [0, 1],
+   *   [0, 2],
+   *   [1, 2],
+   * ]);
+   * ```
    */
   public moveTo(
     coordsOrPath:
@@ -980,6 +1118,13 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.rewind
    * @group Movement
+   * @example
+   * ```ts
+   * grid.moveDown();
+   * grid.moveRight();
+   * grid.rewind();
+   * grid.rewind(2);
+   * ```
    */
   public rewind(steps = 1): void {
     if (!Number.isFinite(steps) || steps <= 0) {
@@ -996,6 +1141,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.rewindTo
    * @group Movement
+   * @example
+   * ```ts
+   * grid.rewindTo(0);
+   * ```
    */
   public rewindTo(index: number): void {
     if (!Number.isInteger(index)) {
@@ -1011,6 +1160,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.unrewind
    * @group Movement
+   * @example
+   * ```ts
+   * grid.rewind();
+   * grid.unrewind();
+   * ```
    */
   public unrewind(steps = 1): void {
     if (!Number.isFinite(steps) || steps <= 0) {
@@ -1027,6 +1181,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.unrewindTo
    * @group Movement
+   * @example
+   * ```ts
+   * grid.rewind(3);
+   * grid.unrewindTo(2);
+   * ```
    */
   public unrewindTo(index: number): void {
     if (!Number.isInteger(index)) {
@@ -1502,6 +1661,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getOptions
    * @group Options
+   * @example
+   * ```ts
+   * const { wasdControls, moveDebounce } = grid.getOptions();
+   * ```
    */
   public getOptions(): IOptions {
     return this.options;
@@ -1509,6 +1672,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.setOptions
    * @group Options
+   * @example Speed power-up
+   * ```ts
+   * grid.setOptions({ moveDebounce: 40, wasdControls: true });
+   * ```
    */
   public setOptions(newOptions: IOptions): void {
     this.options = { ...this.options, ...newOptions };
@@ -1522,6 +1689,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.destroy
    * @group View
+   * @example
+   * ```ts
+   * grid.destroy();
+   * ```
    */
   public destroy(): void {
     const rendered = this.state.rendered;
@@ -1543,6 +1714,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.setMatrix
    * @group Matrix
+   * @example
+   * ```ts
+   * grid.setMatrix(nextRows);
+   * if (grid.getState().rendered) grid.refresh();
+   * ```
    */
   public setMatrix(m: ICell[][]): void {
     this.matrix = m;
@@ -1554,6 +1730,11 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getMatrix
    * @group Matrix
+   * @example
+   * ```ts
+   * const rows = grid.getMatrix();
+   * const cell = rows[1][2]; // same as getCell([2, 1])
+   * ```
    */
   public getMatrix(): ICell[][] {
     return this.matrix;
@@ -1562,6 +1743,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getZoom
    * @group Zoom
+   * @example
+   * ```ts
+   * const zoom = grid.getZoom();
+   * ```
    */
   public getZoom(): IZoomBounds | null {
     return this.state.zoom;
@@ -1570,6 +1755,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.setZoom
    * @group Zoom
+   * @example
+   * ```ts
+   * grid.setZoom({ minX: 0, minY: 0, maxX: 3, maxY: 3 }, { animate: true });
+   * ```
    */
   public setZoom(bounds: IZoomBounds, options?: IZoomOptions): void {
     const fromZoom = this.state.zoom;
@@ -1629,6 +1818,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.clearZoom
    * @group Zoom
+   * @example
+   * ```ts
+   * grid.clearZoom({ animate: true });
+   * ```
    */
   public clearZoom(options?: IZoomOptions): void {
     const fromZoom = this.state.zoom;
@@ -1678,6 +1871,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getZoomAround
    * @group Zoom
+   * @example
+   * ```ts
+   * const bounds = grid.getZoomAround([2, 2], 1);
+   * ```
    */
   public getZoomAround(
     center: readonly [number, number] | number[],
@@ -1690,6 +1887,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getQuadrantZoom
    * @group Zoom
+   * @example
+   * ```ts
+   * const se = grid.getQuadrantZoom("se");
+   * ```
    */
   public getQuadrantZoom(quadrant: ZoomQuadrant): IZoomBounds {
     return getQuadrantZoom(this.matrix, quadrant);
@@ -1698,6 +1899,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getFractionZoom
    * @group Zoom
+   * @example
+   * ```ts
+   * const tile = grid.getFractionZoom(3, 1, 1);
+   * ```
    */
   public getFractionZoom(divisions: number, tileX: number, tileY: number): IZoomBounds {
     return getFractionZoom(this.matrix, divisions, tileX, tileY);
@@ -1706,6 +1911,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.zoomAround
    * @group Zoom
+   * @example
+   * ```ts
+   * grid.zoomAround([2, 2], 1, 1, { animate: true });
+   * ```
    */
   public zoomAround(
     center: readonly [number, number] | number[],
@@ -1719,6 +1928,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.zoomQuadrant
    * @group Zoom
+   * @example
+   * ```ts
+   * grid.zoomQuadrant("se");
+   * ```
    */
   public zoomQuadrant(quadrant: ZoomQuadrant, options?: IZoomOptions): void {
     this.setZoom(this.getQuadrantZoom(quadrant), options);
@@ -1727,6 +1940,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.zoomFraction
    * @group Zoom
+   * @example
+   * ```ts
+   * grid.zoomFraction(3, 0, 1);
+   * ```
    */
   public zoomFraction(
     divisions: number,
@@ -1740,6 +1957,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getRegionAt
    * @group Zoom
+   * @example
+   * ```ts
+   * const region = grid.getRegionAt([4, 1], 2);
+   * ```
    */
   public getRegionAt(
     coords: readonly [number, number] | number[],
@@ -1755,6 +1976,10 @@ class GameGrid implements IGameGrid {
   /**
    * @inheritDoc IGameGrid.getActiveRegion
    * @group Zoom
+   * @example
+   * ```ts
+   * const current = grid.getActiveRegion();
+   * ```
    */
   public getActiveRegion(): IRegionTile | null {
     if (this.state.region) {
