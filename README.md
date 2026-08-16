@@ -194,6 +194,12 @@ export interface IOptions {
   /** Appended to `.gamegrid__viewport` when zoom is active. */
   zoomViewportClasses?: string[];
 
+  /**
+   * Inject bundled layout CSS on render (default `true`).
+   * Set `false` to skip injection and style `.gamegrid` yourself.
+   */
+  injectStyles?: boolean;
+
   activeClasses?: string[];
   cellClasses?: string[];
   containerClasses?: string[];
@@ -218,10 +224,11 @@ Default options (before your `config.options` spread):
   constrainToZoom: true,
   zoomSlideDuration: 300,
   slideZoomOnEdge: false,
+  injectStyles: true,
 }
 ```
 
-Use **`cellAttributes`** on **`ICell`** for per-cell attributes; **`activeClasses`** / **`cellClasses`** / **`containerClasses`** / **`rowClasses`** append classes on render.
+Use **`cellAttributes`** on **`ICell`** for per-cell attributes; **`activeClasses`** / **`cellClasses`** / **`containerClasses`** / **`rowClasses`** append classes on render. Set **`injectStyles: false`** to skip the bundled stylesheet (layout, zoom viewport, and a 2px `currentColor` active ring) and supply your own CSS.
 
 ### `matrix: ICell[][]`
 

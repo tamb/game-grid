@@ -81,6 +81,7 @@ const GAMEGRID_STYLE_ATTR = 'data-gamegrid-styles';
  * Injects bundled GameGrid stylesheet into `document.head` once (guarded via `style[data-gamegrid-styles]`).
  *
  * @remarks Safe across multiple grids/instances — subsequent calls bail early.
+ * {@link GameGrid} skips this when {@link IOptions.injectStyles} is `false`.
  *
  * @category DOM helpers
  */
@@ -141,7 +142,7 @@ export function insertStyles(): void {
     cursor: pointer;
   }
   .gamegrid__cell--active {
-    box-shadow:inset 0px 0px 0px 10px #f00;
+    box-shadow: inset 0 0 0 2px currentColor;
   }
   .gamegrid__cell::before {
     content: "";

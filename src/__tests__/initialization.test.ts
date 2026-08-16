@@ -26,6 +26,7 @@ describe('GameGrid class constructor', () => {
       constrainToZoom: true,
       zoomSlideDuration: 300,
       slideZoomOnEdge: false,
+      injectStyles: true,
     };
   });
 

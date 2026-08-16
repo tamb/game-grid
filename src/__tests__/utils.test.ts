@@ -89,4 +89,13 @@ describe('insertStyles util', () => {
     expect(document.querySelectorAll('style[data-gamegrid-styles]').length).toBe(n);
     expect(n).toBeGreaterThanOrEqual(1);
   });
+
+  test('active cell highlight is a thin currentColor ring, not a 10px red outline', () => {
+    insertStyles();
+    const css = document.querySelector('style[data-gamegrid-styles]')?.textContent ?? '';
+    expect(css).toContain('.gamegrid__cell--active');
+    expect(css).toMatch(/box-shadow:\s*inset 0 0 0 2px currentColor/);
+    expect(css).not.toMatch(/#f00|#ff0000/i);
+    expect(css).not.toMatch(/10px/);
+  });
 });

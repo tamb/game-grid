@@ -178,6 +178,7 @@ class GameGrid implements IGameGrid {
       constrainToZoom: true,
       zoomSlideDuration: 300,
       slideZoomOnEdge: false,
+      injectStyles: true,
       // overrides
       ...config.options,
     };
@@ -349,6 +350,11 @@ class GameGrid implements IGameGrid {
     this.options.activeClasses?.forEach((c) => el.classList.add(c));
   }
 
+  private applyInjectedStyles(): void {
+    if (this.options.injectStyles === false) return;
+    insertStyles();
+  }
+
   private rebuildDom(): void {
     const container = this.refs.container;
     if (!container) {
@@ -358,7 +364,7 @@ class GameGrid implements IGameGrid {
     container.replaceChildren();
     this.refs.cells = [];
     this.refs.rows = [];
-    insertStyles();
+    this.applyInjectedStyles();
     const fragment = this.renderGrid();
     container.appendChild(fragment);
     this.attachHandlers();
@@ -369,7 +375,7 @@ class GameGrid implements IGameGrid {
    * @group View
    */
   public render(container: HTMLElement): void {
-    insertStyles();
+    this.applyInjectedStyles();
     this.refs.container = container;
     this.refs.cells = [];
     this.refs.rows = [];
