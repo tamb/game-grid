@@ -1232,10 +1232,12 @@ class GameGrid implements IGameGrid {
     if (!this.getOptions().clickable) {
       return;
     }
-    if (!(event.target instanceof Element)) {
+    const raw = event.target;
+    const from = raw instanceof Element ? raw : raw instanceof Node ? raw.parentElement : null;
+    if (!from) {
       return;
     }
-    const cellEl = event.target.closest('[data-gamegrid-ref="cell"]');
+    const cellEl = from.closest('[data-gamegrid-ref="cell"]');
     if (!(cellEl instanceof HTMLElement)) {
       return;
     }

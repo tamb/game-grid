@@ -74,6 +74,34 @@ describe('keyboard and pointer input', () => {
     expect(grid.getState().activeCoords).toEqual([2, 2]);
   });
 
+  test('clicking a text node inside a rendered cell still selects that cell', () => {
+    const labeled = new GameGrid(
+      {
+        matrix: [
+          [
+            {
+              type: 'open',
+              render: () => {
+                const label = document.createElement('span');
+                label.textContent = 'coin';
+                return label;
+              },
+            },
+            { type: 'open' },
+          ],
+          [{ type: 'open' }, { type: 'open' }],
+        ],
+        state: { activeCoords: [1, 1] },
+      },
+      container,
+    );
+    const text = container.querySelector('span')?.firstChild as Text;
+    expect(text?.nodeType).toBe(Node.TEXT_NODE);
+    text.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(labeled.getState().activeCoords).toEqual([0, 0]);
+    labeled.destroy();
+  });
+
   test('clicking a child inside a rendered cell resolves the parent cell coords', () => {
     const rendered = new GameGrid(
       {
