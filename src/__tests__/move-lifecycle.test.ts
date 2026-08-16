@@ -247,6 +247,19 @@ describe('getActiveCell / getPreviousCell follow setCell', () => {
     grid.destroy();
     mount.remove();
   });
+
+  test('getPreviousCell follows setCell after a real move', () => {
+    const grid = new GameGrid({
+      matrix: [[open({ token: 'start' }), open({ token: 'next' })]],
+      state: { activeCoords: [0, 0] },
+    });
+    grid.moveRight();
+    grid.setCell([0, 0], { type: 'barrier', token: 'rewritten' });
+    expect(grid.getPreviousCell().type).toBe('barrier');
+    expect(grid.getPreviousCell().token).toBe('rewritten');
+    expect(grid.getActiveCell().token).toBe('next');
+    grid.destroy();
+  });
 });
 
 describe('destroy and setMatrix bookkeeping', () => {
