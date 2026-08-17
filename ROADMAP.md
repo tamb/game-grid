@@ -31,14 +31,6 @@ Lifecycle contracts, dead APIs, and versioning from the “fix first” list.
 
 Suggested order. Do not add a second state API or a separate hooks layer.
 
-### Typed extensibility ([#16](https://github.com/tamb/game-grid/issues/16))
-
-`setStateSync` + `StatePatch` already allow extra keys. What is missing is typing and a documented extension story.
-
-- [ ] **`GameGrid<TState extends IState>`** (or `getState(): TState`) so extra fields are not `unknown`.
-- [ ] **`protected` hooks** around move / render so subclassing is possible without forking privates.
-- [ ] **Short “extend vs compose” note** — extra state via `setStateSync` is enough; subclass only for behavior. Close #16. Do **not** add a second `setState`.
-
 ### Input
 
 - [ ] **Touch / swipe** — keyboard + click are built in; the demo invented a d-pad. A small swipe helper or `pointerControls` should respect `moveDebounce`.
