@@ -1,6 +1,6 @@
 {
   "name": "@tamb/gamegrid",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A 2D HTML grid for creating web games (or other things that could use a 2D matrix)",
   "homepage": "https://tamb.github.io/game-grid/docs/",
   "main": "dist/main.js",
