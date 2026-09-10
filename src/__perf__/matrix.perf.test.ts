@@ -1,4 +1,5 @@
 import GameGrid from '../index';
+import { PERF_BUDGET_MS } from './budgets';
 import { expectWithinBudget, makeOpenMatrix, makeTypedMatrix, measureMedian } from './helpers';
 
 describe('matrix query performance', () => {
@@ -11,7 +12,11 @@ describe('matrix query performance', () => {
     expect(found).toBeGreaterThan(0);
     expect(found).toBe(grid.getAllCellsByType('barrier').length);
     grid.destroy();
-    expectWithinBudget('getAllCellsByType 80x80', median, 5);
+    expectWithinBudget(
+      'getAllCellsByType 80x80',
+      median,
+      PERF_BUDGET_MS.matrix.getAllCellsByType80x80,
+    );
   });
 
   it('setCell / getCell tight loop on 100×80 stays under budget', () => {
@@ -26,6 +31,6 @@ describe('matrix query performance', () => {
     });
     expect(grid.getCell([99, 79]).type).toBe('open');
     grid.destroy();
-    expectWithinBudget('setCell/getCell 8000 cells', median, 10);
+    expectWithinBudget('setCell/getCell 8000 cells', median, PERF_BUDGET_MS.matrix.setGetCell8000);
   });
 });

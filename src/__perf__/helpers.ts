@@ -1,8 +1,12 @@
 import { performance } from 'node:perf_hooks';
+import { createColors } from 'picocolors';
 import type GameGrid from '../index';
 import type { ICell } from '../interfaces';
 
 /** Median-of-N timing helper for `src/__perf__` regression budgets. */
+
+/** Force colors in perf logs (Vitest workers are often non-TTY). */
+const pc = createColors(true);
 
 export function makeOpenMatrix(rows: number, cols: number): ICell[][] {
   const matrix: ICell[][] = new Array(rows);
@@ -54,7 +58,24 @@ export function measureMedian(fn: () => void, warmup = 1, runs = 5): number {
   return median(samples);
 }
 
+function colorHeadroom(headroomMs: number, budgetMs: number): (text: string) => string {
+  const ratio = headroomMs / budgetMs;
+  if (ratio >= 0.5) {
+    return pc.green;
+  }
+  if (ratio >= 0.15) {
+    return pc.yellow;
+  }
+  return pc.red;
+}
+
 export function expectWithinBudget(label: string, ms: number, budgetMs: number): void {
+  const headroomMs = budgetMs - ms;
+  const headroomPct = (headroomMs / budgetMs) * 100;
+  const headroom = colorHeadroom(headroomMs, budgetMs);
+  console.log(
+    `${pc.cyan('[perf]')} ${pc.bold(label)}: ${pc.yellow(`${ms.toFixed(2)}ms`)} ${pc.dim(`(budget ${budgetMs}ms,`)} ${headroom(`${headroomMs.toFixed(2)}ms headroom, ${pc.cyan(`${headroomPct.toFixed(0)}% remaining`)}`)}${pc.dim(')')}`,
+  );
   expect(ms, `${label}: ${ms.toFixed(2)}ms (budget ${budgetMs}ms)`).toBeLessThan(budgetMs);
 }
 

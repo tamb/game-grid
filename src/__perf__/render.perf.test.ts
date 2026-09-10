@@ -1,4 +1,5 @@
 import GameGrid from '../index';
+import { PERF_BUDGET_MS } from './budgets';
 import { expectWithinBudget, makeOpenMatrix, measureMedian, mountRoot } from './helpers';
 
 describe('render performance', () => {
@@ -21,7 +22,7 @@ describe('render performance', () => {
       1,
       3,
     );
-    expectWithinBudget('render 40x40', median, 90);
+    expectWithinBudget('render 40x40', median, PERF_BUDGET_MS.render.render40x40);
   });
 
   it('refresh of a 40×40 grid stays under budget', () => {
@@ -36,7 +37,7 @@ describe('render performance', () => {
     );
     expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(1600);
     grid.destroy();
-    expectWithinBudget('refresh 40x40', median, 80);
+    expectWithinBudget('refresh 40x40', median, PERF_BUDGET_MS.render.refresh40x40);
   });
 
   it('refreshCells of 200 tiles on a 20×20 grid stays under budget', () => {
@@ -55,7 +56,11 @@ describe('render performance', () => {
     );
     expect(grid.getCell([0, 0]).type).toBe('open');
     grid.destroy();
-    expectWithinBudget('refreshCells 200 on 20x20', median, 20);
+    expectWithinBudget(
+      'refreshCells 200 on 20x20',
+      median,
+      PERF_BUDGET_MS.render.refreshCells200On20x20,
+    );
   });
 
   it('zoomed first paint of an 80×80 world only mounts the window', () => {
@@ -84,6 +89,10 @@ describe('render performance', () => {
       1,
       3,
     );
-    expectWithinBudget('zoomed first paint 10x10 of 80x80', median, 20);
+    expectWithinBudget(
+      'zoomed first paint 10x10 of 80x80',
+      median,
+      PERF_BUDGET_MS.render.zoomedFirstPaint10x10Of80x80,
+    );
   });
 });
