@@ -47,7 +47,7 @@ import type {
   StatePatch,
   ZoomQuadrant,
 } from './interfaces';
-import { fireGameGridEvent, getCoordsFromElement, insertStyles, renderAttributes } from './utils';
+import { fireGameGridEvent, getCoordsFromElement, insertStyles } from './utils';
 import {
   clampCoordsToZoom,
   getRegionAt as computeRegionAt,
@@ -105,6 +105,12 @@ export type {
  * @category Events
  */
 export const gameGridEventsEnum = gridEventsEnum;
+
+const RESERVED_CELL_ATTRIBUTES = new Set([
+  'data-gamegrid-ref',
+  'data-gamegrid-coords',
+  'data-gamegrid-cell-type',
+]);
 
 /**
  * Stateful 2‑D lattice with collision rules and optional {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement | HTMLElement} projection.
@@ -190,6 +196,9 @@ class GameGrid implements IGameGrid {
   private slideRenderBounds: { from: IZoomBounds; to: IZoomBounds } | null = null;
   private lastMoveAt = 0;
   private lastMoveAtByDirection: Partial<Record<directionEnum, number>> = {};
+  private activeCellEl: HTMLDivElement | null = null;
+  private appliedDirectionClass: string | null = null;
+  private viewportEl: HTMLElement | null = null;
 
   private getEventTarget(): EventTarget {
     return (
@@ -411,16 +420,14 @@ class GameGrid implements IGameGrid {
   }
 
   private insertCellInRow(rowEl: HTMLElement, cellEl: HTMLDivElement, x: number): void {
-    const children = Array.from(rowEl.children) as HTMLElement[];
-    const next = children.find((child) => {
-      const coords = getCoordsFromElement(child);
-      return coords != null && coords[0] > x;
-    });
-    if (next) {
-      rowEl.insertBefore(cellEl, next);
-    } else {
-      rowEl.appendChild(cellEl);
+    for (let child = rowEl.firstElementChild; child; child = child.nextElementSibling) {
+      const coords = getCoordsFromElement(child as HTMLElement);
+      if (coords != null && coords[0] > x) {
+        rowEl.insertBefore(cellEl, child);
+        return;
+      }
     }
+    rowEl.appendChild(cellEl);
   }
 
   private restoreActiveCellClasses(x: number, y: number, el: HTMLDivElement): void {
@@ -429,7 +436,11 @@ class GameGrid implements IGameGrid {
       return;
     }
     el.classList.add(classesEnum.ACTIVE_CELL);
-    this.options.activeClasses?.forEach((c) => el.classList.add(c));
+    this.activeCellEl = el;
+    const extra = this.options.activeClasses;
+    if (extra?.length) {
+      el.classList.add(...extra);
+    }
   }
 
   private applyInjectedStyles(): void {
@@ -446,6 +457,8 @@ class GameGrid implements IGameGrid {
     container.replaceChildren();
     this.refs.cells = [];
     this.refs.rows = [];
+    this.activeCellEl = null;
+    this.viewportEl = null;
     this.applyInjectedStyles();
     const fragment = this.renderGrid();
     container.appendChild(fragment);
@@ -479,24 +492,31 @@ class GameGrid implements IGameGrid {
     this.augmentContainer();
     const fragment = document.createDocumentFragment();
     const viewport = document.createElement('div');
-    viewport.classList.add(classesEnum.VIEWPORT);
+    viewport.className = classesEnum.VIEWPORT;
     viewport.setAttribute('data-gamegrid-ref', 'viewport');
+    this.viewportEl = viewport;
 
     const zoom = this.state.zoom;
     const slide = this.slideRenderBounds;
     const renderBounds = slide ? this.unionSlideBounds(slide.from, slide.to) : zoom;
     const yStart = renderBounds?.minY ?? 0;
     const yEnd = renderBounds?.maxY ?? Math.max(0, this.matrix.length - 1);
-    const defaultColCount = (rI: number): number => this.matrix[rI]?.length ?? 1;
     const visibleColCount = zoom ? zoom.maxX - zoom.minX + 1 : null;
 
-    this.refs.cells = this.matrix.map((rowData: ICell[], rI: number) =>
-      rowData.map((cellData: ICell, cI: number) => ({
-        ...cellData,
-        current: null,
-        coords: [cI, rI],
-      })),
-    );
+    const cells: ICell[][] = new Array(this.matrix.length);
+    for (let rI = 0; rI < this.matrix.length; rI++) {
+      const rowData = this.matrix[rI];
+      const rowRefs: ICell[] = new Array(rowData.length);
+      for (let cI = 0; cI < rowData.length; cI++) {
+        rowRefs[cI] = {
+          ...rowData[cI],
+          current: null,
+          coords: [cI, rI],
+        };
+      }
+      cells[rI] = rowRefs;
+    }
+    this.refs.cells = cells;
     this.refs.rows = [];
 
     for (let rI = yStart; rI <= yEnd; rI++) {
@@ -509,7 +529,7 @@ class GameGrid implements IGameGrid {
       const xEnd = renderBounds
         ? Math.min(renderBounds.maxX, rowData.length - 1)
         : rowData.length - 1;
-      const colCount = visibleColCount ?? defaultColCount(rI);
+      const colCount = visibleColCount ?? (rowData.length > 0 ? rowData.length : 1);
       const row: HTMLDivElement = this.renderRow(rI);
 
       for (let cI = xStart; cI <= xEnd; cI++) {
@@ -517,19 +537,17 @@ class GameGrid implements IGameGrid {
         if (!cellData) {
           continue;
         }
-        const isZoomEdge = zoom && !slide ? this.isZoomEdgeCell(cI, rI, zoom) : false;
+        const isZoomEdge = Boolean(zoom && !slide && this.isZoomEdgeCell(cI, rI, zoom));
         const cell: HTMLDivElement = this.renderCell(rI, cI, cellData, colCount, isZoomEdge);
         row.appendChild(cell);
-        this.refs.cells[rI][cI] = {
-          ...cellData,
-          current: cell,
-          coords: [cI, rI],
-        };
+        const ref = cells[rI][cI];
+        ref.current = cell;
+        ref.coords = [cI, rI];
       }
 
       this.refs.rows.push({
         index: rI,
-        cells: this.refs.cells[rI],
+        cells: cells[rI],
         current: row,
       });
       viewport.appendChild(row);
@@ -575,10 +593,12 @@ class GameGrid implements IGameGrid {
 
     const viewport =
       viewportEl ??
+      this.viewportEl ??
       (container.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement | null);
     if (!viewport) {
       return;
     }
+    this.viewportEl = viewport;
 
     for (const cls of this.appliedZoomViewportClasses) {
       viewport.classList.remove(cls);
@@ -613,10 +633,9 @@ class GameGrid implements IGameGrid {
   private augmentContainer(): void {
     if (this.refs.container !== null) {
       this.refs.container.classList.add(classesEnum.GRID);
-      if (this.options.containerClasses) {
-        this.options.containerClasses.forEach((containerClass: string) =>
-          this.refs.container!.classList.add(containerClass),
-        );
+      const extra = this.options.containerClasses;
+      if (extra?.length) {
+        this.refs.container.classList.add(...extra);
       }
       this.refs.container.setAttribute('tabindex', '0');
       this.refs.container.setAttribute('data-gamegrid-ref', 'container');
@@ -627,12 +646,13 @@ class GameGrid implements IGameGrid {
 
   private renderRow(rI: number): HTMLDivElement {
     const row: HTMLDivElement = document.createElement('div');
-    if (this.options.rowClasses) {
-      this.options.rowClasses.forEach((rowClass: string) => row.classList.add(rowClass));
+    row.className = classesEnum.ROW;
+    const extra = this.options.rowClasses;
+    if (extra?.length) {
+      row.classList.add(...extra);
     }
-    row.setAttribute('data-gamegrid-row-index', rI.toString());
+    row.setAttribute('data-gamegrid-row-index', String(rI));
     row.setAttribute('data-gamegrid-ref', 'row');
-    row.classList.add(classesEnum.ROW);
     return row;
   }
 
@@ -644,33 +664,27 @@ class GameGrid implements IGameGrid {
     isZoomEdge = false,
   ): HTMLDivElement {
     const cell: HTMLDivElement = document.createElement('div');
-    renderAttributes(cell, [
-      ['data-gamegrid-ref', 'cell'],
-      ['data-gamegrid-coords', `${cI},${rI}`],
-      ['data-gamegrid-cell-type', cellData.type || cellTypeEnum.OPEN],
-    ]);
-
+    cell.setAttribute('data-gamegrid-ref', 'cell');
+    cell.setAttribute('data-gamegrid-coords', `${cI},${rI}`);
+    cell.setAttribute('data-gamegrid-cell-type', cellData.type || cellTypeEnum.OPEN);
     cell.style.width = `${100 / colCount}%`;
-    const reservedCellAttributes = new Set([
-      'data-gamegrid-ref',
-      'data-gamegrid-coords',
-      'data-gamegrid-cell-type',
-    ]);
-    cellData.cellAttributes?.forEach((attr: string[]) => {
-      if (reservedCellAttributes.has(attr[0])) {
-        return;
+    const attrs = cellData.cellAttributes;
+    if (attrs) {
+      for (let i = 0; i < attrs.length; i++) {
+        const attr = attrs[i];
+        if (RESERVED_CELL_ATTRIBUTES.has(attr[0])) {
+          continue;
+        }
+        cell.setAttribute(attr[0], attr[1]);
       }
-      cell.setAttribute(attr[0], attr[1]);
-    });
-
+    }
     cell.classList.add(classesEnum.CELL);
     if (isZoomEdge) {
       cell.classList.add(classesEnum.CELL_ZOOM_EDGE);
     }
-    if (this.options.cellClasses) {
-      this.options.cellClasses.forEach((cellClass: string) => {
-        cell.classList.add(cellClass);
-      });
+    const extra = this.options.cellClasses;
+    if (extra?.length) {
+      cell.classList.add(...extra);
     }
 
     if (cellData.render) {
@@ -825,30 +839,55 @@ class GameGrid implements IGameGrid {
   }
 
   private syncActiveDirectionClasses(direction?: string): void {
-    for (const key in directionClassEnum) {
-      this.refs.container?.classList.remove(directionClassEnum[key]);
+    const container = this.refs.container;
+    if (!container) {
+      return;
     }
-    if (direction) {
-      this.refs.container?.classList.add(directionClassEnum[direction]);
+    const next = direction ? directionClassEnum[direction] : undefined;
+    if (this.appliedDirectionClass === next && next) {
+      return;
+    }
+    if (this.appliedDirectionClass) {
+      container.classList.remove(this.appliedDirectionClass);
+    } else {
+      container.classList.remove(
+        directionClassEnum.UP,
+        directionClassEnum.DOWN,
+        directionClassEnum.LEFT,
+        directionClassEnum.RIGHT,
+      );
+    }
+    if (next) {
+      container.classList.add(next);
+      this.appliedDirectionClass = next;
+    } else {
+      this.appliedDirectionClass = null;
     }
   }
 
   private syncActiveDom(direction?: string): void {
     if (!this.getState().rendered) return;
-    this.removeActiveClasses();
+    this.clearPaintedActiveCell();
     const [nx, ny] = this.getState().activeCoords!;
-    const cell = this.refs.cells[ny]?.[nx];
-    cell?.current?.classList.add(classesEnum.ACTIVE_CELL);
+    const el = this.refs.cells[ny]?.[nx]?.current;
+    if (el) {
+      el.classList.add(classesEnum.ACTIVE_CELL);
+      this.activeCellEl = el;
+      const extra = this.options.activeClasses;
+      if (extra?.length) {
+        el.classList.add(...extra);
+      }
+    }
     this.syncActiveDirectionClasses(direction);
-    this.options.activeClasses?.forEach((c) => cell?.current?.classList.add(c));
   }
 
-  private removeActiveClasses(): void {
-    this.refs.cells.forEach((cellRow) => {
-      cellRow.forEach((cell: ICell) => {
-        cell.current?.classList.remove(classesEnum.ACTIVE_CELL);
-      });
-    });
+  private clearPaintedActiveCell(): void {
+    const el = this.activeCellEl;
+    if (!el) {
+      return;
+    }
+    el.classList.remove(classesEnum.ACTIVE_CELL);
+    this.activeCellEl = null;
   }
 
   private containerBlur = (): void => {
@@ -944,13 +983,15 @@ class GameGrid implements IGameGrid {
    */
   public getAllCellsByType(type: string): ICell[] {
     const cells: ICell[] = [];
-    this.matrix.forEach((row: ICell[], rI: number) => {
-      row.forEach((cell: ICell, cI: number) => {
-        if (cell.type === type) {
-          cells.push(this.getCell([cI, rI]));
+    const matrix = this.matrix;
+    for (let rI = 0; rI < matrix.length; rI++) {
+      const row = matrix[rI];
+      for (let cI = 0; cI < row.length; cI++) {
+        if (row[cI].type === type) {
+          cells.push(row[cI]);
         }
-      });
-    });
+      }
+    }
     return cells;
   }
 
@@ -1227,7 +1268,12 @@ class GameGrid implements IGameGrid {
   }
 
   private cloneMoves(moves: number[][]): number[][] {
-    return moves.map((coords) => [...coords]);
+    const cloned: number[][] = new Array(moves.length);
+    for (let i = 0; i < moves.length; i++) {
+      const coords = moves[i];
+      cloned[i] = [coords[0], coords[1]];
+    }
+    return cloned;
   }
 
   private moveEventDetail(
@@ -1304,22 +1350,35 @@ class GameGrid implements IGameGrid {
   }
 
   private trimMovesToLimit(moves: number[][] = this.getState().moves): number[][] {
-    const cloned = this.cloneMoves(moves);
     const limit = this.getRewindLimit();
-    if (cloned.length > limit) {
-      return cloned.slice(cloned.length - limit);
+    if (moves.length <= limit) {
+      return moves;
     }
-    return cloned;
+    const start = moves.length - limit;
+    const trimmed: number[][] = new Array(limit);
+    for (let i = 0; i < limit; i++) {
+      const coords = moves[start + i];
+      trimmed[i] = [coords[0], coords[1]];
+    }
+    return trimmed;
   }
 
   private createNewMovesArray(nextCoords: number[]): number[][] {
-    const clonedMoves = this.cloneMoves(this.getState().moves);
-    const last = clonedMoves[clonedMoves.length - 1];
-    if (last && this.coordsEqual(last, nextCoords)) {
-      return this.trimMovesToLimit(clonedMoves);
+    const moves = this.state.moves;
+    const last = moves[moves.length - 1];
+    const limit = this.getRewindLimit();
+    if (last && last[0] === nextCoords[0] && last[1] === nextCoords[1]) {
+      return moves.length > limit ? this.trimMovesToLimit(moves) : moves;
     }
-    clonedMoves.push([...nextCoords]);
-    return this.trimMovesToLimit(clonedMoves);
+    const start = moves.length >= limit ? moves.length - limit + 1 : 0;
+    const next: number[][] = new Array(moves.length - start + 1);
+    let j = 0;
+    for (let i = start; i < moves.length; i++) {
+      const coords = moves[i];
+      next[j++] = [coords[0], coords[1]];
+    }
+    next[j] = [nextCoords[0], nextCoords[1]];
+    return next;
   }
 
   private applyRewindToIndex(index: number, steps: number): void {
@@ -1707,6 +1766,9 @@ class GameGrid implements IGameGrid {
       this.refs.rows = [];
       this.refs.cells = [];
     }
+    this.activeCellEl = null;
+    this.appliedDirectionClass = null;
+    this.viewportEl = null;
     this.setStateSync({ rendered: false });
     this.emit(gridEventsEnum.DESTROYED);
   }
@@ -1789,9 +1851,9 @@ class GameGrid implements IGameGrid {
 
     if (this.state.rendered) {
       const container = this.refs.container;
-      const viewport = container?.querySelector(
-        '[data-gamegrid-ref="viewport"]',
-      ) as HTMLElement | null;
+      const viewport =
+        this.viewportEl ??
+        (container?.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement | null);
 
       if (animate && fromZoom && container && viewport) {
         const duration = this.options.zoomSlideDuration ?? 300;
@@ -1832,9 +1894,9 @@ class GameGrid implements IGameGrid {
 
     if (this.state.rendered) {
       const container = this.refs.container;
-      const viewport = container?.querySelector(
-        '[data-gamegrid-ref="viewport"]',
-      ) as HTMLElement | null;
+      const viewport =
+        this.viewportEl ??
+        (container?.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement | null);
 
       if (animate && fromZoom && container && viewport) {
         const duration = this.options.zoomSlideDuration ?? 300;
