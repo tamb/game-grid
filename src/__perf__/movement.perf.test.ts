@@ -1,4 +1,5 @@
 import GameGrid, { classesEnum } from '../index';
+import { PERF_BUDGET_MS } from './budgets';
 import {
   countActiveCells,
   expectWithinBudget,
@@ -26,7 +27,11 @@ describe('movement performance', () => {
       expect(grid.getState().activeCoords).toEqual([0, 0]);
       grid.destroy();
     });
-    expectWithinBudget('headless 80x80 x 3000 moves', median, 40);
+    expectWithinBudget(
+      'headless 80x80 x 3000 moves',
+      median,
+      PERF_BUDGET_MS.movement.headless80x80x3000,
+    );
   });
 
   it('headless 80×80 with region tracking completes 2000 moves under budget', () => {
@@ -40,7 +45,11 @@ describe('movement performance', () => {
       expect(grid.getActiveRegion()?.divisions).toBe(4);
       grid.destroy();
     });
-    expectWithinBudget('headless region 80x80 x 2000 moves', median, 40);
+    expectWithinBudget(
+      'headless region 80x80 x 2000 moves',
+      median,
+      PERF_BUDGET_MS.movement.headlessRegion80x80x2000,
+    );
   });
 
   it('rendered 30×30 completes 400 zigzag moves without scanning the grid', () => {
@@ -61,7 +70,11 @@ describe('movement performance', () => {
       1,
       3,
     );
-    expectWithinBudget('rendered 30x30 x 400 moves', median, 120);
+    expectWithinBudget(
+      'rendered 30x30 x 400 moves',
+      median,
+      PERF_BUDGET_MS.movement.rendered30x30x400,
+    );
   });
 
   it('move-only cost on a mounted 30×30 stays well below a full-grid class scan', () => {
@@ -80,7 +93,11 @@ describe('movement performance', () => {
     expect(grid.getState().activeCoords).toEqual([0, 0]);
     expect(countActiveCells(root)).toBe(1);
     grid.destroy();
-    expectWithinBudget('mounted 30x30 move-only 400', median, 40);
+    expectWithinBudget(
+      'mounted 30x30 move-only 400',
+      median,
+      PERF_BUDGET_MS.movement.mountedMoveOnly30x30x400,
+    );
   });
 
   it('zoomed 10×10 window on an 80×80 matrix keeps move cost independent of world size', () => {
@@ -109,7 +126,11 @@ describe('movement performance', () => {
     expect(grid.getState().activeCoords).toEqual([10, 10]);
     expect(countActiveCells(root)).toBe(1);
     grid.destroy();
-    expectWithinBudget('zoomed 80x80 world / 10x10 window x 400 moves', median, 40);
+    expectWithinBudget(
+      'zoomed 80x80 world / 10x10 window x 400 moves',
+      median,
+      PERF_BUDGET_MS.movement.zoomed80x80Window10x10x400,
+    );
   });
 
   it('moveTo along a 200-step path stays under budget', () => {
@@ -123,7 +144,7 @@ describe('movement performance', () => {
       expect(grid.getState().activeCoords).toEqual([49, 3]);
       grid.destroy();
     });
-    expectWithinBudget('moveTo 200-step path', median, 8);
+    expectWithinBudget('moveTo 200-step path', median, PERF_BUDGET_MS.movement.moveTo200Steps);
   });
 
   it('rewind / unrewind cycles stay under budget', () => {
@@ -139,6 +160,10 @@ describe('movement performance', () => {
       }
       grid.destroy();
     });
-    expectWithinBudget('rewind/unrewind 500 cycles', median, 25);
+    expectWithinBudget(
+      'rewind/unrewind 500 cycles',
+      median,
+      PERF_BUDGET_MS.movement.rewindUnrewind500Cycles,
+    );
   });
 });
