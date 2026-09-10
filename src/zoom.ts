@@ -1,7 +1,14 @@
 import type { ICell, IRegionTile, IZoomBounds, IZoomOptions, ZoomQuadrant } from './interfaces';
 
 export function getMatrixWidth(matrix: ICell[][]): number {
-  return matrix.reduce((max, row) => Math.max(max, row.length), 0);
+  let max = 0;
+  for (let i = 0; i < matrix.length; i++) {
+    const len = matrix[i]?.length ?? 0;
+    if (len > max) {
+      max = len;
+    }
+  }
+  return max;
 }
 
 export function getMatrixHeight(matrix: ICell[][]): number {
@@ -62,11 +69,7 @@ function getTileBounds(
   }
 
   const base = Math.floor(total / divisions);
-  let start = 0;
-  for (let i = 0; i < tileIndex; i++) {
-    start += base;
-  }
-
+  const start = tileIndex * base;
   const isLast = tileIndex === divisions - 1;
   const end = isLast ? total - 1 : start + base - 1;
   return { start, end };
@@ -140,13 +143,14 @@ export function getQuadrantZoom(matrix: ICell[][], quadrant: ZoomQuadrant): IZoo
 }
 
 function findTileIndex(coord: number, total: number, divisions: number): number {
-  for (let i = 0; i < divisions; i++) {
-    const { start, end } = getTileBounds(total, divisions, i);
-    if (coord >= start && coord <= end) {
-      return i;
-    }
+  if (coord < 0 || coord >= total || total <= 0) {
+    return Math.max(0, divisions - 1);
   }
-  return Math.max(0, divisions - 1);
+  const base = Math.floor(total / divisions);
+  if (base <= 0) {
+    return Math.max(0, divisions - 1);
+  }
+  return Math.min(divisions - 1, Math.floor(coord / base));
 }
 
 function tileToQuadrant(tileX: number, tileY: number): ZoomQuadrant {

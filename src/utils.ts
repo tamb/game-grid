@@ -17,13 +17,15 @@ import type { IGameGrid, IGameGridEventDetail } from './interfaces';
  * @category DOM helpers
  */
 export function renderAttributes(el: HTMLElement, tuples: [string, string][]): void {
-  tuples.forEach((tuple: [string, string]) => {
-    if (tuple[0] === 'class') {
-      el.classList.add(...tuple[1].split(' '));
+  for (let i = 0; i < tuples.length; i++) {
+    const name = tuples[i][0];
+    const value = tuples[i][1];
+    if (name === 'class') {
+      el.classList.add(...value.split(' '));
     } else {
-      el.setAttribute(tuple[0], tuple[1]);
+      el.setAttribute(name, value);
     }
-  });
+  }
 }
 
 /**
@@ -43,9 +45,12 @@ export function renderAttributes(el: HTMLElement, tuples: [string, string][]): v
 export function getCoordsFromElement(el: HTMLElement): [number, number] | undefined {
   const raw = el.getAttribute('data-gamegrid-coords');
   if (raw === null) return undefined;
-  const parts = raw.split(',').map((num: string) => Number.parseInt(num, 10));
-  if (parts.length !== 2 || parts.some(Number.isNaN)) return undefined;
-  return [parts[0], parts[1]];
+  const comma = raw.indexOf(',');
+  if (comma < 1 || raw.indexOf(',', comma + 1) !== -1) return undefined;
+  const x = Number.parseInt(raw.slice(0, comma), 10);
+  const y = Number.parseInt(raw.slice(comma + 1), 10);
+  if (Number.isNaN(x) || Number.isNaN(y)) return undefined;
+  return [x, y];
 }
 
 /**

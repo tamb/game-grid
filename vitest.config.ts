@@ -5,6 +5,6 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['src/**/__tests__/**/*.ts'],
-    exclude: ['src/**/__tests__/**/*.dist.test.ts'],
+    exclude: ['src/**/__tests__/**/*.dist.test.ts', 'src/__perf__/**'],
   },
 });

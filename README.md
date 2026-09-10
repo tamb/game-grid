@@ -55,6 +55,15 @@ npm run demo:dev
 
 After a change to the library, run **`npm run build`** again so **`dist/`** updates; Parcel will pick it up on reload when using **`file:..`** or a **`npm link`** symlink.
 
+## Tests
+
+| Script | Purpose |
+|--------|---------|
+| **`npm test`** | Unit suite (Vitest + jsdom). Does **not** run performance budgets. |
+| **`npm run test:perf`** | Performance / stress regression suite (`src/__perf__/`). Time budgets fail if hot paths regress (for example, painting the active cell by scanning the whole grid). |
+| **`npm run test:dist`** | Checks the built `dist/` bundles. |
+| **`npm run build.safe`** | Unit tests → build → dist tests → perf suite. |
+
 ## API documentation (TypeDoc)
 
 Browse the [published API reference](https://tamb.github.io/game-grid/docs/) on GitHub Pages, or generate HTML locally:

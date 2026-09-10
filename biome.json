@@ -13,6 +13,7 @@
       "scripts/**",
       "rolldown.config.mjs",
       "vitest.config.ts",
+      "vitest.perf.config.ts",
       ".vscode/settings.json",
       "*.json"
     ]
@@ -47,7 +48,7 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.test.ts", "**/__tests__/**"],
+      "includes": ["**/*.test.ts", "**/__tests__/**", "**/__perf__/**"],
       "linter": {
         "rules": {
           "suspicious": {

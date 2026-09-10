@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
 - TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.
-
 - **Richer `MOVE_*` `detail`**: directional, blocked, collide, dettach, land, wrap, and boundary events include `from`, `to`, `direction`, and `blocked` (`IMoveEventDetail`). `to` is the candidate cell after wrap/clamp; `blocked` is true only when `blockOnType` / `moveOnType` rejected that cell.
 - **`moveTo(coords | path)`**: walk one cell or an explicit list through `setActiveCell` (block / collide / wrap rules). Stops when a step does not land on the requested cell. No pathfinding. Not rate-limited by `moveDebounce`.
 - **`unrewind(steps?)` / `unrewindTo(index)`**: redo after `rewind`. Dropped coords live on `state.future` until a new cell lands. Emits `gamegrid:move:unrewind` (`detail.steps`, `detail.index`, plus move detail) then `MOVE_LAND`. Optional `callbacks.onUnrewind`.
@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Faster rendered movement**: updating the active cell no longer walks every cell to toggle `gamegrid__cell--active` (O(cells) → O(1)). Direction classes on the container are swapped the same way.
+- **Cheaper hot paths** (no public API change): move-history updates clone once instead of twice; zoom tile indices are O(1); `render` / `refresh` allocate cell refs in a single pass; `refreshCells` inserts without snapshotting every row child; `getAllCellsByType` and coord parsing avoid extra allocations.
 - TypeDoc groups `GameGrid` / `IGameGrid` members by **job** (Matrix, Movement, View, State, Options, Zoom) instead of a flat Methods list. Docs landing page has a matching table.
 - `rewind` / `rewindTo` keep undone coords on `state.future` instead of discarding them.
 - Default active-cell highlight is a 2px `currentColor` inset ring instead of a 10px red outline.
