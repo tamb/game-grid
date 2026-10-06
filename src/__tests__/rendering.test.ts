@@ -125,6 +125,48 @@ describe('GameGrid rendering', () => {
     expect(withClasses.refs.cells[0][0].current?.classList.contains('baz-2')).toBe(true);
   });
 
+  test('custom active classes move with the active cell', () => {
+    withClasses.moveRight();
+    const previous = withClasses.refs.cells[0][0].current;
+    const current = withClasses.refs.cells[0][1].current;
+    expect(previous?.classList.contains('gamegrid__cell--active')).toBe(false);
+    expect(previous?.classList.contains('baz')).toBe(false);
+    expect(previous?.classList.contains('baz-2')).toBe(false);
+    expect(current?.classList.contains('gamegrid__cell--active')).toBe(true);
+    expect(current?.classList.contains('baz')).toBe(true);
+    expect(current?.classList.contains('baz-2')).toBe(true);
+  });
+
+  test('changing activeClasses drops the previous token on the next move', () => {
+    withClasses.setOptions({ activeClasses: ['next-player'] });
+    withClasses.moveRight();
+    const previous = withClasses.refs.cells[0][0].current;
+    const current = withClasses.refs.cells[0][1].current;
+    expect(previous?.classList.contains('baz')).toBe(false);
+    expect(previous?.classList.contains('baz-2')).toBe(false);
+    expect(current?.classList.contains('baz')).toBe(false);
+    expect(current?.classList.contains('next-player')).toBe(true);
+  });
+
+  test('an active class that is also a cell class stays on the previous cell', () => {
+    const grid = new GameGrid(
+      {
+        matrix,
+        options: { cellClasses: ['tile'], activeClasses: ['tile', 'player'] },
+        state: { activeCoords: [0, 0] },
+      },
+      document.getElementById('root3')!,
+    );
+    grid.moveRight();
+    const previous = grid.refs.cells[0][0].current;
+    const current = grid.refs.cells[0][1].current;
+    expect(previous?.classList.contains('tile')).toBe(true);
+    expect(previous?.classList.contains('player')).toBe(false);
+    expect(current?.classList.contains('tile')).toBe(true);
+    expect(current?.classList.contains('player')).toBe(true);
+    grid.destroy();
+  });
+
   test('cell width is correct', () => {
     const cells = renderedGrid.refs.cells;
     expect(cells[0][0].current?.style.width.substring(0, 4)).toMatch('33.3');

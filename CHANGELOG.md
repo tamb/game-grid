@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Reserved `data-gamegrid-*` cell attributes are ignored case-insensitively, matching HTML attribute-name folding.
+- Custom `activeClasses` are removed from the cell that lost focus, including after `setOptions` changes the list. A class that is also in `cellClasses` stays on every cell.
+- `destroy()` during an animated zoom no longer remounts the grid when the slide finishes.
+- Each grid copies its initial `activeCoords`, `prevCoords`, `moves`, and `future` arrays so instances do not share the defaults.
+- A `slideZoomOnEdge` move that does not change the zoom window still updates the active-cell highlight.
+
 ### Added
 
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
