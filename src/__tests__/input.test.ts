@@ -194,6 +194,38 @@ describe('keyboard and pointer input', () => {
     spoofed.destroy();
   });
 
+  test('reserved cellAttributes cannot override internal attributes when the name case differs', () => {
+    const spoofed = new GameGrid(
+      {
+        matrix: [
+          [
+            {
+              type: 'open',
+              cellAttributes: [
+                ['DATA-GAMEGRID-COORDS', '2,2'],
+                ['Data-Gamegrid-Ref', 'not-a-cell'],
+                ['DATA-GAMEGRID-CELL-TYPE', 'barrier'],
+              ],
+            },
+            { type: 'open' },
+            { type: 'open' },
+          ],
+          [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
+          [{ type: 'open' }, { type: 'open' }, { type: 'open' }],
+        ],
+        state: { activeCoords: [0, 0] },
+      },
+      container,
+    );
+    const cell = spoofed.refs.cells[0][0].current!;
+    expect(cell.getAttribute('data-gamegrid-coords')).toBe('0,0');
+    expect(cell.getAttribute('data-gamegrid-ref')).toBe('cell');
+    expect(cell.getAttribute('data-gamegrid-cell-type')).toBe('open');
+    cell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(spoofed.getState().activeCoords).toEqual([0, 0]);
+    spoofed.destroy();
+  });
+
   test('reserved cellAttributes cannot override data-gamegrid-ref', () => {
     const spoofed = new GameGrid(
       {
