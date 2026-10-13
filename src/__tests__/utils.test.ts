@@ -12,6 +12,16 @@ describe('getCoordsFromElement util', () => {
     const el = document.createElement('div');
     el.setAttribute('data-gamegrid-coords', 'a,b');
     expect(getCoordsFromElement(el)).toBeUndefined();
+    el.setAttribute('data-gamegrid-coords', '1,2,3');
+    expect(getCoordsFromElement(el)).toBeUndefined();
+    el.setAttribute('data-gamegrid-coords', ',1');
+    expect(getCoordsFromElement(el)).toBeUndefined();
+  });
+
+  test('parses a zero coordinate', () => {
+    const el = document.createElement('div');
+    el.setAttribute('data-gamegrid-coords', '0,0');
+    expect(getCoordsFromElement(el)).toEqual([0, 0]);
   });
 });
 

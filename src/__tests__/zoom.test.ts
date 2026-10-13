@@ -63,6 +63,43 @@ describe('zoom helpers and state', () => {
     grid.setZoom({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
     expect(grid.getZoom()).toEqual({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
     expect(grid.getState().activeCoords).toEqual([2, 2]);
+    expect(grid.getState().moves).toEqual([
+      [5, 5],
+      [2, 2],
+    ]);
+    grid.destroy();
+  });
+
+  test('rewind leaves the zoom window in place when constrainToZoom is false', () => {
+    const grid = new GameGrid({
+      matrix: makeMatrix(6, 6),
+      options: { constrainToZoom: false },
+      state: { activeCoords: [5, 5] },
+    });
+    grid.moveLeft();
+    grid.setZoom({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
+    grid.rewind();
+    expect(grid.getState().activeCoords).toEqual([4, 5]);
+    expect(grid.getZoom()).toEqual({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
+    grid.destroy();
+  });
+
+  test('setZoom clamp clears redo history and an edge bump does not record the pre-zoom cell', () => {
+    const grid = new GameGrid({
+      matrix: makeMatrix(6, 6),
+      state: { activeCoords: [5, 5] },
+    });
+    grid.moveLeft();
+    grid.rewind();
+    expect(grid.getState().future).toEqual([[4, 5]]);
+    grid.setZoom({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
+    expect(grid.getState().activeCoords).toEqual([2, 2]);
+    expect(grid.getState().future).toEqual([]);
+    expect(grid.getState().moves.at(-1)).toEqual([2, 2]);
+    const moves = grid.getState().moves;
+    grid.moveRight();
+    expect(grid.getState().activeCoords).toEqual([2, 2]);
+    expect(grid.getState().moves).toEqual(moves);
     grid.destroy();
   });
 
@@ -362,6 +399,52 @@ describe('zoom filtered render and CSS classes', () => {
     grid.zoomQuadrant('se');
     const cells = document.querySelectorAll('[data-gamegrid-ref="cell"]');
     expect(cells.length).toBe(9);
+    grid.destroy();
+  });
+
+  test('rewind after a zoom clamp shifts the window and keeps the active cell painted', () => {
+    const grid = new GameGrid(
+      { matrix: makeMatrix(6, 6), state: { activeCoords: [5, 5] } },
+      document.getElementById('zoom-root')!,
+    );
+    grid.moveLeft();
+    grid.setZoom({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
+    expect(grid.getState().activeCoords).toEqual([2, 2]);
+    expect(
+      document.querySelector('.gamegrid__cell--active')?.getAttribute('data-gamegrid-coords'),
+    ).toBe('2,2');
+
+    grid.rewind();
+    expect(grid.getState().activeCoords).toEqual([4, 5]);
+    expect(grid.getZoom()).toEqual({ minX: 2, minY: 3, maxX: 4, maxY: 5 });
+    expect(
+      document.querySelector('.gamegrid__cell--active')?.getAttribute('data-gamegrid-coords'),
+    ).toBe('4,5');
+    expect(document.querySelectorAll('.gamegrid__cell--active')).toHaveLength(1);
+    grid.destroy();
+  });
+
+  test('unrewind shifts the window when the restored cell is outside zoom', () => {
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(6, 6),
+        options: { constrainToZoom: false },
+        state: { activeCoords: [1, 1] },
+      },
+      document.getElementById('zoom-root')!,
+    );
+    grid.setZoom({ minX: 0, minY: 0, maxX: 2, maxY: 2 });
+    grid.moveTo([5, 5]);
+    expect(grid.getState().activeCoords).toEqual([5, 5]);
+    grid.setOptions({ constrainToZoom: true });
+    grid.rewind();
+    expect(grid.getState().activeCoords).toEqual([1, 1]);
+    grid.unrewind();
+    expect(grid.getState().activeCoords).toEqual([5, 5]);
+    expect(grid.getZoom()).toEqual({ minX: 3, minY: 3, maxX: 5, maxY: 5 });
+    expect(
+      document.querySelector('.gamegrid__cell--active')?.getAttribute('data-gamegrid-coords'),
+    ).toBe('5,5');
     grid.destroy();
   });
 

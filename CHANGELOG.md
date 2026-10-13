@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Zoom clamps now append the landed cell to `state.moves` (and clear `state.future`) so the trail still includes the current cell. With `constrainToZoom`, `rewind` / `unrewind` shift the window to keep that cell on screen instead of leaving the highlight outside the viewport.
+
 ### Added
 
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.

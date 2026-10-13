@@ -59,6 +59,7 @@ import {
   normalizeZoomBounds,
   regionsEqual,
   resolveAnimate,
+  shiftZoomToInclude,
 } from './zoom';
 import { runZoomSlide } from './zoom-render';
 
@@ -1408,6 +1409,7 @@ class GameGrid implements IGameGrid {
 
     this.emitLand(prevCoords, nextCoords, detail);
 
+    this.followZoomToActiveCell();
     this.handleZoomExit(prevCoords, direction);
     this.handleRegionChange(prevCoords);
     this.syncActiveDom(direction);
@@ -1443,9 +1445,36 @@ class GameGrid implements IGameGrid {
 
     this.emitLand(prevCoords, nextCoords, detail);
 
+    this.followZoomToActiveCell();
     this.handleZoomExit(prevCoords, direction);
     this.handleRegionChange(prevCoords);
     this.syncActiveDom(direction);
+  }
+
+  /**
+   * History can land outside the current window (a zoom clamp records the new
+   * cell, then rewind returns to where the player was). Shift the window so
+   * the active cell stays on screen when movement is constrained to zoom.
+   */
+  private followZoomToActiveCell(): void {
+    if (this.options.constrainToZoom === false) {
+      return;
+    }
+    const zoom = this.state.zoom;
+    const coords = this.getState().activeCoords;
+    if (!zoom || !coords || isInsideZoom(coords, zoom)) {
+      return;
+    }
+    const next = shiftZoomToInclude(zoom, coords, this.matrix);
+    if (
+      next.minX === zoom.minX &&
+      next.minY === zoom.minY &&
+      next.maxX === zoom.maxX &&
+      next.maxY === zoom.maxY
+    ) {
+      return;
+    }
+    this.setZoom(next, { animate: false });
   }
 
   private emitCollideAndDettach(from: number[], to: number[], detail?: IMoveEventDetail): void {
@@ -1838,8 +1867,15 @@ class GameGrid implements IGameGrid {
     const patch: StatePatch = { zoom: normalized };
 
     if (activeCoords[0] !== clamped[0] || activeCoords[1] !== clamped[1]) {
+      const nextMoves = this.createNewMovesArray(clamped);
+      const last = this.state.moves[this.state.moves.length - 1];
+      const landedNew = !last || last[0] !== clamped[0] || last[1] !== clamped[1];
       patch.activeCoords = clamped;
-      patch.prevCoords = activeCoords;
+      patch.prevCoords = [activeCoords[0], activeCoords[1]];
+      patch.moves = nextMoves;
+      if (landedNew && (this.state.future?.length ?? 0) > 0) {
+        patch.future = [];
+      }
     }
 
     const divisions = this.options.regionDivisions;

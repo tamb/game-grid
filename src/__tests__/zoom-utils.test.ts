@@ -9,6 +9,7 @@ import {
   normalizeZoomBounds,
   regionsEqual,
   resolveAnimate,
+  shiftZoomToInclude,
 } from '../zoom';
 
 const open = { type: 'open' as const };
@@ -41,6 +42,30 @@ describe('zoom pure helpers', () => {
     expect(clampCoordsToZoom([0, 5], zoom)).toEqual([2, 4]);
     expect(isInsideZoom([3, 3], zoom)).toBe(true);
     expect(isInsideZoom([1, 3], zoom)).toBe(false);
+  });
+
+  test('shiftZoomToInclude keeps window size and contains the coord', () => {
+    const matrix = Array.from({ length: 6 }, () => [open, open, open, open, open, open]);
+    const zoom = { minX: 0, minY: 0, maxX: 2, maxY: 2 };
+    expect(shiftZoomToInclude(zoom, [1, 1], matrix)).toBe(zoom);
+    expect(shiftZoomToInclude(zoom, [5, 5], matrix)).toEqual({
+      minX: 3,
+      minY: 3,
+      maxX: 5,
+      maxY: 5,
+    });
+    expect(shiftZoomToInclude(zoom, [4, 1], matrix)).toEqual({
+      minX: 2,
+      minY: 0,
+      maxX: 4,
+      maxY: 2,
+    });
+    expect(shiftZoomToInclude({ minX: 3, minY: 3, maxX: 5, maxY: 5 }, [0, 4], matrix)).toEqual({
+      minX: 0,
+      minY: 3,
+      maxX: 2,
+      maxY: 5,
+    });
   });
 
   test('resolveAnimate prefers per-call option then global default', () => {

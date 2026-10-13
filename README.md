@@ -445,7 +445,7 @@ The **`GameGrid`** class implements **`IGameGrid`**. The mounted root element is
 
 **`rewind(steps?)`** and **`rewindTo(index)`** walk **`state.moves`**, an oldest-first trail of landed cells (including the current one) capped by **`rewindLimit`**. Blocked attempts are not recorded. Extra `rewind` steps clamp to the oldest remaining entry. Dropped coords go onto **`state.future`**. These calls emit **`gamegrid:move:rewind`** then **`MOVE_LAND`**, and they ignore **`moveDebounce`**.
 
-**`unrewind(steps?)`** and **`unrewindTo(index)`** replay **`state.future`**. A new landed cell (move, click, or **`moveTo`**) clears the forward stack; a blocked stay does not. Same debounce exception. Emits **`gamegrid:move:unrewind`** then **`MOVE_LAND`**.
+**`unrewind(steps?)`** and **`unrewindTo(index)`** replay **`state.future`**. A new landed cell (move, click, **`moveTo`**, or a zoom clamp) clears the forward stack; a blocked stay does not. Same debounce exception. Emits **`gamegrid:move:unrewind`** then **`MOVE_LAND`**. When **`constrainToZoom`** is on, **`rewind`** / **`unrewind`** shift the current window (same width and height) so the landed cell stays visible.
 
 **`moveTo(coords)`** walks one cell or an explicit list of **`[x, y]`** steps through **`setActiveCell`** (block / collide / wrap / zoom-edge). It does not pathfind. The walk stops when a step does not land on the requested cell.
 
