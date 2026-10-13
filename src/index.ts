@@ -114,6 +114,22 @@ const RESERVED_CELL_ATTRIBUTES = new Set([
 ]);
 
 /**
+ * HTML documents store attribute names in ASCII lowercase, so a mixed-case
+ * `cellAttributes` entry still overwrites these unless the check folds case.
+ */
+function isReservedCellAttribute(name: string): boolean {
+  if (RESERVED_CELL_ATTRIBUTES.has(name)) {
+    return true;
+  }
+  let lowered = '';
+  for (let i = 0; i < name.length; i++) {
+    const code = name.charCodeAt(i);
+    lowered += code >= 65 && code <= 90 ? String.fromCharCode(code + 32) : name[i];
+  }
+  return RESERVED_CELL_ATTRIBUTES.has(lowered);
+}
+
+/**
  * Stateful 2‑D lattice with collision rules and optional {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement | HTMLElement} projection.
  *
  * @remarks
@@ -198,8 +214,10 @@ class GameGrid implements IGameGrid {
   private lastMoveAt = 0;
   private lastMoveAtByDirection: Partial<Record<directionEnum, number>> = {};
   private activeCellEl: HTMLDivElement | null = null;
+  private appliedActiveClasses: string[] = [];
   private appliedDirectionClass: string | null = null;
   private viewportEl: HTMLElement | null = null;
+  private zoomSlideEpoch = 0;
 
   private getEventTarget(): EventTarget {
     return (
@@ -253,15 +271,20 @@ class GameGrid implements IGameGrid {
     this.refs = this.setEmptyRefs();
 
     this.matrix = config.matrix;
+    const initialActive = config.state?.activeCoords ?? INITIAL_STATE.activeCoords;
+    const initialPrev = config.state?.prevCoords ?? INITIAL_STATE.prevCoords;
+    const initialMoves = config.state?.moves;
+    const initialFuture = config.state?.future;
     this.state = {
       ...INITIAL_STATE,
       ...config.state,
+      activeCoords: [...initialActive],
+      prevCoords: [...initialPrev],
+      moves: initialMoves ? initialMoves.map((coords) => [...coords]) : [],
+      future: initialFuture ? initialFuture.map((coords) => [...coords]) : [],
     };
     if (this.state.moves.length === 0) {
       this.state.moves = [[...this.state.activeCoords]];
-    }
-    if (!this.state.future) {
-      this.state.future = [];
     }
 
     if (container) {
@@ -436,12 +459,7 @@ class GameGrid implements IGameGrid {
     if (ax !== x || ay !== y) {
       return;
     }
-    el.classList.add(classesEnum.ACTIVE_CELL);
-    this.activeCellEl = el;
-    const extra = this.options.activeClasses;
-    if (extra?.length) {
-      el.classList.add(...extra);
-    }
+    this.paintActiveCell(el);
   }
 
   private applyInjectedStyles(): void {
@@ -673,7 +691,7 @@ class GameGrid implements IGameGrid {
     if (attrs) {
       for (let i = 0; i < attrs.length; i++) {
         const attr = attrs[i];
-        if (RESERVED_CELL_ATTRIBUTES.has(attr[0])) {
+        if (isReservedCellAttribute(attr[0])) {
           continue;
         }
         cell.setAttribute(attr[0], attr[1]);
@@ -792,10 +810,11 @@ class GameGrid implements IGameGrid {
       return false;
     }
 
+    const zoomBefore = this.state.zoom;
     this.zoomFraction(next.divisions, next.tileX, next.tileY, {
       animate: resolveAnimate(undefined, this.options.animateZoom),
     });
-    return true;
+    return this.state.zoom !== zoomBefore;
   }
 
   private handleZoomExit(prevCoords: [number, number], direction?: string): void {
@@ -872,14 +891,21 @@ class GameGrid implements IGameGrid {
     const [nx, ny] = this.getState().activeCoords!;
     const el = this.refs.cells[ny]?.[nx]?.current;
     if (el) {
-      el.classList.add(classesEnum.ACTIVE_CELL);
-      this.activeCellEl = el;
-      const extra = this.options.activeClasses;
-      if (extra?.length) {
-        el.classList.add(...extra);
-      }
+      this.paintActiveCell(el);
     }
     this.syncActiveDirectionClasses(direction);
+  }
+
+  private paintActiveCell(el: HTMLDivElement): void {
+    el.classList.add(classesEnum.ACTIVE_CELL);
+    this.activeCellEl = el;
+    const extra = this.options.activeClasses;
+    if (extra?.length) {
+      el.classList.add(...extra);
+      this.appliedActiveClasses = extra.slice();
+    } else {
+      this.appliedActiveClasses = [];
+    }
   }
 
   private clearPaintedActiveCell(): void {
@@ -888,7 +914,17 @@ class GameGrid implements IGameGrid {
       return;
     }
     el.classList.remove(classesEnum.ACTIVE_CELL);
+    if (this.appliedActiveClasses.length > 0) {
+      const permanent = this.options.cellClasses;
+      const removable = permanent?.length
+        ? this.appliedActiveClasses.filter((cls) => !permanent.includes(cls))
+        : this.appliedActiveClasses;
+      if (removable.length > 0) {
+        el.classList.remove(...removable);
+      }
+    }
     this.activeCellEl = null;
+    this.appliedActiveClasses = [];
   }
 
   private containerBlur = (): void => {
@@ -1783,6 +1819,7 @@ class GameGrid implements IGameGrid {
    * ```
    */
   public destroy(): void {
+    this.zoomSlideEpoch += 1;
     const rendered = this.state.rendered;
     const container = this.refs.container;
     if (container && rendered) {
@@ -1883,6 +1920,7 @@ class GameGrid implements IGameGrid {
       patch.region = computeRegionAt(this.matrix, clamped, divisions);
     }
 
+    const epoch = ++this.zoomSlideEpoch;
     this.setStateSync(patch);
 
     if (this.state.rendered) {
@@ -1898,6 +1936,9 @@ class GameGrid implements IGameGrid {
           this.rebuildDom();
           this.syncActiveDom(this.state.currentDirection);
         }).then(() => {
+          if (epoch !== this.zoomSlideEpoch || !this.state.rendered) {
+            return;
+          }
           this.slideRenderBounds = null;
           this.rebuildDom();
           this.emitZoomSet(animate, normalized);
@@ -1926,6 +1967,7 @@ class GameGrid implements IGameGrid {
     const animate = resolveAnimate(options, this.options.animateZoom);
     const fullBounds = this.getFullMatrixBounds();
 
+    const epoch = ++this.zoomSlideEpoch;
     this.setStateSync({ zoom: null });
 
     if (this.state.rendered) {
@@ -1941,6 +1983,9 @@ class GameGrid implements IGameGrid {
           this.rebuildDom();
           this.syncActiveDom(this.state.currentDirection);
         }).then(() => {
+          if (epoch !== this.zoomSlideEpoch || !this.state.rendered) {
+            return;
+          }
           this.slideRenderBounds = null;
           this.rebuildDom();
           this.emitZoomCleared(animate);

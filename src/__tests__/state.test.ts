@@ -173,4 +173,35 @@ describe('setStateSync', () => {
 
     expect(newGrid.getState().activeCoords).toEqual([1, 1]);
   });
+
+  test('grids do not share default coordinate arrays', () => {
+    const row = [[{ type: 'open' }]];
+    const a = new GameGrid({ matrix: row });
+    const b = new GameGrid({ matrix: row });
+    expect(a.getState().activeCoords).not.toBe(b.getState().activeCoords);
+    expect(a.getState().prevCoords).not.toBe(b.getState().prevCoords);
+    expect(a.getState().future).not.toBe(b.getState().future);
+    expect(a.getState().moves).not.toBe(b.getState().moves);
+
+    a.getState().activeCoords[0] = 4;
+    a.getState().future.push([1, 0]);
+    expect(b.getState().activeCoords).toEqual([0, 0]);
+    expect(b.getState().future).toEqual([]);
+
+    const seededMoves = [
+      [0, 0],
+      [1, 0],
+    ];
+    const seeded = new GameGrid({
+      matrix: row,
+      state: { activeCoords: [1, 0], moves: seededMoves, future: [[2, 0]] },
+    });
+    seededMoves[1][0] = 9;
+    expect(seeded.getState().moves).toEqual([
+      [0, 0],
+      [1, 0],
+    ]);
+    expect(seeded.getState().future).toEqual([[2, 0]]);
+    expect(seeded.getState().future).not.toBe(a.getState().future);
+  });
 });

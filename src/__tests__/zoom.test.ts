@@ -585,6 +585,30 @@ describe('slideZoomOnEdge', () => {
     expect(grid.getState().region?.quadrant).toBe('sw');
     grid.destroy();
   });
+
+  test('failed edge slide still paints the active cell', () => {
+    document.body.innerHTML = '<div id="zoom-edge-root"></div>';
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrixWithWestEdgeBarrier(),
+        options: {
+          regionDivisions: 2,
+          slideZoomOnEdge: true,
+          animateZoom: false,
+        },
+        state: { activeCoords: [4, 4] },
+      },
+      document.getElementById('zoom-edge-root')!,
+    );
+    grid.zoomQuadrant('se');
+    grid.moveTo([2, 2]);
+    expect(grid.getState().activeCoords).toEqual([3, 3]);
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
+    expect(
+      document.querySelector('.gamegrid__cell--active')?.getAttribute('data-gamegrid-coords'),
+    ).toBe('3,3');
+    grid.destroy();
+  });
 });
 
 async function flushZoomSlide(): Promise<void> {
@@ -729,6 +753,28 @@ describe('animated zoom transitions', () => {
     expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('se'));
     expect(grid.getState().region?.quadrant).toBe('se');
     grid.destroy();
+  });
+
+  test('destroy during an animated zoom does not remount the grid', async () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: 240 });
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: 240 });
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(6, 6),
+        options: { animateZoom: true, zoomSlideDuration: 40 },
+        state: { activeCoords: [3, 3] },
+      },
+      root,
+    );
+    grid.zoomQuadrant('se', { animate: false });
+    grid.zoomQuadrant('sw', { animate: true });
+    grid.destroy();
+    await flushZoomSlide();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(grid.getState().rendered).toBe(false);
+    expect(root.childElementCount).toBe(0);
+    expect(root.querySelector('[data-gamegrid-ref="cell"]')).toBeNull();
   });
 
   test('getActiveRegion derives from activeCoords when state.region is unset', () => {
