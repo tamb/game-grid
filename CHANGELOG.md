@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`npm run test:e2e`**: Vitest 5 browser mode with Playwright Chromium (`e2e/`, `vitest.e2e.config.ts`). Headless tests drive real clicks and keystrokes against a rendered grid. Not part of `npm test`. `build.safe` and CI run this suite (CI installs the Playwright Chromium shell first).
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
 - TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.
 - **Richer `MOVE_*` `detail`**: directional, blocked, collide, dettach, land, wrap, and boundary events include `from`, `to`, `direction`, and `blocked` (`IMoveEventDetail`). `to` is the candidate cell after wrap/clamp; `blocked` is true only when `blockOnType` / `moveOnType` rejected that cell.
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Test runner is Vitest 5 (`vitest`, `@vitest/coverage-v8`). Unit and performance suites stay on jsdom.
 - **Faster rendered movement**: updating the active cell no longer walks every cell to toggle `gamegrid__cell--active` (O(cells) → O(1)). Direction classes on the container are swapped the same way.
 - **Cheaper hot paths** (no public API change): move-history updates clone once instead of twice; zoom tile indices are O(1); `render` / `refresh` allocate cell refs in a single pass; `refreshCells` inserts without snapshotting every row child; `getAllCellsByType` and coord parsing avoid extra allocations.
 - TypeDoc groups `GameGrid` / `IGameGrid` members by **job** (Matrix, Movement, View, State, Options, Zoom) instead of a flat Methods list. Docs landing page has a matching table.
