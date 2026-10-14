@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -13,7 +13,9 @@
       "scripts/**",
       "rolldown.config.mjs",
       "vitest.config.ts",
+      "vitest.e2e.config.ts",
       "vitest.perf.config.ts",
+      "e2e/**",
       ".vscode/settings.json",
       "*.json"
     ]

@@ -13,6 +13,12 @@
     "types": ["vitest/globals", "node"],
     "noEmit": true
   },
-  "include": ["src/**/*.ts", "vitest.config.ts", "vitest.perf.config.ts"],
+  "include": [
+    "src/**/*.ts",
+    "e2e/**/*.ts",
+    "vitest.config.ts",
+    "vitest.e2e.config.ts",
+    "vitest.perf.config.ts"
+  ],
   "exclude": ["node_modules/**/*"]
 }

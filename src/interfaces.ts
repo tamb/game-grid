@@ -88,7 +88,7 @@ export interface IState {
   /**
    * Oldest-first coords undone by {@link GameGrid.rewind} / {@link GameGrid.rewindTo}.
    * {@link GameGrid.unrewind} / {@link GameGrid.unrewindTo} replay this stack.
-   * Cleared when a new cell lands (a real move, click, or {@link GameGrid.moveTo} step).
+   * Cleared when a new cell lands (a real move, click, {@link GameGrid.moveTo} step, or a zoom clamp).
    * Blocked stays do not clear it.
    */
   future: number[][];

@@ -52,6 +52,50 @@ export function isInsideZoom(
   return x >= zoom.minX && x <= zoom.maxX && y >= zoom.minY && y <= zoom.maxY;
 }
 
+/**
+ * Slide `zoom` just far enough to contain `coords`, keeping its width and height
+ * and staying inside the matrix. A window that already contains `coords` is returned as-is.
+ */
+export function shiftZoomToInclude(
+  zoom: IZoomBounds,
+  coords: readonly [number, number] | number[],
+  matrix: ICell[][],
+): IZoomBounds {
+  const x = coords[0];
+  const y = coords[1];
+  if (isInsideZoom(coords, zoom)) {
+    return zoom;
+  }
+
+  const width = zoom.maxX - zoom.minX;
+  const height = zoom.maxY - zoom.minY;
+  const maxXLimit = Math.max(0, getMatrixWidth(matrix) - 1);
+  const maxYLimit = Math.max(0, getMatrixHeight(matrix) - 1);
+
+  let minX = zoom.minX;
+  let minY = zoom.minY;
+  if (x < zoom.minX) {
+    minX = x;
+  } else if (x > zoom.maxX) {
+    minX = x - width;
+  }
+  if (y < zoom.minY) {
+    minY = y;
+  } else if (y > zoom.maxY) {
+    minY = y - height;
+  }
+
+  minX = Math.min(Math.max(0, minX), Math.max(0, maxXLimit - width));
+  minY = Math.min(Math.max(0, minY), Math.max(0, maxYLimit - height));
+
+  return {
+    minX,
+    minY,
+    maxX: minX + width,
+    maxY: minY + height,
+  };
+}
+
 export function resolveAnimate(
   options: IZoomOptions | undefined,
   animateZoom: boolean | undefined,

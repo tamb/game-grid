@@ -28,7 +28,7 @@ The **`demo/`** package depends on this library via **`"@tamb/gamegrid": "file:.
 | **`npm run demo`** | Clean lib + demo artefacts, build library, install demo deps, compile Handlebars, start Parcel |
 | **`npm run demo:safe`** | Same as **`demo`**, but runs tests before building |
 | **`npm run demo:dev`** | Start Parcel only (after **`demo:prepare`** or a prior **`demo`** run) |
-| **`npm run demo:test`** | Run library Vitest suite |
+| **`npm run demo:test`** | Run the library unit suite (jsdom). Does **not** run browser e2e tests. |
 | **`npm run demo:prepare`** | **`npm run build`** + **`npm install`** in **`demo/`** |
 | **`npm run demo:build`** | Production Parcel build in **`demo/dist`** |
 | **`npm run demo:link`** | Build, **`npm link`** the library, install demo deps, link **`@tamb/gamegrid`** in the demo |
@@ -59,10 +59,11 @@ After a change to the library, run **`npm run build`** again so **`dist/`** upda
 
 | Script | Purpose |
 |--------|---------|
-| **`npm test`** | Unit suite (Vitest + jsdom). Does **not** run performance budgets. |
+| **`npm test`** | Unit suite (Vitest + jsdom). Does **not** run browser e2e tests or performance budgets. |
+| **`npm run test:e2e`** | Browser suite (Vitest browser mode + Playwright Chromium, headless). Clicks and keystrokes go through a real browser. Requires Playwright’s Chromium (`npx playwright install --only-shell chromium`). |
 | **`npm run test:perf`** | Performance / stress regression suite (`src/__perf__/`). Time budgets fail if hot paths regress (for example, painting the active cell by scanning the whole grid). |
 | **`npm run test:dist`** | Checks the built `dist/` bundles. |
-| **`npm run build.safe`** | Unit tests → build → dist tests → perf suite. |
+| **`npm run build.safe`** | Unit tests → browser e2e → build → dist tests → perf suite. |
 
 ## API documentation (TypeDoc)
 
@@ -445,7 +446,7 @@ The **`GameGrid`** class implements **`IGameGrid`**. The mounted root element is
 
 **`rewind(steps?)`** and **`rewindTo(index)`** walk **`state.moves`**, an oldest-first trail of landed cells (including the current one) capped by **`rewindLimit`**. Blocked attempts are not recorded. Extra `rewind` steps clamp to the oldest remaining entry. Dropped coords go onto **`state.future`**. These calls emit **`gamegrid:move:rewind`** then **`MOVE_LAND`**, and they ignore **`moveDebounce`**.
 
-**`unrewind(steps?)`** and **`unrewindTo(index)`** replay **`state.future`**. A new landed cell (move, click, or **`moveTo`**) clears the forward stack; a blocked stay does not. Same debounce exception. Emits **`gamegrid:move:unrewind`** then **`MOVE_LAND`**.
+**`unrewind(steps?)`** and **`unrewindTo(index)`** replay **`state.future`**. A new landed cell (move, click, **`moveTo`**, or a zoom clamp) clears the forward stack; a blocked stay does not. Same debounce exception. Emits **`gamegrid:move:unrewind`** then **`MOVE_LAND`**. When **`constrainToZoom`** is on, **`rewind`** / **`unrewind`** shift the current window (same width and height) so the landed cell stays visible.
 
 **`moveTo(coords)`** walks one cell or an explicit list of **`[x, y]`** steps through **`setActiveCell`** (block / collide / wrap / zoom-edge). It does not pathfind. The walk stops when a step does not land on the requested cell.
 

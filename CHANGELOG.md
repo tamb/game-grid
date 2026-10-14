@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Zoom clamps now append the landed cell to `state.moves` (and clear `state.future`) so the trail still includes the current cell. With `constrainToZoom`, `rewind` / `unrewind` shift the window to keep that cell on screen instead of leaving the highlight outside the viewport.
 - Reserved `data-gamegrid-*` cell attributes are ignored case-insensitively, matching HTML attribute-name folding.
 - Custom `activeClasses` are removed from the cell that lost focus, including after `setOptions` changes the list. A class that is also in `cellClasses` stays on every cell.
 - `destroy()` during an animated zoom no longer remounts the grid when the slide finishes.
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`npm run test:e2e`**: Vitest 5 browser mode with Playwright Chromium (`e2e/`, `vitest.e2e.config.ts`). Headless tests drive real clicks and keystrokes against a rendered grid. Not part of `npm test`. `build.safe` and CI run this suite (CI installs the Playwright Chromium shell first).
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
 - TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.
 - **Richer `MOVE_*` `detail`**: directional, blocked, collide, dettach, land, wrap, and boundary events include `from`, `to`, `direction`, and `blocked` (`IMoveEventDetail`). `to` is the candidate cell after wrap/clamp; `blocked` is true only when `blockOnType` / `moveOnType` rejected that cell.
@@ -26,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Test runner is Vitest 5 (`vitest`, `@vitest/coverage-v8`). Unit and performance suites stay on jsdom.
 - **Faster rendered movement**: updating the active cell no longer walks every cell to toggle `gamegrid__cell--active` (O(cells) → O(1)). Direction classes on the container are swapped the same way.
 - **Cheaper hot paths** (no public API change): move-history updates clone once instead of twice; zoom tile indices are O(1); `render` / `refresh` allocate cell refs in a single pass; `refreshCells` inserts without snapshotting every row child; `getAllCellsByType` and coord parsing avoid extra allocations.
 - TypeDoc groups `GameGrid` / `IGameGrid` members by **job** (Matrix, Movement, View, State, Options, Zoom) instead of a flat Methods list. Docs landing page has a matching table.
