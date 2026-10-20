@@ -70,6 +70,7 @@ export function runZoomSlide(
   to: IZoomBounds,
   duration: number,
   refresh: () => void,
+  isCurrent: () => boolean = () => true,
 ): Promise<void> {
   const lockW = container.clientWidth;
   const lockH = container.clientHeight;
@@ -102,6 +103,10 @@ export function runZoomSlide(
 
   return new Promise((resolve) => {
     const finish = (): void => {
+      if (!isCurrent()) {
+        resolve();
+        return;
+      }
       container.classList.remove(classesEnum.GRID_ZOOM_ANIMATING);
       container.style.width = '';
       container.style.height = '';
@@ -119,6 +124,10 @@ export function runZoomSlide(
     slideViewport.getBoundingClientRect();
 
     requestAnimationFrame(() => {
+      if (!isCurrent()) {
+        resolve();
+        return;
+      }
       slideViewport.style.transition = `transform ${duration}ms ease-out`;
       slideViewport.style.transform = `translate(${transforms.endX}px, ${transforms.endY}px)`;
 

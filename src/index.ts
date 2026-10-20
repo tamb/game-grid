@@ -1820,6 +1820,7 @@ class GameGrid implements IGameGrid {
    */
   public destroy(): void {
     this.zoomSlideEpoch += 1;
+    this.endZoomSlidePresentation();
     const rendered = this.state.rendered;
     const container = this.refs.container;
     if (container && rendered) {
@@ -1932,10 +1933,18 @@ class GameGrid implements IGameGrid {
       if (animate && fromZoom && container && viewport) {
         const duration = this.options.zoomSlideDuration ?? 300;
         this.slideRenderBounds = { from: fromZoom, to: normalized };
-        runZoomSlide(container, viewport, fromZoom, normalized, duration, () => {
-          this.rebuildDom();
-          this.syncActiveDom(this.state.currentDirection);
-        }).then(() => {
+        runZoomSlide(
+          container,
+          viewport,
+          fromZoom,
+          normalized,
+          duration,
+          () => {
+            this.rebuildDom();
+            this.syncActiveDom(this.state.currentDirection);
+          },
+          () => epoch === this.zoomSlideEpoch,
+        ).then(() => {
           if (epoch !== this.zoomSlideEpoch || !this.state.rendered) {
             return;
           }
@@ -1947,11 +1956,29 @@ class GameGrid implements IGameGrid {
         return;
       }
 
+      this.endZoomSlidePresentation();
       this.refresh();
     }
 
     this.emitZoomSet(animate, normalized);
     this.syncActiveDom(this.state.currentDirection);
+  }
+
+  /**
+   * A newer zoom, clear, or destroy owns the viewport. Drop the slide union
+   * and any inline lock the in-flight animation put on the container.
+   */
+  private endZoomSlidePresentation(): void {
+    const container = this.refs.container;
+    const animating = container?.classList.contains(classesEnum.GRID_ZOOM_ANIMATING) ?? false;
+    this.slideRenderBounds = null;
+    if (!container || !animating) {
+      return;
+    }
+    container.classList.remove(classesEnum.GRID_ZOOM_ANIMATING);
+    container.style.width = '';
+    container.style.height = '';
+    container.style.removeProperty('--gamegrid-zoom-duration');
   }
 
   /**
@@ -1979,10 +2006,18 @@ class GameGrid implements IGameGrid {
       if (animate && fromZoom && container && viewport) {
         const duration = this.options.zoomSlideDuration ?? 300;
         this.slideRenderBounds = { from: fromZoom, to: fullBounds };
-        runZoomSlide(container, viewport, fromZoom, fullBounds, duration, () => {
-          this.rebuildDom();
-          this.syncActiveDom(this.state.currentDirection);
-        }).then(() => {
+        runZoomSlide(
+          container,
+          viewport,
+          fromZoom,
+          fullBounds,
+          duration,
+          () => {
+            this.rebuildDom();
+            this.syncActiveDom(this.state.currentDirection);
+          },
+          () => epoch === this.zoomSlideEpoch,
+        ).then(() => {
           if (epoch !== this.zoomSlideEpoch || !this.state.rendered) {
             return;
           }
@@ -1994,6 +2029,7 @@ class GameGrid implements IGameGrid {
         return;
       }
 
+      this.endZoomSlidePresentation();
       this.refresh();
     }
 

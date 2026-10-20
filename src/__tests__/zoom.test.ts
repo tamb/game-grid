@@ -777,6 +777,138 @@ describe('animated zoom transitions', () => {
     expect(root.querySelector('[data-gamegrid-ref="cell"]')).toBeNull();
   });
 
+  test('non-animated setZoom cancels an in-flight slide and paints the new window', async () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: 240 });
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: 240 });
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(20, 20),
+        options: { animateZoom: true, regionDivisions: 2, zoomSlideDuration: 40 },
+        state: { activeCoords: [15, 15] },
+      },
+      root,
+    );
+
+    grid.zoomQuadrant('se', { animate: false });
+    grid.zoomQuadrant('sw', { animate: true });
+    expect(root.classList.contains('gamegrid--zoom-animating')).toBe(true);
+    expect(root.style.width).toBe('240px');
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(200);
+
+    grid.zoomQuadrant('nw', { animate: false });
+    expect(root.classList.contains('gamegrid--zoom-animating')).toBe(false);
+    expect(root.style.width).toBe('');
+    expect(root.style.height).toBe('');
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('nw'));
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(100);
+    expect(
+      root.querySelector('.gamegrid__cell--active')?.getAttribute('data-gamegrid-coords'),
+    ).toBe('9,9');
+
+    await flushZoomSlide();
+    expect(root.classList.contains('gamegrid--zoom-animating')).toBe(false);
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(100);
+    grid.destroy();
+  });
+
+  test('clearZoom during an animated slide paints the full matrix', async () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(20, 20),
+        options: { animateZoom: true, regionDivisions: 2, zoomSlideDuration: 40 },
+        state: { activeCoords: [15, 15] },
+      },
+      root,
+    );
+
+    grid.zoomQuadrant('se', { animate: false });
+    grid.zoomQuadrant('sw', { animate: true });
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(200);
+
+    grid.clearZoom({ animate: false });
+    expect(grid.getZoom()).toBeNull();
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(400);
+
+    await flushZoomSlide();
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(400);
+    grid.destroy();
+  });
+
+  test('render after destroy during an animated zoom paints the logical window', async () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(20, 20),
+        options: { animateZoom: true, regionDivisions: 2, zoomSlideDuration: 40 },
+        state: { activeCoords: [15, 15] },
+      },
+      root,
+    );
+
+    grid.zoomQuadrant('se', { animate: false });
+    grid.zoomQuadrant('sw', { animate: true });
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(200);
+
+    grid.destroy();
+    grid.render(root);
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(100);
+    expect(grid.getZoom()).toEqual(grid.getQuadrantZoom('sw'));
+
+    await flushZoomSlide();
+    expect(grid.getState().rendered).toBe(true);
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(100);
+    grid.destroy();
+  });
+
+  test('a superseded slide does not clear the newer slide lock', async () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: 240 });
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: 240 });
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(20, 20),
+        options: { animateZoom: true, regionDivisions: 2, zoomSlideDuration: 40 },
+        state: { activeCoords: [15, 15] },
+      },
+      root,
+    );
+
+    grid.zoomQuadrant('se', { animate: false });
+    grid.zoomQuadrant('sw', { animate: true });
+    const firstViewport = root.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement;
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+
+    grid.zoomQuadrant('nw', { animate: true });
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
+    expect(root.classList.contains('gamegrid--zoom-animating')).toBe(true);
+    expect(root.style.width).toBe('240px');
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(200);
+
+    firstViewport.dispatchEvent(
+      new TransitionEvent('transitionend', { propertyName: 'transform', bubbles: true }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(root.classList.contains('gamegrid--zoom-animating')).toBe(true);
+    expect(root.style.width).toBe('240px');
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(200);
+
+    const currentViewport = root.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement;
+    currentViewport.dispatchEvent(
+      new TransitionEvent('transitionend', { propertyName: 'transform', bubbles: true }),
+    );
+    await flushZoomSlide();
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(100);
+    expect(root.classList.contains('gamegrid--zoom-animating')).toBe(false);
+    grid.destroy();
+  });
+
   test('getActiveRegion derives from activeCoords when state.region is unset', () => {
     const grid = new GameGrid({
       matrix: makeMatrix(6, 6),
