@@ -124,6 +124,8 @@ describe('runZoomSlide', () => {
 
     expect(activeViewport).not.toBe(viewport);
     expect(activeViewport.style.transform).toBe('translate(0px, 0px)');
+    expect(activeViewport.style.width).toBe('200%');
+    expect(activeViewport.style.maxWidth).toBe('200%');
     expect(container.classList.contains(classesEnum.GRID_ZOOM_ANIMATING)).toBe(true);
     expect(container.style.width).toBe('300px');
 
@@ -131,6 +133,7 @@ describe('runZoomSlide', () => {
     await slide;
 
     expect(activeViewport.style.transform).toBe('');
+    expect(activeViewport.style.maxWidth).toBe('');
     expect(container.classList.contains(classesEnum.GRID_ZOOM_ANIMATING)).toBe(false);
     expect(container.style.width).toBe('');
   });

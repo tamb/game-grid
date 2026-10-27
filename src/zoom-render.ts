@@ -97,7 +97,12 @@ export function runZoomSlide(
     return Promise.resolve();
   }
 
-  slideViewport.style.width = `${(transforms.unionCols / transforms.windowCols) * 100}%`;
+  const unionWidth = `${(transforms.unionCols / transforms.windowCols) * 100}%`;
+  slideViewport.style.width = unionWidth;
+  // The bundled stylesheet caps the viewport at the container. A slide union is
+  // wider than that cap, so the inline width has to win or the pan math lands
+  // off the cells the player was looking at.
+  slideViewport.style.maxWidth = unionWidth;
   slideViewport.style.transition = 'none';
   slideViewport.style.transform = `translate(${transforms.startX}px, ${transforms.startY}px)`;
 
@@ -111,6 +116,7 @@ export function runZoomSlide(
       container.style.width = '';
       container.style.height = '';
       slideViewport.style.width = '';
+      slideViewport.style.maxWidth = '';
       slideViewport.style.transition = '';
       slideViewport.style.transform = '';
       resolve();

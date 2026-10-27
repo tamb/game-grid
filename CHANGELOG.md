@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Animated zooms that change the window size, including `clearZoom`, keep the cells the player was looking at on screen at the start of the slide. The slide viewport is no longer clamped back to the container, and cells are sized to the slide union rather than the destination window.
 - Interrupting an animated zoom (`setZoom` / `clearZoom` with `animate: false`, or `destroy`) no longer leaves the slide union painted or the container locked to the animation size. A newer slide is not cleared when the superseded slide finishes.
 - Zoom clamps now append the landed cell to `state.moves` (and clear `state.future`) so the trail still includes the current cell. With `constrainToZoom`, `rewind` / `unrewind` shift the window to keep that cell on screen instead of leaving the highlight outside the viewport.
 - Reserved `data-gamegrid-*` cell attributes are ignored case-insensitively, matching HTML attribute-name folding.

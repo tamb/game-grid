@@ -412,7 +412,9 @@ class GameGrid implements IGameGrid {
       return;
     }
 
-    const colCount = zoom ? zoom.maxX - zoom.minX + 1 : (this.matrix[y]?.length ?? 1);
+    const colCount = renderBounds
+      ? renderBounds.maxX - renderBounds.minX + 1
+      : (this.matrix[y]?.length ?? 1);
     const isZoomEdge = Boolean(zoom && !slide && this.isZoomEdgeCell(x, y, zoom));
     const nextEl = this.renderCell(y, x, cellData, colCount, isZoomEdge);
     const prevEl = this.refs.cells[y]?.[x]?.current ?? null;
@@ -520,7 +522,7 @@ class GameGrid implements IGameGrid {
     const renderBounds = slide ? this.unionSlideBounds(slide.from, slide.to) : zoom;
     const yStart = renderBounds?.minY ?? 0;
     const yEnd = renderBounds?.maxY ?? Math.max(0, this.matrix.length - 1);
-    const visibleColCount = zoom ? zoom.maxX - zoom.minX + 1 : null;
+    const visibleColCount = renderBounds ? renderBounds.maxX - renderBounds.minX + 1 : null;
 
     const cells: ICell[][] = new Array(this.matrix.length);
     for (let rI = 0; rI < this.matrix.length; rI++) {

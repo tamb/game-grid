@@ -862,6 +862,57 @@ describe('animated zoom transitions', () => {
     grid.destroy();
   });
 
+  test('animated zoom into a smaller window sizes the union, not the destination', () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: 200 });
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: 200 });
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(4, 4),
+        options: { animateZoom: true, zoomSlideDuration: 400 },
+        state: { activeCoords: [0, 0] },
+      },
+      root,
+    );
+
+    grid.setZoom({ minX: 0, minY: 0, maxX: 3, maxY: 3 }, { animate: false });
+    grid.setZoom({ minX: 2, minY: 2, maxX: 3, maxY: 3 }, { animate: true });
+
+    const cell = root.querySelector('[data-gamegrid-coords="0,0"]') as HTMLElement;
+    const viewport = root.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement;
+    expect(cell.style.width).toBe('25%');
+    expect(viewport.style.width).toBe('100%');
+    expect(viewport.style.maxWidth).toBe('100%');
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(16);
+    grid.destroy();
+  });
+
+  test('animated clearZoom sizes the full matrix and lifts the viewport cap', () => {
+    const root = document.getElementById('zoom-animate-root')!;
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: 200 });
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: 200 });
+    const grid = new GameGrid(
+      {
+        matrix: makeMatrix(4, 4),
+        options: { animateZoom: true, zoomSlideDuration: 400 },
+        state: { activeCoords: [3, 3] },
+      },
+      root,
+    );
+
+    grid.setZoom({ minX: 2, minY: 2, maxX: 3, maxY: 3 }, { animate: false });
+    grid.clearZoom({ animate: true });
+
+    const cell = root.querySelector('[data-gamegrid-coords="2,2"]') as HTMLElement;
+    const viewport = root.querySelector('[data-gamegrid-ref="viewport"]') as HTMLElement;
+    expect(cell.style.width).toBe('25%');
+    expect(viewport.style.width).toBe('200%');
+    expect(viewport.style.maxWidth).toBe('200%');
+    expect(viewport.style.transform).toBe('translate(-200px, -200px)');
+    expect(root.querySelectorAll('[data-gamegrid-ref="cell"]').length).toBe(16);
+    grid.destroy();
+  });
+
   test('a superseded slide does not clear the newer slide lock', async () => {
     const root = document.getElementById('zoom-animate-root')!;
     Object.defineProperty(root, 'clientWidth', { configurable: true, value: 240 });
