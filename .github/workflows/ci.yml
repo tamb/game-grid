@@ -28,7 +28,7 @@ jobs:
       - name: Install Playwright Chromium
         run: npx --no playwright install --with-deps --only-shell chromium
 
-      - name: Test, build, and lint
+      - name: Test, brain coverage, build, and lint
         run: |
           npm run build.safe
           npm run check

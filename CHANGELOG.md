@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`@tamb/gamegrid/npc`**: hider and seeker step functions (`chooseHiderAction`, `chooseSeekerStep`), walk and search helpers, and `createNpcMemory`. Taunt is off unless the caller passes `taunt: true`. This entry is separate from the grid bundle. `npm run test:npc` fails if `src/npc` drops below 92% coverage.
 - **`npm run test:e2e`**: Vitest 5 browser mode with Playwright Chromium (`e2e/`, `vitest.e2e.config.ts`). Headless tests drive real clicks and keystrokes against a rendered grid. Not part of `npm test`. `build.safe` and CI run this suite (CI installs the Playwright Chromium shell first).
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
 - TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.

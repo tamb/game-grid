@@ -9,4 +9,13 @@ describe('package manifest', () => {
 
     expect(pkg.source).toBe('src/index.ts');
   });
+
+  it('exposes the npc brains as a separate entry', () => {
+    const pkg = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, '../../package.json'), 'utf8'),
+    ) as { exports?: Record<string, { types?: string; import?: string }> };
+
+    expect(pkg.exports?.['./npc']?.types).toBe('./dist/npc/index.d.ts');
+    expect(pkg.exports?.['./npc']?.import).toBe('./dist/npc/index.js');
+  });
 });

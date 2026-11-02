@@ -21,4 +21,13 @@ export default defineConfig([
       minify: true,
     },
   },
+  {
+    input: 'src/npc/index.ts',
+    output: {
+      file: 'dist/npc/index.js',
+      format: 'es',
+      sourcemap: true,
+      minify: true,
+    },
+  },
 ]);
