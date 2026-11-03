@@ -54,6 +54,16 @@ interface SeekerStepArgs {
   /** Directions the caller will accept. Omit for every open neighbor. */
   legal?: Direction[];
   rng?: () => number;
+  /**
+   * Milliseconds to wait before the next move when this seeker is standing on
+   * a visible quarry. Omit or pass `0` to move on immediately.
+   */
+  pauseOnOverlapMs?: number;
+  /**
+   * Clock reading, in milliseconds, for {@link SeekerStepArgs.pauseOnOverlapMs}.
+   * Defaults to `Date.now()`.
+   */
+  now?: number;
 }
 
 function ensureCoverageCells(
@@ -248,7 +258,8 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  * Decide a seeker's next step.
  * Order is fixed: closest visible quarry, nearest lure, last-seen cell and its
  * ring, a coverage sweep, an unvisited neighbor, then a random legal step.
- * A visible quarry on the seeker's own cell holds instead of falling through.
+ * Standing on a visible quarry does not hold the cell unless
+ * {@link SeekerStepArgs.pauseOnOverlapMs} is set.
  * Memory is mutated. Pass the same object next tick.
  *
  * @param args - Board, position, quarry, and memory.
@@ -262,7 +273,9 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  * @param args.difficulty - Dumb, normal, or smart. Changes how long a sighting lasts.
  * @param args.legal - Directions the caller will accept. Omit for every open neighbor.
  * @param args.rng - Random source for the last-resort step. Defaults to `Math.random`.
- * @returns One direction, or null when no legal step exists or the seeker is already on a visible quarry.
+ * @param args.pauseOnOverlapMs - Wait this long, in milliseconds, before moving off a visible quarry in the same cell. Omit to move immediately.
+ * @param args.now - Clock reading for that wait. Defaults to `Date.now()`.
+ * @returns One direction, or null when no legal step exists or an overlap pause is still running.
  *
  * @category NPC
  *
@@ -301,6 +314,28 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  * });
  * ```
  */
+function sameCell(a: Coord, b: Coord): boolean {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+/**
+ * True while a positive overlap pause has not elapsed.
+ * Clears the timer when the seeker is not on a quarry or the pause is off.
+ */
+function overlapPauseActive(args: SeekerStepArgs, onQuarry: boolean): boolean {
+  const pauseMs = args.pauseOnOverlapMs;
+  if (!onQuarry || pauseMs == null || !(pauseMs > 0)) {
+    args.memory.overlapSince = null;
+    return false;
+  }
+
+  const now = args.now ?? Date.now();
+  if (args.memory.overlapSince == null) {
+    args.memory.overlapSince = now;
+  }
+  return now - args.memory.overlapSince < pauseMs;
+}
+
 function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   const legal = args.legal ?? openDirections(args.matrix, args.isWalkable, args.self);
   if (legal.length === 0) return null;
@@ -310,13 +345,12 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   syncLure(args.self, args.memory, args.lures ?? []);
 
   const closest = closestQuarry(args.self, args.visibleQuarry);
+  const onQuarry = closest != null && sameCell(args.self, closest.coord);
   if (closest) {
     rememberSighting(args.memory, closest, LAST_SEEN_TTL[args.difficulty]);
-    // Holding the cell is the chase. Falling through would walk off a quarry
-    // the caller can still see, including toward a lure or the coverage sweep.
-    if (args.self[0] === closest.coord[0] && args.self[1] === closest.coord[1]) {
-      return null;
-    }
+  }
+  if (overlapPauseActive(args, onQuarry)) return null;
+  if (closest) {
     const chase = stepToward(args.matrix, args.isWalkable, args.self, closest.coord, legal);
     if (chase) return chase;
   }

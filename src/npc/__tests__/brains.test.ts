@@ -50,6 +50,8 @@ function seeker(partial: {
   difficulty?: 'dumb' | 'normal' | 'smart';
   legal?: Direction[];
   rng?: () => number;
+  pauseOnOverlapMs?: number;
+  now?: number;
 }) {
   return chooseSeekerStep({
     matrix: partial.matrix ?? openRoom,
@@ -62,6 +64,8 @@ function seeker(partial: {
     difficulty: partial.difficulty ?? 'smart',
     legal: partial.legal,
     rng: partial.rng,
+    pauseOnOverlapMs: partial.pauseOnOverlapMs,
+    now: partial.now,
   });
 }
 
@@ -836,7 +840,7 @@ describe('chooseSeekerStep', () => {
     expect(step).toBe('left');
   });
 
-  it('holds the cell when a visible quarry is already there', () => {
+  it('moves on immediately when already standing on a visible quarry', () => {
     const board = corridor(12);
     const memory = createNpcMemory();
     expect(
@@ -847,13 +851,72 @@ describe('chooseSeekerStep', () => {
         lures: [[8, 2]],
         memory,
         legal: ['left', 'right'],
+        pauseOnOverlapMs: 0,
       }),
-    ).toBeNull();
+    ).toBe('right');
     expect(memory.lastSeen).toEqual([5, 2]);
     expect(memory.lastSeenId).toBe('hider');
     expect(memory.ttl).toBe(12);
     expect(memory.investigating).toBe(false);
     expect(memory.lure).toEqual([8, 2]);
+    expect(memory.overlapSince).toBeNull();
+  });
+
+  it('waits pauseOnOverlapMs before the next move, then allows it', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    const overlapping = {
+      matrix: board,
+      self: [5, 2] as Coord,
+      quarry: [{ id: 'hider', coord: [5, 2] as Coord }],
+      lures: [[8, 2] as Coord],
+      memory,
+      legal: ['left', 'right'] as Direction[],
+      pauseOnOverlapMs: 500,
+    };
+
+    expect(seeker({ ...overlapping, now: 1_000 })).toBeNull();
+    expect(memory.overlapSince).toBe(1_000);
+    expect(memory.lastSeen).toEqual([5, 2]);
+
+    expect(seeker({ ...overlapping, now: 1_499 })).toBeNull();
+    expect(memory.overlapSince).toBe(1_000);
+
+    expect(seeker({ ...overlapping, now: 1_500 })).toBe('right');
+    expect(memory.overlapSince).toBe(1_000);
+
+    expect(
+      seeker({
+        ...overlapping,
+        quarry: [{ id: 'hider', coord: [7, 2] }],
+        now: 1_600,
+      }),
+    ).toBe('right');
+    expect(memory.overlapSince).toBeNull();
+
+    expect(seeker({ ...overlapping, now: 1_700 })).toBeNull();
+    expect(memory.overlapSince).toBe(1_700);
+    expect(seeker({ ...overlapping, now: 2_199 })).toBeNull();
+    expect(seeker({ ...overlapping, now: 2_200 })).toBe('right');
+  });
+
+  it('uses Date.now when pauseOnOverlapMs is set and now is omitted', () => {
+    const memory = createNpcMemory();
+    const before = Date.now();
+    expect(
+      seeker({
+        matrix: corridor(12),
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        lures: [[8, 2]],
+        memory,
+        legal: ['right'],
+        pauseOnOverlapMs: 5_000,
+      }),
+    ).toBeNull();
+    const after = Date.now();
+    expect(memory.overlapSince).toBeGreaterThanOrEqual(before);
+    expect(memory.overlapSince).toBeLessThanOrEqual(after);
   });
 
   it('copies a lure so a reused coordinate tuple cannot retarget the seeker', () => {

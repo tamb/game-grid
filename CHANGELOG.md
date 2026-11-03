@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- A seeker already standing on a visible quarry holds that cell instead of walking off toward a lure or the coverage sweep. Lure coordinates are copied into memory, so a caller that reuses the tuple does not retarget the seeker. An unreachable coverage cell no longer pins the sweep, and a jagged board's sweep uses each row's own width.
+- Lure coordinates are copied into memory, so a caller that reuses the tuple does not retarget the seeker. An unreachable coverage cell no longer pins the sweep, and a jagged board's sweep uses each row's own width.
 - Interrupting an animated zoom (`setZoom` / `clearZoom` with `animate: false`, or `destroy`) no longer leaves the slide union painted or the container locked to the animation size. A newer slide is not cleared when the superseded slide finishes.
 - Zoom clamps now append the landed cell to `state.moves` (and clear `state.future`) so the trail still includes the current cell. With `constrainToZoom`, `rewind` / `unrewind` shift the window to keep that cell on screen instead of leaving the highlight outside the viewport.
 - Reserved `data-gamegrid-*` cell attributes are ignored case-insensitively, matching HTML attribute-name folding.
@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`@tamb/gamegrid/npc`**: hider and seeker step functions (`chooseHiderAction`, `chooseSeekerStep`), walk and search helpers, and `createNpcMemory`. Taunt is off unless the caller passes `taunt: true`. This entry is separate from the grid bundle. `npm run test:npc` fails if `src/npc` drops below 92% coverage.
+- **`pauseOnOverlapMs`** on `chooseSeekerStep`: when a seeker is standing on a visible quarry, wait this many milliseconds before the next move. Omit it, or pass `0`, and the seeker moves on immediately. Optional `now` supplies the clock in milliseconds; the default is `Date.now()`. The start time is kept on `memory.overlapSince`.
 - **`npm run test:e2e`**: Vitest 5 browser mode with Playwright Chromium (`e2e/`, `vitest.e2e.config.ts`). Headless tests drive real clicks and keystrokes against a rendered grid. Not part of `npm test`. `build.safe` and CI run this suite (CI installs the Playwright Chromium shell first).
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
 - TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.

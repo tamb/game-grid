@@ -48,6 +48,7 @@ function createNpcMemory(): NpcMemory {
     lure: null,
     coverageIndex: 0,
     coverageCells: [],
+    overlapSince: null,
   };
 }
 

@@ -100,6 +100,11 @@ interface NpcMemory {
   coverageIndex: number;
   /** Sweep order. Empty until the first coverage decision fills it. */
   coverageCells: Coord[];
+  /**
+   * Clock time when this seeker started waiting on a quarry in the same cell.
+   * Null when it is not waiting. Set only while {@link SeekerStepArgs.pauseOnOverlapMs} is positive.
+   */
+  overlapSince: number | null;
 }
 
 export type { Cell, Coord, Difficulty, Direction, IsWalkable, NpcMemory };
