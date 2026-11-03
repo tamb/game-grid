@@ -22,6 +22,9 @@ Browse the full API on the [**exports index**](modules.html):
 | [Movement](modules.html#movement) | [`directionEnum`](enums/directionEnum.html) |
 | [Inputs](modules.html#inputs) | [`keycodeEnum`](enums/keycodeEnum.html) |
 | [Presentation](modules.html#presentation) | [`classesEnum`](enums/classesEnum.html), [`directionClassEnum`](variables/directionClassEnum.html) |
+| [NPC](modules.html#npc) | [`chooseHiderAction`](functions/npc.chooseHiderAction.html), [`chooseSeekerStep`](functions/npc.chooseSeekerStep.html), [`walkableUnlessTypes`](functions/npc.walkableUnlessTypes.html), [`createNpcMemory`](functions/npc.createNpcMemory.html) |
+
+NPC brains are a separate import, `@tamb/gamegrid/npc`. They are not on the default `GameGrid` export. Pass `grid.getMatrix()` and a walk predicate; the functions return a direction (or `"taunt"` only when `taunt: true`). The caller moves its own actor.
 
 ## Instance jobs
 

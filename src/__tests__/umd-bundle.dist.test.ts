@@ -19,5 +19,7 @@ describe('UMD bundle', () => {
     expect(sandbox.GameGrid).toHaveProperty('gridEventsEnum');
     expect(sandbox.GameGrid).toHaveProperty('cellTypeEnum');
     expect(sandbox.GameGrid).not.toHaveProperty('default');
+    expect(sandbox.GameGrid).not.toHaveProperty('chooseHiderAction');
+    expect(sandbox.GameGrid).not.toHaveProperty('chooseSeekerStep');
   });
 });

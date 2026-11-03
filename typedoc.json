@@ -1,6 +1,6 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/index.ts"],
+  "entryPoints": ["src/index.ts", "src/npc/index.ts"],
   "tsconfig": "./tsconfig.typedoc.json",
   "readme": "./docs/API.md",
   "name": "@tamb/gamegrid",
@@ -25,6 +25,7 @@
     "Movement",
     "Inputs",
     "Presentation",
+    "NPC",
     "*"
   ],
   "groupOrder": [
