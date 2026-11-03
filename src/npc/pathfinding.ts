@@ -175,9 +175,9 @@ function listOpenCells(matrix: Cell[][], isWalkable: IsWalkable): Coord[] {
  * ```
  */
 function buildCoveragePath(matrix: Cell[][], isWalkable: IsWalkable): Coord[] {
-  const width = matrix[0]?.length ?? 0;
   const cells: Coord[] = [];
   for (let y = 1; y < matrix.length - 1; y++) {
+    const width = matrix[y]?.length ?? 0;
     const row: Coord[] = [];
     for (let x = 1; x < width - 1; x++) {
       if (isWalkable(matrix, x, y)) row.push([x, y]);

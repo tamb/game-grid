@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A seeker already standing on a visible quarry holds that cell instead of walking off toward a lure or the coverage sweep. Lure coordinates are copied into memory, so a caller that reuses the tuple does not retarget the seeker. An unreachable coverage cell no longer pins the sweep, and a jagged board's sweep uses each row's own width.
 - Interrupting an animated zoom (`setZoom` / `clearZoom` with `animate: false`, or `destroy`) no longer leaves the slide union painted or the container locked to the animation size. A newer slide is not cleared when the superseded slide finishes.
 - Zoom clamps now append the landed cell to `state.moves` (and clear `state.future`) so the trail still includes the current cell. With `constrainToZoom`, `rewind` / `unrewind` shift the window to keep that cell on screen instead of leaving the highlight outside the viewport.
 - Reserved `data-gamegrid-*` cell attributes are ignored case-insensitively, matching HTML attribute-name folding.

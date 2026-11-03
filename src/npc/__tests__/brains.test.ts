@@ -124,6 +124,24 @@ describe('search helpers', () => {
     expect(buildCoveragePath([], walkOpen)).toEqual([]);
     expect(buildCoveragePath([[cell('open')]], walkOpen)).toEqual([]);
   });
+
+  it('sweeps a jagged row using that row width, not the first row', () => {
+    const matrix: Cell[][] = [
+      [cell('wall'), cell('wall')],
+      [cell('wall'), cell('open'), cell('open'), cell('open'), cell('wall')],
+      [cell('wall'), cell('open'), cell('open'), cell('open'), cell('wall')],
+      [cell('wall'), cell('wall'), cell('wall'), cell('wall'), cell('wall')],
+    ];
+    const isWalkable = walkableUnlessTypes(['wall']);
+    expect(buildCoveragePath(matrix, isWalkable)).toEqual([
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [3, 2],
+      [2, 2],
+      [1, 2],
+    ]);
+  });
 });
 
 describe('chooseHiderAction', () => {
@@ -816,5 +834,104 @@ describe('chooseSeekerStep', () => {
       legal: ['left', 'right'],
     });
     expect(step).toBe('left');
+  });
+
+  it('holds the cell when a visible quarry is already there', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    expect(
+      seeker({
+        matrix: board,
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        lures: [[8, 2]],
+        memory,
+        legal: ['left', 'right'],
+      }),
+    ).toBeNull();
+    expect(memory.lastSeen).toEqual([5, 2]);
+    expect(memory.lastSeenId).toBe('hider');
+    expect(memory.ttl).toBe(12);
+    expect(memory.investigating).toBe(false);
+    expect(memory.lure).toEqual([8, 2]);
+  });
+
+  it('copies a lure so a reused coordinate tuple cannot retarget the seeker', () => {
+    const slot: Coord = [8, 2];
+    const memory = createNpcMemory();
+    seeker({
+      matrix: corridor(12),
+      self: [5, 2],
+      lures: [slot],
+      memory,
+      legal: ['right'],
+    });
+    expect(memory.lure).toEqual([8, 2]);
+    expect(memory.lure).not.toBe(slot);
+    slot[0] = 1;
+    expect(memory.lure).toEqual([8, 2]);
+  });
+
+  it('skips an unreachable coverage cell and retries a step the caller rejected', () => {
+    const board = room(7);
+    for (let y = 0; y < board.length; y++) board[y][2] = cell('barrier');
+    const memory = createNpcMemory();
+    seeker({
+      matrix: board,
+      self: [4, 1],
+      memory,
+      difficulty: 'smart',
+      legal: ['left', 'right'],
+    });
+    expect(memory.coverageCells[0]).toEqual([1, 1]);
+    expect(memory.coverageIndex).toBe(1);
+
+    expect(
+      seeker({
+        matrix: board,
+        self: [4, 1],
+        memory,
+        difficulty: 'smart',
+        legal: ['left', 'right'],
+      }),
+    ).toBe('left');
+    expect(memory.coverageIndex).toBe(1);
+
+    const open = room(5);
+    const blocked = createNpcMemory();
+    const toward = bfsNextStep(open, walkOpen, [2, 2], [1, 1]);
+    expect(toward).not.toBeNull();
+    seeker({
+      matrix: open,
+      self: [2, 2],
+      memory: blocked,
+      difficulty: 'smart',
+      legal: [toward === 'left' ? 'right' : 'left'],
+    });
+    expect(blocked.coverageIndex).toBe(0);
+    expect(blocked.coverageCells[0]).toEqual([1, 1]);
+  });
+
+  it('does not skip the patrol cell the seeker is already standing on', () => {
+    const board = room(5);
+    const memory = createNpcMemory();
+    seeker({
+      matrix: board,
+      self: [2, 1],
+      memory,
+      difficulty: 'smart',
+      legal: ['left'],
+    });
+    for (const [x, y] of memory.coverageCells) memory.visited.add(`${x},${y}`);
+    memory.coverageIndex = 0;
+    seeker({
+      matrix: board,
+      self: [2, 1],
+      memory,
+      difficulty: 'smart',
+      legal: ['left'],
+    });
+    expect(memory.coverageCells[1]).toEqual([2, 1]);
+    expect(memory.coverageIndex).toBe(1);
   });
 });

@@ -112,7 +112,9 @@ function syncLure(self: Coord, memory: NpcMemory, lures: readonly Coord[]): void
   }
 
   const nearest = nearestCoord(self, lures);
-  if (nearest) memory.lure = nearest;
+  // Copy. Callers keep mutable [x, y] tuples on actors and reuse them after
+  // the lure list drops; storing the same array retargets this seeker.
+  if (nearest) memory.lure = [nearest[0], nearest[1]];
 }
 
 function stepToward(
@@ -246,6 +248,7 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  * Decide a seeker's next step.
  * Order is fixed: closest visible quarry, nearest lure, last-seen cell and its
  * ring, a coverage sweep, an unvisited neighbor, then a random legal step.
+ * A visible quarry on the seeker's own cell holds instead of falling through.
  * Memory is mutated. Pass the same object next tick.
  *
  * @param args - Board, position, quarry, and memory.
@@ -259,7 +262,7 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  * @param args.difficulty - Dumb, normal, or smart. Changes how long a sighting lasts.
  * @param args.legal - Directions the caller will accept. Omit for every open neighbor.
  * @param args.rng - Random source for the last-resort step. Defaults to `Math.random`.
- * @returns One direction, or null when no legal step exists.
+ * @returns One direction, or null when no legal step exists or the seeker is already on a visible quarry.
  *
  * @category NPC
  *
@@ -309,6 +312,11 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   const closest = closestQuarry(args.self, args.visibleQuarry);
   if (closest) {
     rememberSighting(args.memory, closest, LAST_SEEN_TTL[args.difficulty]);
+    // Holding the cell is the chase. Falling through would walk off a quarry
+    // the caller can still see, including toward a lure or the coverage sweep.
+    if (args.self[0] === closest.coord[0] && args.self[1] === closest.coord[1]) {
+      return null;
+    }
     const chase = stepToward(args.matrix, args.isWalkable, args.self, closest.coord, legal);
     if (chase) return chase;
   }
@@ -340,6 +348,13 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
     if (coverageTarget) {
       const step = bfsNextStep(args.matrix, args.isWalkable, args.self, coverageTarget);
       if (step && legal.includes(step)) return step;
+      // A walled-off cell is still unvisited, so the sweep would pin itself
+      // there and never walk the reachable rooms. Skip one such cell per tick.
+      // A real step that this caller currently rejects stays put and is retried.
+      if (!step && coordKey(coverageTarget) !== coordKey(args.self)) {
+        const count = args.memory.coverageCells.length;
+        args.memory.coverageIndex = (args.memory.coverageIndex + 1) % count;
+      }
     }
   }
 
