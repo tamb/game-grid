@@ -15,7 +15,7 @@ import type { Cell, Coord, Direction, IsWalkable } from './types';
  *
  * @category NPC
  *
- * @example
+ * @example Straight corridor
  * ```ts
  * import { bfsNextStep, walkableUnlessTypes } from "@tamb/gamegrid/npc";
  *
@@ -26,6 +26,21 @@ import type { Cell, Coord, Direction, IsWalkable } from './types';
  * ];
  * const isWalkable = walkableUnlessTypes(["wall"]);
  * const toward = bfsNextStep(matrix, isWalkable, [1, 1], [2, 1]);
+ * // "right"
+ * ```
+ *
+ * @example Around a wall
+ * ```ts
+ * import { bfsNextStep, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "wall" }, { type: "floor" }],
+ *   [{ type: "floor" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "floor" }],
+ *   [{ type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ * ];
+ * const isWalkable = walkableUnlessTypes(["wall"]);
+ * const toward = bfsNextStep(matrix, isWalkable, [0, 0], [4, 0]);
+ * // "down". The cells to the right dead-end, so the first step goes around.
  * ```
  */
 function bfsNextStep(
@@ -88,8 +103,14 @@ function bfsNextStep(
  * ```ts
  * import { bfsFarthestStep, walkableUnlessTypes } from "@tamb/gamegrid/npc";
  *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
  * const isWalkable = walkableUnlessTypes(["wall"]);
- * const away = bfsFarthestStep(matrix, isWalkable, hider.coord, nearestThreat);
+ * const away = bfsFarthestStep(matrix, isWalkable, [2, 1], [1, 1]);
+ * // "right". [4, 1] is the open cell farthest from the threat at [1, 1].
  * ```
  */
 function bfsFarthestStep(
@@ -142,7 +163,12 @@ function bfsFarthestStep(
  * ```ts
  * import { listOpenCells, walkableUnlessTypes } from "@tamb/gamegrid/npc";
  *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "floor" }],
+ *   [{ type: "floor" }, { type: "water" }],
+ * ];
  * const open = listOpenCells(matrix, walkableUnlessTypes(["wall", "water"]));
+ * // [[1, 0], [0, 1]]
  * ```
  */
 function listOpenCells(matrix: Cell[][], isWalkable: IsWalkable): Coord[] {
@@ -171,7 +197,15 @@ function listOpenCells(matrix: Cell[][], isWalkable: IsWalkable): Coord[] {
  * ```ts
  * import { buildCoveragePath, walkableUnlessTypes } from "@tamb/gamegrid/npc";
  *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
  * const sweep = buildCoveragePath(matrix, walkableUnlessTypes(["wall"]));
+ * // [1, 1], [2, 1], [3, 1], [3, 2], [2, 2], [1, 2], [1, 3], [2, 3], [3, 3]
  * ```
  */
 function buildCoveragePath(matrix: Cell[][], isWalkable: IsWalkable): Coord[] {

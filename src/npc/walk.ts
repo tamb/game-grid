@@ -28,6 +28,19 @@ import type { Cell, Coord, Direction, IsWalkable } from './types';
  * const isWalkable = walkableUnlessTypes(["wall", "water"]);
  * isWalkable(matrix, 0, 0); // floor
  * isWalkable(matrix, 1, 0); // wall, blocked
+ * isWalkable(matrix, 1, 1); // floor
+ * isWalkable(matrix, -1, 0); // false, off the board
+ * isWalkable(matrix, 0, 2); // false, no such row
+ * ```
+ *
+ * @example Walls named barrier
+ * ```ts
+ * import { walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const isWalkable = walkableUnlessTypes(["barrier"]);
+ * const matrix = [[{ type: "open" }, { type: "barrier" }]];
+ * isWalkable(matrix, 0, 0); // true
+ * isWalkable(matrix, 1, 0); // false
  * ```
  */
 function walkableUnlessTypes(blocked: readonly string[]): IsWalkable {

@@ -35,6 +35,9 @@ import type { NpcMemory } from './types';
  *   memory,
  *   difficulty: "normal",
  * });
+ *
+ * memory.visited.has("0,0"); // true
+ * memory.visited.has("1,0"); // true
  * ```
  */
 function createNpcMemory(): NpcMemory {

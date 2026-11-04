@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The `chooseSeekerStep` TypeDoc comment was attached to a private helper, so the function page had no description or examples.
 - Lure coordinates are copied into memory, so a caller that reuses the tuple does not retarget the seeker. An unreachable coverage cell no longer pins the sweep, and a jagged board's sweep uses each row's own width.
 - Interrupting an animated zoom (`setZoom` / `clearZoom` with `animate: false`, or `destroy`) no longer leaves the slide union painted or the container locked to the animation size. A newer slide is not cleared when the superseded slide finishes.
 - Zoom clamps now append the landed cell to `state.moves` (and clear `state.future`) so the trail still includes the current cell. With `constrainToZoom`, `rewind` / `unrewind` shift the window to keep that cell on screen instead of leaving the highlight outside the viewport.
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`npm run test:e2e`**: Vitest 5 browser mode with Playwright Chromium (`e2e/`, `vitest.e2e.config.ts`). Headless tests drive real clicks and keystrokes against a rendered grid. Not part of `npm test`. `build.safe` and CI run this suite (CI installs the Playwright Chromium shell first).
 - **`npm run test:perf`**: isolated performance / stress regression suite (`src/__perf__/`, `vitest.perf.config.ts`). Not part of `npm test`. Time budgets guard movement, render, zoom-window paint, and matrix scans. `build.safe` and CI run this suite.
 - TypeDoc `@example` blocks on the public API (`IGameGrid` / `GameGrid` methods, config, state, events, zoom, enums) so generated docs include usage snippets.
+- TypeDoc examples for `@tamb/gamegrid/npc`: a seeker and hider tick, the overlap pause, last-seen search, caller move limits, difficulty, and self-contained boards for the search helpers.
 - **Richer `MOVE_*` `detail`**: directional, blocked, collide, dettach, land, wrap, and boundary events include `from`, `to`, `direction`, and `blocked` (`IMoveEventDetail`). `to` is the candidate cell after wrap/clamp; `blocked` is true only when `blockOnType` / `moveOnType` rejected that cell.
 - **`moveTo(coords | path)`**: walk one cell or an explicit list through `setActiveCell` (block / collide / wrap rules). Stops when a step does not land on the requested cell. No pathfinding. Not rate-limited by `moveDebounce`.
 - **`unrewind(steps?)` / `unrewindTo(index)`**: redo after `rewind`. Dropped coords live on `state.future` until a new cell lands. Emits `gamegrid:move:unrewind` (`detail.steps`, `detail.index`, plus move detail) then `MOVE_LAND`. Optional `callbacks.onUnrewind`.
