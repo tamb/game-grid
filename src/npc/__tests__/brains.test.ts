@@ -170,13 +170,11 @@ describe('chooseHiderAction', () => {
       taunt: false,
       rng: rolls(0),
     });
-    expect(omitted).not.toBe('taunt');
-    expect(omitted).not.toBe('right');
-    expect(explicit).not.toBe('taunt');
-    expect(explicit).not.toBeNull();
+    expect(omitted).toBe('down');
+    expect(explicit).toBe('down');
   });
 
-  it('taunts on a hit and keeps moving on a miss for each difficulty', () => {
+  it('taunts on a hit, flees on a smart or normal miss, and waits on a dumb miss', () => {
     expect(
       chooseHiderAction({
         ...base,
@@ -197,7 +195,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0.5, 0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('down');
     expect(
       chooseHiderAction({
         ...base,
@@ -217,7 +215,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0.5, 0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('left');
     expect(
       chooseHiderAction({
         ...base,
@@ -237,7 +235,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0.5, 0.9),
       }),
-    ).not.toBe('taunt');
+    ).toBeNull();
   });
 
   it('skips the taunt roll when cooldown, distance, or threats say no', () => {
@@ -249,7 +247,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('down');
     expect(
       chooseHiderAction({
         ...base,
@@ -268,7 +266,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('down');
     expect(
       chooseHiderAction({
         ...base,
@@ -280,7 +278,7 @@ describe('chooseHiderAction', () => {
         legal: ['left'],
         rng: rolls(0),
       }),
-    ).not.toBe('taunt');
+    ).toBeNull();
     expect(
       chooseHiderAction({
         ...base,
@@ -383,7 +381,7 @@ describe('chooseHiderAction', () => {
       legal: ['up', 'down'],
       rng: rolls(0),
     });
-    expect(randomSafe === 'up' || randomSafe === 'down').toBe(true);
+    expect(randomSafe).toBe('up');
 
     const smartFallback = chooseHiderAction({
       ...base,
@@ -443,10 +441,26 @@ describe('chooseHiderAction', () => {
         legal: ['down', 'up', 'left'],
         rng: rolls(0),
       }),
-    ).not.toBeNull();
+    ).toBe('up');
   });
 
-  it('waits when every step toward the threat is blocked and no opposite is legal', () => {
+  it('paths toward the farther room when that is not directly away', () => {
+    const matrix = ['#######', '#.....#', '#.#####', '#.#####', '#######'].map((row) =>
+      [...row].map((symbol) => cell(symbol === '#' ? 'barrier' : 'open')),
+    );
+    const isWalkable = walkableUnlessTypes(['barrier']);
+    const shared = {
+      matrix,
+      isWalkable,
+      self: [1, 2] as Coord,
+      threats: [[2, 1]] as Coord[],
+    };
+
+    expect(chooseHiderAction({ ...shared, difficulty: 'normal', rng: rolls(0.9) })).toBe('down');
+    expect(chooseHiderAction({ ...shared, difficulty: 'smart', rng: rolls(0.9) })).toBe('up');
+  });
+
+  it('takes the remaining safe step when both direct axes are blocked', () => {
     const matrix = room();
     matrix[2][3] = cell('barrier');
     matrix[3][2] = cell('barrier');
@@ -771,10 +785,9 @@ describe('chooseSeekerStep', () => {
         self: [2, 2],
         memory,
         difficulty: 'dumb',
-        legal: ['left', 'right'],
-        rng: rolls(0),
+        legal: ['left'],
       }),
-    ).not.toBeNull();
+    ).toBe('left');
 
     const tiny = createNpcMemory();
     expect(
