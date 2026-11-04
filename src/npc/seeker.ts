@@ -35,6 +35,24 @@ const INVESTIGATE_RADIUS: Record<Difficulty, number> = {
  *   difficulty: "smart",
  * };
  * ```
+ *
+ * @example Wait while standing on a visible quarry
+ * ```ts
+ * import { createNpcMemory, type SeekerStepArgs } from "@tamb/gamegrid/npc";
+ *
+ * const args: SeekerStepArgs = {
+ *   matrix,
+ *   isWalkable,
+ *   self: [2, 1],
+ *   visibleQuarry: [{ id: "hider", coord: [2, 1] }],
+ *   isQuarryActive: () => true,
+ *   lures: [[4, 1]],
+ *   memory: createNpcMemory(),
+ *   difficulty: "smart",
+ *   pauseOnOverlapMs: 500,
+ *   now: 1000,
+ * };
+ * ```
  */
 interface SeekerStepArgs {
   matrix: Cell[][];
@@ -54,6 +72,16 @@ interface SeekerStepArgs {
   /** Directions the caller will accept. Omit for every open neighbor. */
   legal?: Direction[];
   rng?: () => number;
+  /**
+   * Milliseconds to wait before the next move when this seeker is standing on
+   * a visible quarry. Omit or pass `0` to move on immediately.
+   */
+  pauseOnOverlapMs?: number;
+  /**
+   * Clock reading, in milliseconds, for {@link SeekerStepArgs.pauseOnOverlapMs}.
+   * Defaults to `Date.now()`.
+   */
+  now?: number;
 }
 
 function ensureCoverageCells(
@@ -112,7 +140,9 @@ function syncLure(self: Coord, memory: NpcMemory, lures: readonly Coord[]): void
   }
 
   const nearest = nearestCoord(self, lures);
-  if (nearest) memory.lure = nearest;
+  // Copy. Callers keep mutable [x, y] tuples on actors and reuse them after
+  // the lure list drops; storing the same array retargets this seeker.
+  if (nearest) memory.lure = [nearest[0], nearest[1]];
 }
 
 function stepToward(
@@ -242,10 +272,34 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
   return stepToward(args.matrix, args.isWalkable, args.self, target, legal);
 }
 
+function sameCell(a: Coord, b: Coord): boolean {
+  return a[0] === b[0] && a[1] === b[1];
+}
+
+/**
+ * True while a positive overlap pause has not elapsed.
+ * Clears the timer when the seeker is not on a quarry or the pause is off.
+ */
+function overlapPauseActive(args: SeekerStepArgs, onQuarry: boolean): boolean {
+  const pauseMs = args.pauseOnOverlapMs;
+  if (!onQuarry || pauseMs == null || !(pauseMs > 0)) {
+    args.memory.overlapSince = null;
+    return false;
+  }
+
+  const now = args.now ?? Date.now();
+  if (args.memory.overlapSince == null) {
+    args.memory.overlapSince = now;
+  }
+  return now - args.memory.overlapSince < pauseMs;
+}
+
 /**
  * Decide a seeker's next step.
  * Order is fixed: closest visible quarry, nearest lure, last-seen cell and its
  * ring, a coverage sweep, an unvisited neighbor, then a random legal step.
+ * Standing on a visible quarry does not hold the cell unless
+ * {@link SeekerStepArgs.pauseOnOverlapMs} is set.
  * Memory is mutated. Pass the same object next tick.
  *
  * @param args - Board, position, quarry, and memory.
@@ -259,7 +313,9 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  * @param args.difficulty - Dumb, normal, or smart. Changes how long a sighting lasts.
  * @param args.legal - Directions the caller will accept. Omit for every open neighbor.
  * @param args.rng - Random source for the last-resort step. Defaults to `Math.random`.
- * @returns One direction, or null when no legal step exists.
+ * @param args.pauseOnOverlapMs - Wait this long, in milliseconds, before moving off a visible quarry in the same cell. Omit to move immediately.
+ * @param args.now - Clock reading for that wait. Defaults to `Date.now()`.
+ * @returns One direction, or null when no legal step exists or an overlap pause is still running.
  *
  * @category NPC
  *
@@ -297,6 +353,159 @@ function chooseLastSeenMove(args: SeekerStepArgs, legal: Direction[]): Direction
  *   difficulty: "normal",
  * });
  * ```
+ *
+ * @example Hold still on a visible quarry, then step
+ * ```ts
+ * import { chooseSeekerStep, createNpcMemory, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ * const isWalkable = walkableUnlessTypes(["wall"]);
+ * const memory = createNpcMemory();
+ *
+ * chooseSeekerStep({
+ *   matrix,
+ *   isWalkable,
+ *   self: [2, 1],
+ *   visibleQuarry: [{ id: "hider", coord: [2, 1] }],
+ *   isQuarryActive: () => true,
+ *   lures: [[4, 1]],
+ *   memory,
+ *   difficulty: "smart",
+ *   legal: ["left", "right"],
+ *   pauseOnOverlapMs: 500,
+ *   now: 1000,
+ * }); // null
+ * memory.overlapSince; // 1000
+ *
+ * chooseSeekerStep({
+ *   matrix,
+ *   isWalkable,
+ *   self: [2, 1],
+ *   visibleQuarry: [{ id: "hider", coord: [2, 1] }],
+ *   isQuarryActive: () => true,
+ *   lures: [[4, 1]],
+ *   memory,
+ *   difficulty: "smart",
+ *   legal: ["left", "right"],
+ *   pauseOnOverlapMs: 500,
+ *   now: 1500,
+ * }); // "right"
+ * memory.overlapSince; // 1000, until the seeker is no longer on that quarry
+ * ```
+ *
+ * @example Walk toward the last sighting
+ * ```ts
+ * import { chooseSeekerStep, createNpcMemory, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ * const memory = createNpcMemory();
+ * memory.lastSeen = [4, 1];
+ * memory.lastSeenId = "hider";
+ * memory.ttl = 3;
+ *
+ * const dir = chooseSeekerStep({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   visibleQuarry: [],
+ *   isQuarryActive: () => true,
+ *   memory,
+ *   difficulty: "normal",
+ * });
+ * // "right"
+ * memory.ttl; // 2
+ * ```
+ *
+ * @example Forget a sighting the caller says is gone
+ * ```ts
+ * import { chooseSeekerStep, createNpcMemory, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ * const memory = createNpcMemory();
+ * memory.lastSeen = [4, 1];
+ * memory.lastSeenId = "hider";
+ * memory.ttl = 3;
+ *
+ * const dir = chooseSeekerStep({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   visibleQuarry: [],
+ *   isQuarryActive: () => false,
+ *   memory,
+ *   difficulty: "normal",
+ *   legal: ["right"],
+ * });
+ * // "right". A later fallback. The sighting itself is cleared.
+ * memory.lastSeen; // null
+ * ```
+ *
+ * @example A legal list can reject the chase
+ * ```ts
+ * import { chooseSeekerStep, createNpcMemory, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ * const memory = createNpcMemory();
+ *
+ * const dir = chooseSeekerStep({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   visibleQuarry: [{ id: "hider", coord: [4, 1] }],
+ *   isQuarryActive: () => true,
+ *   memory,
+ *   difficulty: "smart",
+ *   legal: ["left"],
+ * });
+ * // "left". The chase would be "right", which legal does not allow.
+ * memory.lastSeenId; // "hider"
+ * ```
+ *
+ * @example Smart steps once along the quarry's heading
+ * ```ts
+ * import { chooseSeekerStep, createNpcMemory, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ * const memory = createNpcMemory();
+ * memory.lastSeen = [2, 1];
+ * memory.lastSeenId = "hider";
+ * memory.ttl = 4;
+ * memory.heading = "right";
+ *
+ * const dir = chooseSeekerStep({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   visibleQuarry: [],
+ *   isQuarryActive: () => true,
+ *   memory,
+ *   difficulty: "smart",
+ *   legal: ["left", "right"],
+ * });
+ * // "right"
+ * memory.heading; // null
+ * memory.investigating; // true
+ * ```
  */
 function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   const legal = args.legal ?? openDirections(args.matrix, args.isWalkable, args.self);
@@ -307,8 +516,12 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   syncLure(args.self, args.memory, args.lures ?? []);
 
   const closest = closestQuarry(args.self, args.visibleQuarry);
+  const onQuarry = closest != null && sameCell(args.self, closest.coord);
   if (closest) {
     rememberSighting(args.memory, closest, LAST_SEEN_TTL[args.difficulty]);
+  }
+  if (overlapPauseActive(args, onQuarry)) return null;
+  if (closest) {
     const chase = stepToward(args.matrix, args.isWalkable, args.self, closest.coord, legal);
     if (chase) return chase;
   }
@@ -340,6 +553,13 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
     if (coverageTarget) {
       const step = bfsNextStep(args.matrix, args.isWalkable, args.self, coverageTarget);
       if (step && legal.includes(step)) return step;
+      // A walled-off cell is still unvisited, so the sweep would pin itself
+      // there and never walk the reachable rooms. Skip one such cell per tick.
+      // A real step that this caller currently rejects stays put and is retried.
+      if (!step && coordKey(coverageTarget) !== coordKey(args.self)) {
+        const count = args.memory.coverageCells.length;
+        args.memory.coverageIndex = (args.memory.coverageIndex + 1) % count;
+      }
     }
   }
 

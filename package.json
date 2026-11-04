@@ -1,6 +1,6 @@
 {
   "name": "@tamb/gamegrid",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A 2D HTML grid for creating web games (or other things that could use a 2D matrix)",
   "homepage": "https://tamb.github.io/game-grid/docs/",
   "main": "dist/main.js",
@@ -30,6 +30,7 @@
     "gh-pages": "node scripts/prepare-gh-pages.js && npm run build && npm run demo:install && npm run docs && node scripts/build-demo-gh-pages.js",
     "safe.publish": "npm run build.safe && npm publish --access public",
     "publish:prod": "npm run build.safe && npm publish --access public && npm dist-tag add @tamb/gamegrid@$npm_package_version latest",
+    "publish:rc": "npm run build.safe && npm publish --access public --tag rc",
     "demo:clean": "npm run clean && npm --prefix demo run clean",
     "demo:install": "npm --prefix demo install",
     "demo:compile": "npm --prefix demo run compile",

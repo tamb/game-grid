@@ -5,7 +5,11 @@
  *
  * @example
  * ```ts
- * const here: Coord = [3, 2];
+ * import type { Coord } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [[{ type: "wall" }, { type: "floor" }]];
+ * const here: Coord = [1, 0];
+ * matrix[here[1]][here[0]].type; // "floor". The matrix index is row, then column.
  * ```
  */
 type Coord = [number, number];
@@ -17,7 +21,9 @@ type Coord = [number, number];
  *
  * @example
  * ```ts
- * const step: Direction = "left";
+ * import type { Direction } from "@tamb/gamegrid/npc";
+ *
+ * const steps: Direction[] = ["up", "down", "left", "right"];
  * ```
  */
 type Direction = 'up' | 'down' | 'left' | 'right';
@@ -29,7 +35,9 @@ type Direction = 'up' | 'down' | 'left' | 'right';
  *
  * @example
  * ```ts
- * const cell: Cell = { type: "floor" };
+ * import type { Cell } from "@tamb/gamegrid/npc";
+ *
+ * const matrix: Cell[][] = [[{ type: "wall" }, { type: "floor" }]];
  * ```
  */
 interface Cell {
@@ -43,7 +51,9 @@ interface Cell {
  *
  * @example
  * ```ts
- * const difficulty: Difficulty = "smart";
+ * import type { Difficulty } from "@tamb/gamegrid/npc";
+ *
+ * const difficulties: Difficulty[] = ["dumb", "normal", "smart"];
  * ```
  */
 type Difficulty = 'dumb' | 'normal' | 'smart';
@@ -64,6 +74,13 @@ type Difficulty = 'dumb' | 'normal' | 'smart';
  *
  * const isWalkable = walkableUnlessTypes(["wall", "water"]);
  * ```
+ *
+ * @example Only floors, written by the caller
+ * ```ts
+ * import type { IsWalkable } from "@tamb/gamegrid/npc";
+ *
+ * const isWalkable: IsWalkable = (matrix, x, y) => matrix[y]?.[x]?.type === "floor";
+ * ```
  */
 type IsWalkable = (matrix: Cell[][], x: number, y: number) => boolean;
 
@@ -79,6 +96,33 @@ type IsWalkable = (matrix: Cell[][], x: number, y: number) => boolean;
  * import { createNpcMemory } from "@tamb/gamegrid/npc";
  *
  * const memory = createNpcMemory();
+ * ```
+ *
+ * @example Fields after one chase step
+ * ```ts
+ * import { chooseSeekerStep, createNpcMemory, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ * const memory = createNpcMemory();
+ *
+ * chooseSeekerStep({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [1, 1],
+ *   visibleQuarry: [{ id: "hider", coord: [4, 1] }],
+ *   isQuarryActive: () => true,
+ *   memory,
+ *   difficulty: "smart",
+ * });
+ *
+ * memory.visited.has("1,1"); // true
+ * memory.lastSeen; // [4, 1]
+ * memory.lastSeenId; // "hider"
+ * memory.ttl; // 12
  * ```
  */
 interface NpcMemory {
@@ -100,6 +144,11 @@ interface NpcMemory {
   coverageIndex: number;
   /** Sweep order. Empty until the first coverage decision fills it. */
   coverageCells: Coord[];
+  /**
+   * Clock time when this seeker started waiting on a quarry in the same cell.
+   * Null when it is not waiting. Set only while {@link SeekerStepArgs.pauseOnOverlapMs} is positive.
+   */
+  overlapSince: number | null;
 }
 
 export type { Cell, Coord, Difficulty, Direction, IsWalkable, NpcMemory };

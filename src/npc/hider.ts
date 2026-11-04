@@ -24,6 +24,23 @@ const SMART_THREAT_RADIUS = 6;
  *   difficulty: "normal",
  * };
  * ```
+ *
+ * @example Taunt allowed, and only some directions
+ * ```ts
+ * import type { HiderActionArgs } from "@tamb/gamegrid/npc";
+ *
+ * const args: HiderActionArgs = {
+ *   matrix,
+ *   isWalkable,
+ *   self: [2, 1],
+ *   threats: [[4, 1]],
+ *   difficulty: "smart",
+ *   legal: ["left", "right"],
+ *   canTauntNow: true,
+ *   taunt: true,
+ *   rng: () => 0,
+ * };
+ * ```
  */
 interface HiderActionArgs {
   matrix: Cell[][];
@@ -176,6 +193,114 @@ function wantsTaunt(args: HiderActionArgs, rng: () => number): boolean {
  *   canTauntNow: cooldownReady,
  *   taunt: true,
  * });
+ * ```
+ *
+ * @example A seeded roll that taunts
+ * ```ts
+ * import { chooseHiderAction, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ *
+ * const action = chooseHiderAction({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [1, 1],
+ *   threats: [[4, 1]],
+ *   difficulty: "smart",
+ *   canTauntNow: true,
+ *   taunt: true,
+ *   rng: () => 0,
+ * });
+ * // "taunt". Distance 3 is inside the smart radius, and the roll hits.
+ * ```
+ *
+ * @example A missed taunt roll still flees
+ * ```ts
+ * import { chooseHiderAction, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ *
+ * const action = chooseHiderAction({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   threats: [[4, 1]],
+ *   difficulty: "smart",
+ *   canTauntNow: true,
+ *   taunt: true,
+ *   rng: () => 0.5,
+ * });
+ * // "left". The roll missed, so the hider steps away from [4, 1].
+ * ```
+ *
+ * @example Normal steps directly away
+ * ```ts
+ * import { chooseHiderAction, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ *
+ * const action = chooseHiderAction({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   threats: [[1, 1]],
+ *   difficulty: "normal",
+ * });
+ * // "right"
+ * ```
+ *
+ * @example Dumb waits when the wander roll misses
+ * ```ts
+ * import { chooseHiderAction, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ *
+ * const action = chooseHiderAction({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   threats: [[1, 1]],
+ *   difficulty: "dumb",
+ *   rng: () => 0.9,
+ * });
+ * // null
+ * ```
+ *
+ * @example An empty legal list means the caller will not move
+ * ```ts
+ * import { chooseHiderAction, walkableUnlessTypes } from "@tamb/gamegrid/npc";
+ *
+ * const matrix = [
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ *   [{ type: "wall" }, { type: "floor" }, { type: "floor" }, { type: "floor" }, { type: "floor" }],
+ *   [{ type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }, { type: "wall" }],
+ * ];
+ *
+ * const action = chooseHiderAction({
+ *   matrix,
+ *   isWalkable: walkableUnlessTypes(["wall"]),
+ *   self: [2, 1],
+ *   threats: [[1, 1]],
+ *   difficulty: "normal",
+ *   legal: [],
+ * });
+ * // null
  * ```
  */
 function chooseHiderAction(args: HiderActionArgs): 'taunt' | Direction | null {

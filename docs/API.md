@@ -24,7 +24,43 @@ Browse the full API on the [**exports index**](modules.html):
 | [Presentation](modules.html#presentation) | [`classesEnum`](enums/classesEnum.html), [`directionClassEnum`](variables/directionClassEnum.html) |
 | [NPC](modules.html#npc) | [`chooseHiderAction`](functions/npc.chooseHiderAction.html), [`chooseSeekerStep`](functions/npc.chooseSeekerStep.html), [`walkableUnlessTypes`](functions/npc.walkableUnlessTypes.html), [`createNpcMemory`](functions/npc.createNpcMemory.html) |
 
-NPC brains are a separate import, `@tamb/gamegrid/npc`. They are not on the default `GameGrid` export. Pass `grid.getMatrix()` and a walk predicate; the functions return a direction (or `"taunt"` only when `taunt: true`). The caller moves its own actor.
+NPC brains are a separate import, `@tamb/gamegrid/npc`. They are not on the default `GameGrid` export. Pass `grid.getMatrix()` and a walk predicate; the functions return a direction (or `"taunt"` only when `taunt: true`). The caller moves its own actor. Symbol pages include further snippets for the overlap pause, last-seen search, caller move limits, and the search helpers.
+
+```ts
+import {
+  chooseHiderAction,
+  chooseSeekerStep,
+  createNpcMemory,
+  walkableUnlessTypes,
+} from "@tamb/gamegrid/npc";
+
+const isWalkable = walkableUnlessTypes(["wall"]);
+const memory = createNpcMemory();
+
+const seekerStep = chooseSeekerStep({
+  matrix: grid.getMatrix(),
+  isWalkable,
+  self: seeker.coord,
+  visibleQuarry: hidersInSight.map((hider) => ({ id: hider.id, coord: hider.coord })),
+  isQuarryActive: (id) => hiders.some((hider) => hider.id === id && hider.alive),
+  memory,
+  difficulty: "smart",
+});
+
+if (seekerStep) stepActor(seeker, seekerStep);
+
+const hiderAction = chooseHiderAction({
+  matrix: grid.getMatrix(),
+  isWalkable,
+  self: hider.coord,
+  threats: [seeker.coord],
+  difficulty: "normal",
+});
+
+if (hiderAction && hiderAction !== "taunt") stepActor(hider, hiderAction);
+```
+
+Pass the same `memory` on the next tick. Omit `taunt` and the hider result is never `"taunt"`.
 
 ## Instance jobs
 

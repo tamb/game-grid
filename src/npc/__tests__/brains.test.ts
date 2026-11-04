@@ -50,6 +50,8 @@ function seeker(partial: {
   difficulty?: 'dumb' | 'normal' | 'smart';
   legal?: Direction[];
   rng?: () => number;
+  pauseOnOverlapMs?: number;
+  now?: number;
 }) {
   return chooseSeekerStep({
     matrix: partial.matrix ?? openRoom,
@@ -62,6 +64,8 @@ function seeker(partial: {
     difficulty: partial.difficulty ?? 'smart',
     legal: partial.legal,
     rng: partial.rng,
+    pauseOnOverlapMs: partial.pauseOnOverlapMs,
+    now: partial.now,
   });
 }
 
@@ -124,6 +128,24 @@ describe('search helpers', () => {
     expect(buildCoveragePath([], walkOpen)).toEqual([]);
     expect(buildCoveragePath([[cell('open')]], walkOpen)).toEqual([]);
   });
+
+  it('sweeps a jagged row using that row width, not the first row', () => {
+    const matrix: Cell[][] = [
+      [cell('wall'), cell('wall')],
+      [cell('wall'), cell('open'), cell('open'), cell('open'), cell('wall')],
+      [cell('wall'), cell('open'), cell('open'), cell('open'), cell('wall')],
+      [cell('wall'), cell('wall'), cell('wall'), cell('wall'), cell('wall')],
+    ];
+    const isWalkable = walkableUnlessTypes(['wall']);
+    expect(buildCoveragePath(matrix, isWalkable)).toEqual([
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [3, 2],
+      [2, 2],
+      [1, 2],
+    ]);
+  });
 });
 
 describe('chooseHiderAction', () => {
@@ -148,13 +170,11 @@ describe('chooseHiderAction', () => {
       taunt: false,
       rng: rolls(0),
     });
-    expect(omitted).not.toBe('taunt');
-    expect(omitted).not.toBe('right');
-    expect(explicit).not.toBe('taunt');
-    expect(explicit).not.toBeNull();
+    expect(omitted).toBe('down');
+    expect(explicit).toBe('down');
   });
 
-  it('taunts on a hit and keeps moving on a miss for each difficulty', () => {
+  it('taunts on a hit, flees on a smart or normal miss, and waits on a dumb miss', () => {
     expect(
       chooseHiderAction({
         ...base,
@@ -175,7 +195,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0.5, 0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('down');
     expect(
       chooseHiderAction({
         ...base,
@@ -195,7 +215,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0.5, 0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('left');
     expect(
       chooseHiderAction({
         ...base,
@@ -215,7 +235,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0.5, 0.9),
       }),
-    ).not.toBe('taunt');
+    ).toBeNull();
   });
 
   it('skips the taunt roll when cooldown, distance, or threats say no', () => {
@@ -227,7 +247,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('down');
     expect(
       chooseHiderAction({
         ...base,
@@ -246,7 +266,7 @@ describe('chooseHiderAction', () => {
         taunt: true,
         rng: rolls(0),
       }),
-    ).not.toBe('taunt');
+    ).toBe('down');
     expect(
       chooseHiderAction({
         ...base,
@@ -258,7 +278,7 @@ describe('chooseHiderAction', () => {
         legal: ['left'],
         rng: rolls(0),
       }),
-    ).not.toBe('taunt');
+    ).toBeNull();
     expect(
       chooseHiderAction({
         ...base,
@@ -361,7 +381,7 @@ describe('chooseHiderAction', () => {
       legal: ['up', 'down'],
       rng: rolls(0),
     });
-    expect(randomSafe === 'up' || randomSafe === 'down').toBe(true);
+    expect(randomSafe).toBe('up');
 
     const smartFallback = chooseHiderAction({
       ...base,
@@ -421,10 +441,26 @@ describe('chooseHiderAction', () => {
         legal: ['down', 'up', 'left'],
         rng: rolls(0),
       }),
-    ).not.toBeNull();
+    ).toBe('up');
   });
 
-  it('waits when every step toward the threat is blocked and no opposite is legal', () => {
+  it('paths toward the farther room when that is not directly away', () => {
+    const matrix = ['#######', '#.....#', '#.#####', '#.#####', '#######'].map((row) =>
+      [...row].map((symbol) => cell(symbol === '#' ? 'barrier' : 'open')),
+    );
+    const isWalkable = walkableUnlessTypes(['barrier']);
+    const shared = {
+      matrix,
+      isWalkable,
+      self: [1, 2] as Coord,
+      threats: [[2, 1]] as Coord[],
+    };
+
+    expect(chooseHiderAction({ ...shared, difficulty: 'normal', rng: rolls(0.9) })).toBe('down');
+    expect(chooseHiderAction({ ...shared, difficulty: 'smart', rng: rolls(0.9) })).toBe('up');
+  });
+
+  it('takes the remaining safe step when both direct axes are blocked', () => {
     const matrix = room();
     matrix[2][3] = cell('barrier');
     matrix[3][2] = cell('barrier');
@@ -749,10 +785,9 @@ describe('chooseSeekerStep', () => {
         self: [2, 2],
         memory,
         difficulty: 'dumb',
-        legal: ['left', 'right'],
-        rng: rolls(0),
+        legal: ['left'],
       }),
-    ).not.toBeNull();
+    ).toBe('left');
 
     const tiny = createNpcMemory();
     expect(
@@ -816,5 +851,163 @@ describe('chooseSeekerStep', () => {
       legal: ['left', 'right'],
     });
     expect(step).toBe('left');
+  });
+
+  it('moves on immediately when already standing on a visible quarry', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    expect(
+      seeker({
+        matrix: board,
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        lures: [[8, 2]],
+        memory,
+        legal: ['left', 'right'],
+        pauseOnOverlapMs: 0,
+      }),
+    ).toBe('right');
+    expect(memory.lastSeen).toEqual([5, 2]);
+    expect(memory.lastSeenId).toBe('hider');
+    expect(memory.ttl).toBe(12);
+    expect(memory.investigating).toBe(false);
+    expect(memory.lure).toEqual([8, 2]);
+    expect(memory.overlapSince).toBeNull();
+  });
+
+  it('waits pauseOnOverlapMs before the next move, then allows it', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    const overlapping = {
+      matrix: board,
+      self: [5, 2] as Coord,
+      quarry: [{ id: 'hider', coord: [5, 2] as Coord }],
+      lures: [[8, 2] as Coord],
+      memory,
+      legal: ['left', 'right'] as Direction[],
+      pauseOnOverlapMs: 500,
+    };
+
+    expect(seeker({ ...overlapping, now: 1_000 })).toBeNull();
+    expect(memory.overlapSince).toBe(1_000);
+    expect(memory.lastSeen).toEqual([5, 2]);
+
+    expect(seeker({ ...overlapping, now: 1_499 })).toBeNull();
+    expect(memory.overlapSince).toBe(1_000);
+
+    expect(seeker({ ...overlapping, now: 1_500 })).toBe('right');
+    expect(memory.overlapSince).toBe(1_000);
+
+    expect(
+      seeker({
+        ...overlapping,
+        quarry: [{ id: 'hider', coord: [7, 2] }],
+        now: 1_600,
+      }),
+    ).toBe('right');
+    expect(memory.overlapSince).toBeNull();
+
+    expect(seeker({ ...overlapping, now: 1_700 })).toBeNull();
+    expect(memory.overlapSince).toBe(1_700);
+    expect(seeker({ ...overlapping, now: 2_199 })).toBeNull();
+    expect(seeker({ ...overlapping, now: 2_200 })).toBe('right');
+  });
+
+  it('uses Date.now when pauseOnOverlapMs is set and now is omitted', () => {
+    const memory = createNpcMemory();
+    const before = Date.now();
+    expect(
+      seeker({
+        matrix: corridor(12),
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        lures: [[8, 2]],
+        memory,
+        legal: ['right'],
+        pauseOnOverlapMs: 5_000,
+      }),
+    ).toBeNull();
+    const after = Date.now();
+    expect(memory.overlapSince).toBeGreaterThanOrEqual(before);
+    expect(memory.overlapSince).toBeLessThanOrEqual(after);
+  });
+
+  it('copies a lure so a reused coordinate tuple cannot retarget the seeker', () => {
+    const slot: Coord = [8, 2];
+    const memory = createNpcMemory();
+    seeker({
+      matrix: corridor(12),
+      self: [5, 2],
+      lures: [slot],
+      memory,
+      legal: ['right'],
+    });
+    expect(memory.lure).toEqual([8, 2]);
+    expect(memory.lure).not.toBe(slot);
+    slot[0] = 1;
+    expect(memory.lure).toEqual([8, 2]);
+  });
+
+  it('skips an unreachable coverage cell and retries a step the caller rejected', () => {
+    const board = room(7);
+    for (let y = 0; y < board.length; y++) board[y][2] = cell('barrier');
+    const memory = createNpcMemory();
+    seeker({
+      matrix: board,
+      self: [4, 1],
+      memory,
+      difficulty: 'smart',
+      legal: ['left', 'right'],
+    });
+    expect(memory.coverageCells[0]).toEqual([1, 1]);
+    expect(memory.coverageIndex).toBe(1);
+
+    expect(
+      seeker({
+        matrix: board,
+        self: [4, 1],
+        memory,
+        difficulty: 'smart',
+        legal: ['left', 'right'],
+      }),
+    ).toBe('left');
+    expect(memory.coverageIndex).toBe(1);
+
+    const open = room(5);
+    const blocked = createNpcMemory();
+    const toward = bfsNextStep(open, walkOpen, [2, 2], [1, 1]);
+    expect(toward).not.toBeNull();
+    seeker({
+      matrix: open,
+      self: [2, 2],
+      memory: blocked,
+      difficulty: 'smart',
+      legal: [toward === 'left' ? 'right' : 'left'],
+    });
+    expect(blocked.coverageIndex).toBe(0);
+    expect(blocked.coverageCells[0]).toEqual([1, 1]);
+  });
+
+  it('does not skip the patrol cell the seeker is already standing on', () => {
+    const board = room(5);
+    const memory = createNpcMemory();
+    seeker({
+      matrix: board,
+      self: [2, 1],
+      memory,
+      difficulty: 'smart',
+      legal: ['left'],
+    });
+    for (const [x, y] of memory.coverageCells) memory.visited.add(`${x},${y}`);
+    memory.coverageIndex = 0;
+    seeker({
+      matrix: board,
+      self: [2, 1],
+      memory,
+      difficulty: 'smart',
+      legal: ['left'],
+    });
+    expect(memory.coverageCells[1]).toEqual([2, 1]);
+    expect(memory.coverageIndex).toBe(1);
   });
 });
