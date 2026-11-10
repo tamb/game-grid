@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A seeker that steps off a visible quarry in the same cell no longer turns around on the next tick. Chase and last-seen search skip that quarry while it stays on that cell and remains the closest one in sight. The cell is copied onto `memory.releasedQuarryCell`.
 - The `chooseSeekerStep` TypeDoc comment was attached to a private helper, so the function page had no description or examples.
 - Lure coordinates are copied into memory, so a caller that reuses the tuple does not retarget the seeker. An unreachable coverage cell no longer pins the sweep, and a jagged board's sweep uses each row's own width.
 - Interrupting an animated zoom (`setZoom` / `clearZoom` with `animate: false`, or `destroy`) no longer leaves the slide union painted or the container locked to the animation size. A newer slide is not cleared when the superseded slide finishes.
