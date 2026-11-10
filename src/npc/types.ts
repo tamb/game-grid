@@ -149,6 +149,14 @@ interface NpcMemory {
    * Null when it is not waiting. Set only while {@link SeekerStepArgs.pauseOnOverlapMs} is positive.
    */
   overlapSince: number | null;
+  /**
+   * Quarry this seeker already stepped off of. Chase and last-seen search skip
+   * it while it stays on {@link NpcMemory.releasedQuarryCell} and remains the
+   * closest visible quarry. Null when the seeker is not leaving one.
+   */
+  releasedQuarryId: string | null;
+  /** Cell copied from the quarry at the moment the seeker stepped off it. */
+  releasedQuarryCell: Coord | null;
 }
 
 export type { Cell, Coord, Difficulty, Direction, IsWalkable, NpcMemory };
