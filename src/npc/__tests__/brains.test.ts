@@ -853,6 +853,164 @@ describe('chooseSeekerStep', () => {
     expect(step).toBe('left');
   });
 
+  it('keeps moving away after stepping off a visible quarry that stays put', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    const quarryCell: Coord = [5, 2];
+    expect(
+      seeker({
+        matrix: board,
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: quarryCell }],
+        lures: [[8, 2]],
+        memory,
+        legal: ['left', 'right'],
+      }),
+    ).toBe('right');
+    expect(memory.releasedQuarryId).toBe('hider');
+    expect(memory.releasedQuarryCell).toEqual([5, 2]);
+    expect(memory.releasedQuarryCell).not.toBe(quarryCell);
+
+    expect(
+      seeker({
+        matrix: board,
+        self: [6, 2],
+        quarry: [{ id: 'hider', coord: quarryCell }],
+        lures: [[8, 2]],
+        memory,
+        legal: ['left', 'right'],
+      }),
+    ).toBe('right');
+    expect(memory.releasedQuarryId).toBe('hider');
+
+    quarryCell[0] = 9;
+    expect(memory.releasedQuarryCell).toEqual([5, 2]);
+    expect(
+      seeker({
+        matrix: board,
+        self: [6, 2],
+        quarry: [{ id: 'hider', coord: [9, 2] }],
+        lures: [[1, 2]],
+        memory,
+        legal: ['left', 'right'],
+      }),
+    ).toBe('right');
+    expect(memory.releasedQuarryId).toBeNull();
+    expect(memory.releasedQuarryCell).toBeNull();
+    expect(memory.lastSeen).toEqual([9, 2]);
+  });
+
+  it('does not follow the last sighting back onto a quarry it just left', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    expect(
+      seeker({
+        matrix: board,
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        memory,
+        legal: ['right'],
+      }),
+    ).toBe('right');
+    expect(memory.lastSeen).toEqual([5, 2]);
+    expect(memory.releasedQuarryId).toBe('hider');
+
+    expect(
+      seeker({
+        matrix: board,
+        self: [6, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        memory,
+        legal: ['left', 'right'],
+      }),
+    ).toBe('right');
+    expect(memory.releasedQuarryId).toBe('hider');
+    expect(memory.lastSeenId).toBe('hider');
+  });
+
+  it('chases a closer quarry instead of the one it already left', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    seeker({
+      matrix: board,
+      self: [5, 2],
+      quarry: [{ id: 'hider', coord: [5, 2] }],
+      lures: [[8, 2]],
+      memory,
+      legal: ['right'],
+    });
+
+    expect(
+      seeker({
+        matrix: board,
+        self: [7, 2],
+        quarry: [
+          { id: 'hider', coord: [5, 2] },
+          { id: 'other', coord: [6, 2] },
+        ],
+        lures: [[10, 2]],
+        memory,
+        legal: ['left', 'right'],
+      }),
+    ).toBe('left');
+    expect(memory.lastSeenId).toBe('other');
+    expect(memory.releasedQuarryId).toBeNull();
+  });
+
+  it('drops a released quarry when the caller says that sighting is gone', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    expect(
+      seeker({
+        matrix: board,
+        self: [5, 2],
+        quarry: [{ id: 'hider', coord: [5, 2] }],
+        memory,
+        legal: ['right'],
+      }),
+    ).toBe('right');
+    expect(memory.lastSeen).toEqual([5, 2]);
+
+    expect(
+      seeker({
+        matrix: board,
+        self: [6, 2],
+        quarry: [],
+        memory,
+        active: () => false,
+        legal: ['left', 'right'],
+      }),
+    ).toBe('right');
+    expect(memory.releasedQuarryId).toBeNull();
+    expect(memory.lastSeen).toBeNull();
+  });
+
+  it('does not release a quarry until the overlap pause lets the seeker step', () => {
+    const board = corridor(12);
+    const memory = createNpcMemory();
+    const overlapping = {
+      matrix: board,
+      self: [5, 2] as Coord,
+      quarry: [{ id: 'hider', coord: [5, 2] as Coord }],
+      lures: [[8, 2] as Coord],
+      memory,
+      legal: ['left', 'right'] as Direction[],
+      pauseOnOverlapMs: 500,
+    };
+
+    expect(seeker({ ...overlapping, now: 1_000 })).toBeNull();
+    expect(memory.releasedQuarryId).toBeNull();
+    expect(memory.overlapSince).toBe(1_000);
+
+    expect(seeker({ ...overlapping, now: 1_500 })).toBe('right');
+    expect(memory.releasedQuarryId).toBe('hider');
+    expect(memory.releasedQuarryCell).toEqual([5, 2]);
+
+    expect(seeker({ ...overlapping, self: [6, 2], now: 1_600 })).toBe('right');
+    expect(memory.releasedQuarryId).toBe('hider');
+    expect(memory.overlapSince).toBeNull();
+  });
+
   it('moves on immediately when already standing on a visible quarry', () => {
     const board = corridor(12);
     const memory = createNpcMemory();

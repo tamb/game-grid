@@ -277,6 +277,34 @@ function sameCell(a: Coord, b: Coord): boolean {
 }
 
 /**
+ * True while the closest visible quarry is the one this seeker already stepped
+ * off, and it has not moved to another cell. Any other sighting clears it.
+ */
+function syncReleasedQuarry(
+  memory: NpcMemory,
+  closest: { id: string; coord: Coord } | null,
+): boolean {
+  if (memory.releasedQuarryId == null || memory.releasedQuarryCell == null) {
+    return false;
+  }
+  if (
+    closest &&
+    closest.id === memory.releasedQuarryId &&
+    sameCell(closest.coord, memory.releasedQuarryCell)
+  ) {
+    return true;
+  }
+  memory.releasedQuarryId = null;
+  memory.releasedQuarryCell = null;
+  return false;
+}
+
+function rememberReleasedQuarry(memory: NpcMemory, quarry: { id: string; coord: Coord }): void {
+  memory.releasedQuarryId = quarry.id;
+  memory.releasedQuarryCell = [quarry.coord[0], quarry.coord[1]];
+}
+
+/**
  * True while a positive overlap pause has not elapsed.
  * Clears the timer when the seeker is not on a quarry or the pause is off.
  */
@@ -299,7 +327,10 @@ function overlapPauseActive(args: SeekerStepArgs, onQuarry: boolean): boolean {
  * Order is fixed: closest visible quarry, nearest lure, last-seen cell and its
  * ring, a coverage sweep, an unvisited neighbor, then a random legal step.
  * Standing on a visible quarry does not hold the cell unless
- * {@link SeekerStepArgs.pauseOnOverlapMs} is set.
+ * {@link SeekerStepArgs.pauseOnOverlapMs} is set. Stepping off records that
+ * quarry on {@link NpcMemory.releasedQuarryId}. Chase and last-seen search skip
+ * it while it stays on that cell and remains the closest visible quarry, so
+ * the next tick does not turn around.
  * Memory is mutated. Pass the same object next tick.
  *
  * @param args - Board, position, quarry, and memory.
@@ -509,19 +540,25 @@ function overlapPauseActive(args: SeekerStepArgs, onQuarry: boolean): boolean {
  */
 function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   const legal = args.legal ?? openDirections(args.matrix, args.isWalkable, args.self);
+  const closest = closestQuarry(args.self, args.visibleQuarry);
+  const onQuarry = closest != null && sameCell(args.self, closest.coord);
+  const released = syncReleasedQuarry(args.memory, closest);
   if (legal.length === 0) return null;
 
   const rng = args.rng ?? Math.random;
   args.memory.visited.add(coordKey(args.self));
   syncLure(args.self, args.memory, args.lures ?? []);
 
-  const closest = closestQuarry(args.self, args.visibleQuarry);
-  const onQuarry = closest != null && sameCell(args.self, closest.coord);
+  const finish = (dir: Direction | null): Direction | null => {
+    if (dir && onQuarry && closest) rememberReleasedQuarry(args.memory, closest);
+    return dir;
+  };
+
   if (closest) {
     rememberSighting(args.memory, closest, LAST_SEEN_TTL[args.difficulty]);
   }
   if (overlapPauseActive(args, onQuarry)) return null;
-  if (closest) {
+  if (closest && !released) {
     const chase = stepToward(args.matrix, args.isWalkable, args.self, closest.coord, legal);
     if (chase) return chase;
   }
@@ -529,17 +566,17 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   const lure = args.memory.lure;
   if (lure && (args.self[0] !== lure[0] || args.self[1] !== lure[1])) {
     const towardLure = stepToward(args.matrix, args.isWalkable, args.self, lure, legal);
-    if (towardLure) return towardLure;
+    if (towardLure) return finish(towardLure);
   }
 
-  if (args.memory.lastSeen) {
+  if (args.memory.lastSeen && !released) {
     const stillThere = args.isQuarryActive(args.memory.lastSeenId, args.memory.lastSeen);
     if (!stillThere || args.memory.ttl <= 0) {
       clearLastSeen(args.memory);
     } else {
       args.memory.ttl -= 1;
       const resume = chooseLastSeenMove(args, legal);
-      if (resume) return resume;
+      if (resume) return finish(resume);
     }
   }
 
@@ -552,7 +589,7 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
     );
     if (coverageTarget) {
       const step = bfsNextStep(args.matrix, args.isWalkable, args.self, coverageTarget);
-      if (step && legal.includes(step)) return step;
+      if (step && legal.includes(step)) return finish(step);
       // A walled-off cell is still unvisited, so the sweep would pin itself
       // there and never walk the reachable rooms. Skip one such cell per tick.
       // A real step that this caller currently rejects stays put and is retried.
@@ -564,9 +601,9 @@ function chooseSeekerStep(args: SeekerStepArgs): Direction | null {
   }
 
   const unvisited = pickUnvisitedDirection(args.self, args.memory, legal);
-  if (unvisited) return unvisited;
+  if (unvisited) return finish(unvisited);
 
-  return pickRandom(legal, rng);
+  return finish(pickRandom(legal, rng));
 }
 
 export { chooseSeekerStep, type SeekerStepArgs };

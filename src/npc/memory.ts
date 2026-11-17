@@ -52,6 +52,8 @@ function createNpcMemory(): NpcMemory {
     coverageIndex: 0,
     coverageCells: [],
     overlapSince: null,
+    releasedQuarryId: null,
+    releasedQuarryCell: null,
   };
 }
 
